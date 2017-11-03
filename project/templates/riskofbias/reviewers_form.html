@@ -20,14 +20,77 @@
 {% endblock %}
 
 {% block content %}
-        <div id='numberForm'>
+   <h3 onclick="$('#RoBStudyList').toggle();$('#RSLOpen').toggle();$('#RSLClose').toggle();">Study Reviewers [<span id="RSLOpen" style="display:none;">+</span><span id="RSLClose">-</span>]</h3>
+   <div id="RoBStudyList">
+	
+       <div id='numberForm'>
             {% crispy form %}
         </div>
 
-        <div id='reviewersFormset'>
+        <div id='studyReviewersFormset'>
             {% include "hawc/table_inline_formset.html" with form_show_errors=True %}
         </div>
-{% endblock %}
+	</div>
+  <h3 onclick="$('#RoBEndpointList').toggle();$('#RELOpen').toggle();$('#RELClose').toggle();">Endpoint Reviewers [<span id="RELOpen" style="display:none;">+</span><span id="RELClose">-</span>]</h3>
+		
+       <div id='numberForm'>
+            {% crispy form %}
+        </div>
+ 
+ <div class="controls"> <input class="numberinput" id="id_number_of_reviewers" min="0" name="number_of_reviewers" type="number" value="4" required="">
+	<p id="hint_id_number_of_reviewers" class="help-block">The number of independent reviewers required for each endpoint. If there is more than 1 reviewer, an additional final 
+	reviewer will resolve any conflicts and make a final determination, so there will be a total of N+1 reviews.</p>
+	</div>	
+    <table class="table table-condensed table-striped" id="RoBEndpointList">
+		<thead>
+			<th>Study</th>
+			<th>Experiment</th>
+			<th>Animal group</th>
+			<th>Endpoint</th>
+        </thead>
+		<tbody>
+			<tr>
+				<td><a href="/study/282165/" target="_blank">NTP 2008</a><br><b>Date created: </b><span>06/08/2017</span></td>
+				<td><a href="/ani/experiment/1683/" target="_blank">2-year cancer bioassay in F344/N rats and B6C3F1 mice</a></td>
+				<td><a href="/ani/animal-group/3056/" target="_blank">Female B6C3F1 mice</a></td>
+				<td><a href="/ani/endpoint/27493/" target="_blank">Adenomas of the duodenum</a></td>
+			</tr>
+			<tr>
+				<th colspan="{{ rob_count }}">
+					Reviewers
+				</th>
+			</tr>
+			<tr class="formset-row">
+    <th id="div_id_form-0-author-0" class="control-group">
+            <div class="controls">
+                    <span role="status" aria-live="polite" class="ui-helper-hidden-accessible"></span><input class="autocompletewidget ui-autocomplete-input ui-widget ui-widget-content ui-corner-all" data-selectable-allow-new="false" data-selectable-type="text" data-selectable-url="/selectable/myuser-assessmentteammemberorhigherlookup/?related=499" id="id_form-0-author-0_0" name="form-0-author-0_0" type="text" value="Catherine Gibbons" autocomplete="off"><input class="hiddeninput" data-selectable-type="hidden" id="id_form-0-author-0_1" name="form-0-author-0_1" type="hidden" value="119">
+            <i class="btn fa fa-arrows-v rob-copy-reviewers" title="Use this reviewer for all studies in this reviewer-column"></i></div>
+    </th>
+    <th id="div_id_form-0-author-1" class="control-group">
+            <div class="controls">
+                    <span role="status" aria-live="polite" class="ui-helper-hidden-accessible"></span><input class="autocompletewidget ui-autocomplete-input ui-widget ui-widget-content ui-corner-all" data-selectable-allow-new="false" data-selectable-type="text" data-selectable-url="/selectable/myuser-assessmentteammemberorhigherlookup/?related=499" id="id_form-0-author-1_0" name="form-0-author-1_0" type="text" value="Alan Sasso" autocomplete="off"><input class="hiddeninput" data-selectable-type="hidden" id="id_form-0-author-1_1" name="form-0-author-1_1" type="hidden" value="706">
+            <i class="btn fa fa-arrows-v rob-copy-reviewers" title="Use this reviewer for all studies in this reviewer-column"></i></div>
+    </th>
+    <th id="div_id_form-0-author-2" class="control-group">
+            <div class="controls">
+                    <span role="status" aria-live="polite" class="ui-helper-hidden-accessible"></span><input class="autocompletewidget ui-autocomplete-input ui-widget ui-widget-content ui-corner-all" data-selectable-allow-new="false" data-selectable-type="text" data-selectable-url="/selectable/myuser-assessmentteammemberorhigherlookup/?related=499" id="id_form-0-author-2_0" name="form-0-author-2_0" type="text" autocomplete="off"><input class="hiddeninput" data-selectable-type="hidden" id="id_form-0-author-2_1" name="form-0-author-2_1" type="hidden">
+            <i class="btn fa fa-arrows-v rob-copy-reviewers" title="Use this reviewer for all studies in this reviewer-column"></i></div>
+    </th>
+    <th id="div_id_form-0-author-3" class="control-group">
+            <div class="controls">
+                    <span role="status" aria-live="polite" class="ui-helper-hidden-accessible"></span><input class="autocompletewidget ui-autocomplete-input ui-widget ui-widget-content ui-corner-all" data-selectable-allow-new="false" data-selectable-type="text" data-selectable-url="/selectable/myuser-assessmentteammemberorhigherlookup/?related=499" id="id_form-0-author-3_0" name="form-0-author-3_0" type="text" autocomplete="off"><input class="hiddeninput" data-selectable-type="hidden" id="id_form-0-author-3_1" name="form-0-author-3_1" type="hidden">
+            <i class="btn fa fa-arrows-v rob-copy-reviewers" title="Use this reviewer for all studies in this reviewer-column"></i></div>
+    </th>
+    <th id="div_id_form-0-author-4" class="control-group">
+            <div class="controls">
+                    <span role="status" aria-live="polite" class="ui-helper-hidden-accessible"></span><input class="autocompletewidget ui-autocomplete-input ui-widget ui-widget-content ui-corner-all" data-selectable-allow-new="false" data-selectable-type="text" data-selectable-url="/selectable/myuser-assessmentteammemberorhigherlookup/?related=499" id="id_form-0-author-4_0" name="form-0-author-4_0" type="text" autocomplete="off"><input class="hiddeninput" data-selectable-type="hidden" id="id_form-0-author-4_1" name="form-0-author-4_1" type="hidden">
+            <i class="btn fa fa-arrows-v rob-copy-reviewers" title="Use this reviewer for all studies in this reviewer-column"></i></div>
+    </th>
+                </tr>
+			</div>
+    </div>
+		
+		{% endblock %}
 
 
 {% block extrajs %}
@@ -35,8 +98,8 @@
     <script type="text/javascript">
       $(document).ready(function() {
         // insert reviewer formset into number_of_reviewers form
-        new window.app.utils.DynamicFormset($('#reviewersFormset'), 'form', {oneFormRequired: true});
-        $('#reviewersFormset').insertBefore($('#numberForm .form-actions'));
+        new window.app.utils.DynamicFormset($('#studyReviewersFormset'), 'form', {oneFormRequired: true});
+        $('#studyReviewersFormset').insertBefore($('#numberForm .form-actions'));
 
         var reviewerFields = document.getElementsByClassName('autocompletewidget'),
             formsetRows = document.getElementById('reviewersFormset')

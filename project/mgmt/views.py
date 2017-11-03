@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
 
 from assessment.models import Assessment
+from animal.models import Endpoint
 from utils.views import BaseList, LoginRequiredMixin, TeamMemberOrHigherMixin
 
 from . import models
@@ -93,10 +94,14 @@ class TaskDashboard(TeamMemberOrHigherMixin, BaseList):
     def get_queryset(self):
         return self.model.objects.assessment_qs(self.assessment.id)
 
-
+    def get_context_data(self, **kwargs):
+        context = super(TaskDashboard, self).get_context_data(**kwargs)
+        context['endpoint_list'] = Endpoint.objects.filter(assessment=self.assessment).select_related('animal_group__experiment__study')
+        return context
+		
 class TaskDetail(TaskDashboard):
     template_name = 'mgmt/assessment_details.html'
-
+		
 
 class TaskModify(TaskDashboard):
     template_name = 'mgmt/assessment_modify.html'

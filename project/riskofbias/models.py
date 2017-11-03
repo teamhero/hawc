@@ -11,7 +11,7 @@ from django.utils.html import strip_tags
 
 from reversion import revisions as reversion
 
-from assessment.models import Assessment
+from assessment.models import Assessment, BaseEndpoint
 from myuser.models import HAWCUser
 from study.models import Study
 from utils.helper import cleanHTML, HAWCDjangoJSONEncoder, SerializerHelper
@@ -29,6 +29,9 @@ class RiskOfBiasDomain(models.Model):
     name = models.CharField(
         max_length=128)
     description = models.TextField()
+    type = models.CharField(
+        max_length=12,
+		default='study')
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -471,6 +474,262 @@ class RiskOfBiasScore(models.Model):
         RiskOfBias.delete_caches(rob_ids)
         Study.delete_caches(study_ids)
 
+class RiskOfBiasPerEndpoint(models.Model):
+    objects = managers.RiskOfBiasPerEndpointManager()
+
+    baseendpoint = models.ForeignKey(
+        'assessment.Baseendpoint',
+        related_name='riskofbiasesperendpoint',
+        null=True)
+    final = models.BooleanField(
+        default=False,
+        db_index=True)
+    author = models.ForeignKey(
+        HAWCUser,
+        related_name='riskofbiasesperendpoint')
+    active = models.BooleanField(
+        default=False,
+        db_index=True)
+    created = models.DateTimeField(
+        auto_now_add=True)
+    last_updated = models.DateTimeField(
+        auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'Risk of Biases per Endpoint'
+        ordering = ('final',)
+
+    def __str__(self):
+        return '{} (Risk of bias)'.format(self.baseendpoint.name)
+
+    def get_assessment(self):
+        return self.baseendpoint.get_assessment()
+
+    def get_final_url(self):
+        return reverse('riskofbias:rob_detail', args=[self.pk])
+
+    def get_absolute_url(self):
+        return reverse('riskofbias:arob_reviewers',
+            args=[self.get_assessment().pk])
+
+    def get_edit_url(self):
+        return reverse('riskofbias:rob_update', args=[self.pk])
+
+    def get_crumbs(self):
+        return get_crumbs(self, self.baseendpoint)
+
+    def get_json(self, json_encode=True):
+        return SerializerHelper.get_serialized(self, json=json_encode)
+
+    @staticmethod
+    def get_qs_json(queryset, json_encode=True):
+        robs = [rob.get_json(json_encode=False) for rob in queryset]
+        if json_encode:
+            return json.dumps(robs, cls=HAWCDjangoJSONEncoder)
+        else:
+            return robs
+
+    def update_scores(self, assessment):
+        """Sync RiskOfBiasScore for this endpoint based on assessment requirements.
+
+        Metrics may change based on endpoint type and metric requirements by endpoint
+        type. This method is called via signals when the endpoint type changes,
+        or when a metric is altered.  RiskOfBiasScore are created/deleted as
+        needed.
+        """
+        metrics = RiskOfBiasMetric.objects.get_required_metrics(assessment, self.baseendpoint)\
+            .prefetch_related('scores')
+        scores = self.scores.all()
+        # add any scores that are required and not currently created
+        for metric in metrics:
+            if not (metric.scores.all() & scores):
+                logging.info('Creating score: {}->{}'.format(self.baseendpoint, metric))
+                RiskOfBiasScorePerEndpoint.objects.create(riskofbias=self, metric=metric)
+        # delete any scores that are no longer required
+        for score in scores:
+            if score.metric not in metrics:
+                logging.info('Deleting score: {}->{}'.format(self.baseendpoint, score.metric))
+                score.delete()
+
+    def build_scores(self, assessment, baseendpoint):
+        scores = [
+            RiskOfBiasScorePerEndpoint(riskofbias=self, metric=metric)
+            for metric in
+            RiskOfBiasMetric.objects.get_required_metrics(assessment, baseendpoint)
+        ]
+        RiskOfBiasScore.objects.bulk_create(scores)
+
+    def activate(self):
+        self.active = True
+        self.save()
+
+    def deactivate(self):
+        self.active = False
+        self.save()
+
+    @property
+    def is_complete(self):
+        """
+        The rich text editor used for notes input adds HTML tags even if input
+        is empty, so HTML needs to be stripped out.
+        """
+        return all([
+            len(strip_tags(score.notes)) > 0 for score in self.scores.all() if score.score is not 0
+        ])
+
+    @property
+    def study_reviews_complete(self):
+        return all([
+            rob.is_complete
+            for rob in self.study.get_active_robs(with_final=False)
+        ])
+
+    @classmethod
+    def delete_caches(cls, ids):
+        SerializerHelper.delete_caches(cls, ids)
+
+    @staticmethod
+    def flat_complete_header_row():
+        return (
+            'rob-id',
+            'rob-active',
+            'rob-final',
+            'rob-author_id',
+            'rob-author_name'
+        )
+
+    @staticmethod
+    def flat_complete_data_row(ser):
+        return (
+            ser['id'],
+            ser['active'],
+            ser['final'],
+            ser['author']['id'],
+            ser['author']['full_name']
+        )
+
+    @classmethod
+    def copy_across_assessment(cls, cw, studies, assessment):
+        # Copy active, final, risk of bias assessments for each endpoint, and
+        # assign to project manager selected at random. Requires that for all
+        # studies, a crosswalk exists which assigns a new RiskOfBiasMetric ID
+        # from the old RiskOfBiasMetric ID.
+
+        author = assessment.project_manager.first()
+        final_robs = cls.objects.filter(study__in=studies, active=True, final=True)
+
+        # copy reviews and scores
+        for rob in final_robs:
+            scores = list(rob.scores.all())
+
+            rob.id = None
+            rob.baseendpoint_id = cw[Study.COPY_NAME][rob.baseendpoint_id]
+            rob.author = author
+            rob.save()
+
+            for score in scores:
+                score.id = None
+                score.riskofbias_id = rob.id
+                score.metric_id = cw[RiskOfBiasMetric.COPY_NAME][score.metric_id]
+                score.save()
+
+        return cw
+
+
+class RiskOfBiasScorePerEndpoint(models.Model):
+    objects = managers.RiskOfBiasScorePerEndpointManager()
+
+    RISK_OF_BIAS_SCORE_CHOICES = (
+        (10, 'Not reported'),
+        (1, 'Critically deficient'),
+        (2, 'Poor'),
+        (3, 'Adequate'),
+        (4, 'Good'),
+        (0, 'Not applicable'))
+
+    SCORE_SYMBOLS = {
+        1: '--',
+        2: '-',
+        3: '+',
+        4: '++',
+        0: '-',
+        10: 'NR',
+    }
+
+    SCORE_SHADES = {
+        1: '#CC3333',
+        2: '#FFCC00',
+        3: '#6FFF00',
+        4: '#00CC00',
+        0: '#FFCC00',
+        10: '#FFCC00',
+    }
+
+    riskofbiasperendpoint = models.ForeignKey(
+        RiskOfBiasPerEndpoint,
+        related_name='scoresperendpoint')
+    metric = models.ForeignKey(
+        RiskOfBiasMetric,
+        related_name='scoresperendpoint')
+    score = models.PositiveSmallIntegerField(
+        choices=RISK_OF_BIAS_SCORE_CHOICES,
+        default=10)
+    notes = models.TextField(
+        blank=True)
+
+    class Meta:
+        ordering = ('metric', 'id')
+
+    def __str__(self):
+        return '{} {}'.format(self.riskofbiasperendpoint, self.metric)
+
+    def get_assessment(self):
+        return self.metric.get_assessment()
+
+    @staticmethod
+    def flat_complete_header_row():
+        return (
+            'rob-domain_id',
+            'rob-domain_name',
+            'rob-domain_description',
+            'rob-metric_id',
+            'rob-metric_name',
+            'rob-metric_description',
+            'rob-score_id',
+            'rob-score_score',
+            'rob-score_description',
+            'rob-score_notes',
+        )
+
+    @staticmethod
+    def flat_complete_data_row(ser):
+        return (
+            ser['metric']['domain']['id'],
+            ser['metric']['domain']['name'],
+            ser['metric']['domain']['description'],
+            ser['metric']['id'],
+            ser['metric']['name'],
+            ser['metric']['description'],
+            ser['id'],
+            ser['score'],
+            ser['score_description'],
+            cleanHTML(ser['notes']),
+        )
+
+    @property
+    def score_symbol(self):
+        return self.SCORE_SYMBOLS[self.score]
+
+    @property
+    def score_shade(self):
+        return self.SCORE_SHADES[self.score]
+
+    @classmethod
+    def delete_caches(cls, ids):
+        id_lists = [(score.riskofbiasperendpoint.id, score.riskofbiasperendpoint.endpoint_id) for score in cls.objects.filter(id__in=ids)]
+        rob_ids, endpoint_ids = list(zip(*id_lists))
+        RiskOfBiasPerEndpoint.delete_caches(rob_ids)
+        #Study.delete_caches(study_ids)
 
 class RiskOfBiasAssessment(models.Model):
     objects = managers.RiskOfBiasAssessmentManager()
@@ -478,7 +737,9 @@ class RiskOfBiasAssessment(models.Model):
     assessment = models.OneToOneField(
         Assessment,
         related_name='rob_settings')
-    number_of_reviewers = models.PositiveSmallIntegerField(
+    number_of_study_reviewers = models.PositiveSmallIntegerField(
+        default=1)
+    number_of_endpoint_reviewers = models.PositiveSmallIntegerField(
         default=1)
 
     def get_absolute_url(self):
@@ -493,3 +754,5 @@ reversion.register(RiskOfBiasDomain)
 reversion.register(RiskOfBiasMetric)
 reversion.register(RiskOfBias)
 reversion.register(RiskOfBiasScore)
+reversion.register(RiskOfBiasPerEndpoint)
+reversion.register(RiskOfBiasScorePerEndpoint)

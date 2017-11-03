@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic.edit import FormView
 
 from assessment.models import Assessment
+from animal.models import Endpoint, AnimalGroup
 from riskofbias import exports
 from study.models import Study
 from study.views import StudyList
@@ -84,7 +85,8 @@ class ARoBReviewersList(TeamMemberOrHigherMixin, BaseList):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['rob_count'] = self.assessment.rob_settings.number_of_reviewers + 1
+        context['rob_count'] = self.assessment.rob_settings.number_of_study_reviewers + 1
+        context['endpoint_list'] = Endpoint.objects.filter(assessment=self.assessment).select_related('animal_group__experiment__study')
         return context
 
 
@@ -96,11 +98,12 @@ class ARoBReviewersUpdate(ProjectManagerOrHigherMixin, BaseUpdateWithFormset):
     a final review is created in addition to the `number of reviewers`
     """
     model = Assessment
-    form_class = forms.NumberOfReviewersForm
-    formset_factory = forms.RoBReviewerFormset
+    form_class = forms.NumberOfStudyReviewersForm
+    formset_factory_study = forms.RoBStudyReviewerFormset
     success_message = 'Risk of Bias reviewers updated.'
     template_name = 'riskofbias/reviewers_form.html'
-
+	#study_reviewers_form = forms.RoBStudyReviewerFormset
+	
     def get_assessment(self, request, *args, **kwargs):
         return get_object_or_404(self.model, pk=kwargs['pk'])
 
@@ -116,12 +119,12 @@ class ARoBReviewersUpdate(ProjectManagerOrHigherMixin, BaseUpdateWithFormset):
                     to_attr='active_riskofbiases')
                 )
 
-        return self.formset_factory(queryset=queryset)
+        return self.formset_factory_study(queryset=queryset)
 
     def pre_validate(self, form, formset):
-        # if number_of_reviewers changes, change required on fields
-        if form.is_valid() and 'number_of_reviewers' in form.changed_data:
-            n = form.cleaned_data['number_of_reviewers']
+        # if number_of_study_reviewers changes, change required on fields
+        if form.is_valid() and 'number_of_study_reviewers' in form.changed_data:
+            n = form.cleaned_data['number_of_study_reviewers']
             required_fields = ['reference_ptr', 'final_author']
             if n == 1:
                 n = 0
@@ -132,11 +135,11 @@ class ARoBReviewersUpdate(ProjectManagerOrHigherMixin, BaseUpdateWithFormset):
                         rob_form.fields[field].required = False
 
     def post_object_save(self, form, formset):
-        if 'number_of_reviewers' in form.changed_data:
-            n = form.cleaned_data['number_of_reviewers']
-            old_n = form.fields['number_of_reviewers'].initial
+        if 'number_of_study_reviewers' in form.changed_data:
+            n = form.cleaned_data['number_of_study_reviewers']
+            old_n = form.fields['number_of_study_reviewers'].initial
             n_diff = n - old_n
-            # deactivate robs if number_of_reviewers is lowered.
+            # deactivate robs if number_of_study_reviewers is lowered.
             if n_diff < 0:
                 if n == 1:
                     n = 0
