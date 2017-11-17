@@ -9,6 +9,9 @@ router = DefaultRouter()
 router.register(r'endpoint',
                 api.Endpoint,
                 base_name="endpoint")
+router.register(r'endpointsummary',
+                api.EndpointSummary,
+                base_name="endpointsummary")
 router.register(r'experiment',
                 api.Experiment,
                 base_name="experiment")
@@ -30,6 +33,7 @@ router.register(r'dose-units',
 
 
 urlpatterns = [
+
     url(r'^api/', include(router.urls, namespace='api')),
 
     # Overall views

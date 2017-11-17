@@ -136,6 +136,39 @@ class EndpointSerializer(serializers.ModelSerializer):
         model = models.Endpoint
         fields = '__all__'
 
+class AnimalGroupSummarySerializer(serializers.ModelSerializer):
+    experiment = ExperimentSerializer()
+    species = serializers.StringRelatedField()
+    strain = serializers.StringRelatedField()
+    parents = AnimalGroupRelationSerializer(many=True)
+    siblings = AnimalGroupRelationSerializer()
+    children = AnimalGroupRelationSerializer(many=True)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['url'] = instance.get_absolute_url()
+        ret['sex'] = instance.get_sex_display()
+        ret['generation'] = instance.generation_short
+        ret['sex_symbol'] = instance.sex_symbol
+        return ret
+
+    class Meta:
+        model = models.AnimalGroup
+        fields = '__all__'
+		
+class EndpointSummarySerializer(serializers.ModelSerializer):
+    assessment = serializers.PrimaryKeyRelatedField(read_only=True)
+    animal_group = AnimalGroupSummarySerializer()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['url'] = instance.get_absolute_url()
+        return ret
+
+    class Meta:
+        model = models.Endpoint
+        fields = '__all__'
+
 
 class ExperimentCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 

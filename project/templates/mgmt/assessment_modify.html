@@ -20,8 +20,12 @@
 
   <div id='taskTable'></div>
   
-  <h3 onclick="$('#EndpointTable').toggle();$('#eTOpen').toggle();$('#eTClose').toggle();">Endpoint Assignments [<span id="eTOpen" style="display:none;">+</span><span id="eTClose">-</span>]</h3>
-  <div id="EndpointTable">
+  <h3 onclick="$('#ertaskTable').toggle();$('#eTOpen').toggle();$('#eTClose').toggle();">Endpoint Assignments [<span id="eTOpen" style="display:none;">+</span><span id="eTClose">-</span>]</h3>
+
+ <div id="ertaskTable"></div>
+
+  <!--
+ <div id="EndpointTable">
     {% for anendpoint in endpoint_list %}
       {% if forloop.first %}
       <div class="flexRow-container">
@@ -34,31 +38,44 @@
       {% endif %}
       <div>
         <div>
-          <div class="flexRow-container taskStudy">
+          <div class="flexRow-container taskEndpoint">
             <div class="study-label flex-1"><a href="{% url 'study:detail' anendpoint.endpoint.animal_group.experiment.study.id %}" target="_blank">{{ anendpoint.endpoint.animal_group.experiment.study.short_citation }}</a><br><b>Date created: </b><span>{{ anendpoint.endpoint.animal_group.experiment.study.created|date:"SHORT_DATE_FORMAT" }}</span></div>
-            <div class="task-0 flex-1 relative-parent"><a href="{% url 'animal:experiment_detail' anendpoint.endpoint.animal_group.experiment.pk %}" target="_blank">{{ anendpoint.endpoint.animal_group.experiment.name }}</a></div>
-            <div class="task-1 flex-1 relative-parent"><a href="{% url 'animal:animal_group_detail' anendpoint.endpoint.animal_group.pk %}" target="_blank">{{ anendpoint.endpoint.animal_group.name }}</a></div>
-            <div class="task-2 flex-1 relative-parent"><a href="{% url 'animal:endpoint_detail' anendpoint.pk %}" target="_blank">{{ anendpoint.name }}</a></div>
-            <div class="task-3 flex-1 relative-parent">
-			  <i title="Edit this task" class="fa fa-pencil-square-o edit-icon" aria-hidden="true" style="cursor: pointer;"></i>
-			  <div class="taskLabel">
-			    <div>
-				  <b>Status: </b>
-			      <i class="fa fa-circle" style="padding-left: 5px; padding-right: 5px; color: rgb(255, 204, 0);"></i>
-			      <!-- react-text: 87 -->Started<!-- /react-text -->
-				</div>
-				<div>
-				  <b>Owner: </b>
-				  <!-- react-text: 90 -->Alan Sasso<!-- /react-text -->
-				</div>
-				<!-- react-empty: 91 -->
-		      </div>
-		    </div>
-          </div>
+            <div class="study-label flex-1 relative-parent"><a href="{% url 'animal:experiment_detail' anendpoint.endpoint.animal_group.experiment.pk %}" target="_blank">{{ anendpoint.endpoint.animal_group.experiment.name }}</a></div>
+            <div class="study-label flex-1 relative-parent"><a href="{% url 'animal:animal_group_detail' anendpoint.endpoint.animal_group.pk %}" target="_blank">{{ anendpoint.endpoint.animal_group.name }}</a></div>
+            <div class="study-label flex-1 relative-parent"><a href="{% url 'animal:endpoint_detail' anendpoint.pk %}" target="_blank">{{ anendpoint.name }}</a></div>
+		  </div>
+          <div class="flexRow-container task-0">
+			<div class="study-label flex-1 relative-parent"></div>
+			<div class="study-label flex-1 relative-parent">
+			  <label class="control-label" for="4360-owner">Owner</label>
+			  <div class="autocomplete__container">
+			    <input type="text" value="Alan Sasso" autocomplete="off" role="combobox" aria-autocomplete="list" aria-owns="react-autowhatever-4360-owner" aria-expanded="false" aria-haspopup="false" class="autocomplete__input">
+				<div id="react-autowhatever-4360-owner" class="autocomplete__suggestions-container"></div>
+			  </div>
+			</div>
+			<div class="study-label flex-1 relative-parent">
+			  <label class="control-label" for="4360-status_selection">Status</label>
+			  <select id="4360-status_selection" name="status_selection" style="width: auto;">
+			    <option value="10">not started</option>
+				<option value="20">started</option>
+				<option value="30">completed</option>
+				<option value="40">abandoned</option>
+			  </select>
+			  <i class="fa fa-circle" style="padding: 5px; color: rgb(255, 204, 0); height: 25px; vertical-align: middle;"></i>
+			</div>
+			<div class="study-label flex-1 relative-parent">
+			  <label for="4360-due_date" class="control-label">Due date (optional)</label>
+			  <div class="react-datepicker__input-container">
+			    <input type="text" id="4360-due_date" class="" value="">
+			  </div>
+			</div>
+			
+          </div><hr/>
         </div>
       </div>
     {% endfor %}
-    </div>
+</div>
+-->	
 {% endblock %}
 
 
@@ -73,8 +90,14 @@
         "tasks": {
             "url": "{% url 'mgmt:api:task-list' %}"
         },
+        "ertasks": {
+            "url": "{% url 'mgmt:api:ertask-list' %}"
+        },
         "studies": {
             "url": "{% url 'study:api:study-list' %}?assessment_id={{assessment.pk}}"
+        },
+       "endpoints": {
+            "url": "{% url 'animal:api:endpointsummary-list' %}?assessment_id={{assessment.pk}}"
         },
         "autocomplete": {
             "url": "{% url 'selectable-lookup' 'myuser-assessmentteammemberorhigherlookup' %}"
@@ -84,6 +107,7 @@
 <script type="text/javascript">
 window.app.mgmtStartup(function(mgmt){
     mgmt.TaskTable(document.getElementById('taskTable'))
+    mgmt.ERTaskTable(document.getElementById('ertaskTable'))
 });
 </script>
 {% endblock extrajs %}

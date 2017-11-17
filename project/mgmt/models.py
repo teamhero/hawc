@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from study.models import Study
+from animal.models import Endpoint
 from utils.helper import HAWCDjangoJSONEncoder, SerializerHelper
 
 from . import managers
@@ -119,5 +120,102 @@ class Task(models.Model):
         """Stop task if currently started."""
         if self.status == self.STATUS_STARTED:
             logging.info('Stopping "{}" task {}'.format(self.get_type_display(), self.id))
+            self.status = self.STATUS_COMPLETED
+            self.save()
+
+class EndpointRobTask(models.Model):
+
+    STATUS_NOT_STARTED = 10
+    STATUS_STARTED = 20
+    STATUS_COMPLETED = 30
+    STATUS_ABANDONED = 40
+    STATUS_CHOICES = (
+        (STATUS_NOT_STARTED, 'not started'),
+        (STATUS_STARTED, 'started'),
+        (STATUS_COMPLETED, 'completed'),
+        (STATUS_ABANDONED, 'abandoned'),
+    )
+
+    objects = managers.EndpointRobTaskManager()
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        related_name='endpointRobTasks')
+    endpoint = models.ForeignKey(
+        Endpoint,
+        related_name='tasks')
+    status = models.PositiveSmallIntegerField(
+        default=STATUS_CHOICES[0][0],
+        choices=STATUS_CHOICES)
+    open = models.BooleanField(
+        default=False)
+    due_date = models.DateTimeField(
+        blank=True,
+        null=True)
+    started = models.DateTimeField(
+        blank=True,
+        null=True)
+    completed = models.DateTimeField(
+        blank=True,
+        null=True)
+
+    class Meta:
+        ordering = ('endpoint', )
+
+    def __str__(self):
+        return '{}'.format(self.endpoint)
+
+    @classmethod
+    def dashboard_metrics(cls, qs):
+        return dict(
+            endpoints=qs.order_by('endpoint_id').distinct('endpoint_id').count(),
+            tasks=qs.count(),
+        )
+
+    def get_assessment(self):
+        return self.endpoint.get_assessment()
+
+    def get_json(self, json_encode=True):
+        return SerializerHelper.get_serialized(self, json=json_encode)
+
+    @staticmethod
+    def get_qs_json(queryset, json_encode=True):
+        tasks = [endpointRobTask.get_json(json_encode=False) for task in queryset]
+        if json_encode:
+            return json.dumps(tasks, cls=HAWCDjangoJSONEncoder)
+        else:
+            return outcomes
+
+
+    def save(self, *args, **kwargs):
+        """Alter model business logic for timestamps and open/closed."""
+        if self.status == self.STATUS_NOT_STARTED:
+            self.started = None
+            self.completed = None
+            self.open = False
+        elif self.status == self.STATUS_STARTED:
+            self.started = timezone.now()
+            self.completed = None
+            self.open = True
+        elif self.status in [self.STATUS_COMPLETED, self.STATUS_ABANDONED]:
+            self.completed = timezone.now()
+            self.open = False
+
+        super().save(*args, **kwargs)
+
+    def start_if_unstarted(self, user):
+        """Save task as started by user if currently not started."""
+        if self.status == self.STATUS_NOT_STARTED:
+            logging.info('Starting Risk-of-Bias task {}'.format(self.id))
+            self.owner = user
+            self.status = self.STATUS_STARTED
+            self.save()
+
+    def stop_if_started(self):
+        """Stop task if currently started."""
+        if self.status == self.STATUS_STARTED:
+            logging.info('Stopping Risk-of-Bias task {}'.format(self.id))
             self.status = self.STATUS_COMPLETED
             self.save()

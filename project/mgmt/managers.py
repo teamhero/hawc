@@ -3,6 +3,7 @@ from utils.models import BaseManager
 import logging
 
 from study.models import Study
+from animal.models import Endpoint
 
 
 class TaskManager(BaseManager):
@@ -117,5 +118,76 @@ class TaskManager(BaseManager):
     def ensure_rob_stopped(self, study):
         """Stop RoB task if started."""
         task = self.filter(study=study, type=self.model.TYPE_ROB).first()
+        if task:
+            task.stop_if_started()
+
+class EndpointRobTaskManager(BaseManager):
+    assessment_relation = 'endpoint__assessment'
+
+    def owned_by(self, user):
+        return self.filter(owner=user)
+
+    def create_assessment_tasks(self, assessment):
+        """
+        Create tasks for all endpoints in assessment and save to database.
+
+        Tasks are only added, not removed with changes. Method called via
+        signal whenever assessment is created/modified.
+        """
+        if not assessment.enable_project_management:
+            return
+        endpoints = Endpoint.objects\
+            .assessment_qs(assessment.id)\
+            .prefetch_related('tasks')
+        tasks = []
+        for endpoint in endpoints:
+            tasks.extend(self._get_missing_tasks(endpoint, assessment))
+        logging.info('Creating {} tasks for assessment {}.'.format(len(tasks), assessment.id))
+        self.bulk_create(tasks)
+
+    def create_endpoint_tasks(self, endpoint):
+        """
+        Create tasks for endpoint and save to database.
+
+        Method called via signal whenever a endpoint is created/modified.
+        """
+        assessment = endpoint.assessment
+        if not assessment.enable_project_management:
+            return
+        tasks = self._get_missing_tasks(endpoint, assessment)
+        logging.info('Creating {} tasks for endpoint {}.'.format(len(tasks), endpoint.id))
+        self.bulk_create(tasks)
+
+    def _get_missing_tasks(self, endpoint, assessment):
+        """Return list of unsaved Task objects for single endpoint."""
+        existing_tasks = endpoint.tasks.all()
+        new_tasks = []
+
+        def task_by_endpoint(qs, endpoint):
+            """Get task if exists in qs, else return None."""
+            for task in qs:
+                if task.endpoint == endpoint:
+                    return task
+            return None
+
+			# create rob tasks
+        if assessment.enable_risk_of_bias:
+            task = task_by_endpoint(existing_tasks, endpoint)
+            if task is None:
+                new_tasks.append(self.model(
+                    endpoint=endpoint
+                ))
+
+        return new_tasks
+
+    def ensure_rob_started(self, endpoint, user):
+        """Start RoB task if not started."""
+        task = self.filter(endpoint=endpoint).first()
+        if task:
+            task.start_if_unstarted(user)
+
+    def ensure_rob_stopped(self, endpoint):
+        """Stop RoB task if started."""
+        task = self.filter(endpoint=endpoint).first()
         if task:
             task.stop_if_started()

@@ -7,6 +7,7 @@ from . import api, views
 
 router = DefaultRouter()
 router.register(r'task', api.Task, base_name="task")
+router.register(r'ertask', api.ERTask, base_name="ertask")
 
 
 urlpatterns = [

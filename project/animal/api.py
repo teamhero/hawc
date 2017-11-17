@@ -22,15 +22,25 @@ class AnimalGroup(AssessmentViewset):
     serializer_class = serializers.AnimalGroupSerializer
 
 
+class EndpointSummary(AssessmentViewset):
+    assessment_filter_args = "assessment"
+    model = models.Endpoint
+    serializer_class = serializers.EndpointSummarySerializer
+    pagination_class = None
+	
+    def get_queryset(self):
+        return self.model.objects.optimized_qs()
+ 
+
 class Endpoint(AssessmentViewset):
     assessment_filter_args = "assessment"
     model = models.Endpoint
     serializer_class = serializers.EndpointSerializer
     list_actions = ['list', 'effects', 'rob_filter', ]
-
+		
     def get_queryset(self):
         return self.model.objects.optimized_qs()
-
+ 
     @list_route()
     def effects(self, request):
         assessment_id = tryParseInt(self.request.query_params.get('assessment_id'), -1)

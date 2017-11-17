@@ -48,3 +48,42 @@ class Task(AssessmentEditViewset):
         qs = self.filter_queryset(self.get_queryset())
         metrics = self.model.dashboard_metrics(qs)
         return Response(metrics)
+
+class ERTask(AssessmentEditViewset):
+    assessment_filter_args = "endpoint__assessment"
+    model = models.EndpointRobTask
+    serializer_class = serializers.ERTaskSerializer
+    permission_classes = (AssessmentLevelPermissions, permissions.IsAuthenticated, )
+    pagination_class = DisabledPagination
+    list_actions = ['list', 'dashboard']
+
+    def filter_queryset(self, queryset):
+        return super()\
+            .filter_queryset(queryset)\
+            .select_related('owner', 'endpoint')
+
+    @list_route()
+    def assignments(self, request):
+        # Tasks assigned to user.
+        qs = self.model.objects\
+            .owned_by(request.user)\
+            .select_related('owner', 'endpoint', 'endpoint__reference_ptr', 'endpoint__assessment')
+        serializer = serializers.TaskByAssessmentSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    @detail_route(methods=['get'])
+    def assessment_assignments(self, request, pk=None):
+        # Tasks assigned to user for a specific assessment
+        assessment = get_object_or_404(Assessment, pk=pk)
+        qs = self.model.objects\
+            .owned_by(request.user)\
+            .filter(study__assessment=assessment)\
+            .select_related('owner', 'endpoint', 'endpoint__reference_ptr', 'endpoint__assessment')
+        serializer = serializers.TaskByAssessmentSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    @list_route()
+    def dashboard(self, request):
+        qs = self.filter_queryset(self.get_queryset())
+        metrics = self.model.dashboard_metrics(qs)
+        return Response(metrics)

@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from myuser.models import HAWCUser
 from myuser.serializers import HAWCUserSerializer
+from animal.serializers import EndpointSerializer
 from study.serializers import StudyAssessmentSerializer, SimpleStudySerializer
 from utils.helper import SerializerHelper
 
@@ -20,6 +21,29 @@ class TaskSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
             'study',
+            'open',
+            'started',
+            'completed',
+        )
+
+    def update(self, instance, validated_data):
+        if self.initial_data['owner']:
+            owner_id = self.initial_data['owner']['id']
+            instance.owner = HAWCUser.objects.get(pk=owner_id)
+            instance.save()
+        return super().update(instance, validated_data)
+		
+class ERTaskSerializer(serializers.ModelSerializer):
+    owner = HAWCUserSerializer(read_only=True)
+    endpoint = EndpointSerializer(read_only=True)
+    status_display = serializers.CharField(source='get_status_display')
+
+    class Meta:
+        model = models.EndpointRobTask
+        fields = '__all__'
+        read_only_fields = (
+            'id',
+            'endpoint',
             'open',
             'started',
             'completed',
