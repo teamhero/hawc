@@ -47,3 +47,5 @@ notebooks/*.ipynb
 !notebooks/example.ipynb
 
 .DS_Store
+
+.vscode
