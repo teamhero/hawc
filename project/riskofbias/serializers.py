@@ -67,7 +67,7 @@ class RiskOfBiasScoreSerializer(serializers.ModelSerializer):
 class RiskOfBiasSerializer(serializers.ModelSerializer):
     scores = RiskOfBiasScoreSerializer(read_only=False, many=True, partial=True)
     author = HAWCUserSerializer(read_only=True)
-
+	
     class Meta:
         model = models.RiskOfBias
         fields = ('id', 'author', 'active',
@@ -81,6 +81,48 @@ class RiskOfBiasSerializer(serializers.ModelSerializer):
         """
         score_data = validated_data.pop('scores')
         for score, form_data in zip(instance.scores.all(), score_data):
+            for field, value in list(form_data.items()):
+                setattr(score, field, value)
+            score.save()
+        return super().update(instance, validated_data)
+
+
+class RiskOfBiasPEScoreSerializer(serializers.ModelSerializer):
+    metric = RiskOfBiasMetricSerializer(read_only=True)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['score_description'] = instance.get_score_display()
+        ret['score_symbol'] = instance.score_symbol
+        ret['score_shade'] = instance.score_shade
+        ret['url_edit'] = instance.riskofbiasperendpoint.get_edit_url()
+        ret['endpoint_name'] = instance.riskofbiasperendpoint.baseendpoint.name
+        ret['endpoint_id'] = instance.riskofbiasperendpoint.baseendpoint.id
+        #ret['study_types'] = instance.riskofbias.study.get_study_type()
+        return ret
+
+    class Meta:
+        model = models.RiskOfBiasScorePerEndpoint
+        fields = ('id', 'score', 'notes', 'metric')
+
+
+class RiskOfBiasPESerializer(serializers.ModelSerializer):
+    scoresperendpoint = RiskOfBiasPEScoreSerializer(read_only=False, many=True, partial=True)
+    author = HAWCUserSerializer(read_only=True)
+	
+    class Meta:
+        model = models.RiskOfBiasPerEndpoint
+        fields = ('id', 'author', 'active',
+                  'final', 'baseendpoint', 'created',
+                  'last_updated', 'scoresperendpoint')
+
+    def update(self, instance, validated_data):
+        """
+        Updates the nested RiskOfBiasScores with submitted data before updating
+        the RiskOfBias instance.
+        """
+        score_data = validated_data.pop('scoresperendpoint')
+        for score, form_data in zip(instance.scoresperendpoint.all(), score_data):
             for field, value in list(form_data.items()):
                 setattr(score, field, value)
             score.save()

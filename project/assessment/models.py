@@ -13,6 +13,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.utils.http import urlquote
 from django.shortcuts import HttpResponse
+from django.core.exceptions import (ValidationError, ObjectDoesNotExist,
+                                    MultipleObjectsReturned)
 
 from reversion import revisions as reversion
 
@@ -382,6 +384,35 @@ class BaseEndpoint(models.Model):
         elif hasattr(self, 'ivendpoint'):
             d = self.ivendpoint.get_json(*args, **kwargs)
         return d
+
+    def get_final_rob_url(self):
+        final = self.get_final_rob()
+        try:
+            return final.get_final_url()
+        except AttributeError:
+            raise Http404('Final RoB does not exist')
+
+    def get_final_rob(self):
+        try:
+            return self.riskofbiasesperendpoint.get(final=True, active=True)
+        except ObjectDoesNotExist:
+            return None
+        except MultipleObjectsReturned:
+            raise ValidationError(
+                'Multiple active final risk of bias reviews for "{}", '
+                'there should only be one per endpoint.'.format(self))
+
+    def get_active_robs(self, with_final=True):
+        if with_final:
+            return self.riskofbiasesperendpoint\
+               .filter(active=True)\
+               .order_by('final', 'last_updated')\
+               .prefetch_related('author')
+        else:
+            return self.riskofbiasesperendpoint\
+               .filter(active=True, final=False)\
+               .order_by('last_updated')\
+               .prefetch_related('author')
 
 
 class TimeSpentEditing(models.Model):

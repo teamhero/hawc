@@ -1,5 +1,3 @@
-
-
 from django.shortcuts import get_object_or_404
 
 from rest_framework import filters
@@ -14,7 +12,7 @@ from utils.api import BulkIdFilter
 from utils.views import TeamMemberOrHigherMixin
 
 from assessment.models import TimeSpentEditing
-from mgmt.models import Task
+from mgmt.models import Task, EndpointRobTask
 from . import models, serializers
 
 
@@ -49,6 +47,35 @@ class RiskOfBias(viewsets.ModelViewSet):
         Task.objects.ensure_rob_started(study, user)
         if serializer.instance.final and serializer.instance.is_complete:
             Task.objects.ensure_rob_stopped(study)
+
+        # send time complete task
+        if not serializer.errors:
+            TimeSpentEditing.add_time_spent_job(
+                self.request.session.session_key,
+                serializer.instance.get_edit_url(),
+                serializer.instance,
+                serializer.instance.get_assessment().id
+            )
+
+class RiskOfBiasPE(viewsets.ModelViewSet):
+    assessment_filter_args = 'endpoint__baseendpoint__assessment'
+    model = models.RiskOfBiasPerEndpoint
+    pagination_class = DisabledPagination
+    permission_classes = (AssessmentLevelPermissions,)
+    filter_backends = (InAssessmentFilter, filters.DjangoFilterBackend)
+    serializer_class = serializers.RiskOfBiasPESerializer
+
+    def get_queryset(self):
+        return self.model.objects.all()\
+            .prefetch_related('baseendpoint','author', 'scoresperendpoint__metric__domain')
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        endpoint = serializer.instance.baseendpoint
+        user = self.request.user
+        EndpointRobTask.objects.ensure_rob_started(endpoint, user)
+        if serializer.instance.final and serializer.instance.is_complete:
+            EndpointRobTask.objects.ensure_rob_stopped(endpoint)
 
         # send time complete task
         if not serializer.errors:

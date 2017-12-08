@@ -27,8 +27,16 @@ class ARoBDetail(BaseList):
     def get_queryset(self):
         return self.model.objects\
             .get_qs(self.assessment)\
+		    .filter(type='study')\
             .prefetch_related('metrics')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['endpoint_domains'] = self.model.objects\
+            .get_qs(self.assessment)\
+		    .filter(type='endpoint')\
+            .prefetch_related('metrics')
+        return context
 
 class ARoBEdit(ProjectManagerOrHigherMixin, ARoBDetail):
     crud = 'Update'
@@ -86,7 +94,27 @@ class ARoBReviewersList(TeamMemberOrHigherMixin, BaseList):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['rob_count'] = self.assessment.rob_settings.number_of_study_reviewers + 1
-        context['endpoint_list'] = Endpoint.objects.filter(assessment=self.assessment).select_related('animal_group__experiment__study')
+        context['robpe_count'] = self.assessment.rob_settings.number_of_endpoint_reviewers + 1
+        context['endpoint_list'] = Endpoint.objects.filter(assessment=self.assessment).select_related('animal_group__experiment__study').prefetch_related(Prefetch('riskofbiasesperendpoint',queryset=models.RiskOfBiasPerEndpoint.objects.all_active().select_related('author'),to_attr='active_RoBpE'))
+        return context
+
+class ARoBEList(TeamMemberOrHigherMixin, BaseList):
+    """
+    List an assessment's studies with their active risk of bias reviewers.
+    """
+    parent_model = Assessment
+    model = Endpoint
+    template_name = 'riskofbias/ereviewers_list.html'
+
+    def get_assessment(self, request, *args, **kwargs):
+        return get_object_or_404(self.parent_model, pk=kwargs['pk'])
+
+    def get_queryset(self):
+        return self.model.objects.filter(assessment=self.assessment).select_related('animal_group__experiment__study').prefetch_related(Prefetch('riskofbiasesperendpoint',queryset=models.RiskOfBiasPerEndpoint.objects.all_active().select_related('author'),to_attr='active_RoBpE'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['rob_count'] = self.assessment.rob_settings.number_of_study_reviewers + 1
         return context
 
 
@@ -99,7 +127,7 @@ class ARoBReviewersUpdate(ProjectManagerOrHigherMixin, BaseUpdateWithFormset):
     """
     model = Assessment
     form_class = forms.NumberOfStudyReviewersForm
-    formset_factory_study = forms.RoBStudyReviewerFormset
+    formset_factory = forms.RoBStudyReviewerFormset
     success_message = 'Risk of Bias reviewers updated.'
     template_name = 'riskofbias/reviewers_form.html'
 	#study_reviewers_form = forms.RoBStudyReviewerFormset
@@ -119,7 +147,7 @@ class ARoBReviewersUpdate(ProjectManagerOrHigherMixin, BaseUpdateWithFormset):
                     to_attr='active_riskofbiases')
                 )
 
-        return self.formset_factory_study(queryset=queryset)
+        return self.formset_factory(queryset=queryset)
 
     def pre_validate(self, form, formset):
         # if number_of_study_reviewers changes, change required on fields
@@ -161,6 +189,88 @@ class ARoBReviewersUpdate(ProjectManagerOrHigherMixin, BaseUpdateWithFormset):
         return reverse_lazy('riskofbias:arob_reviewers',
                             kwargs={'pk': self.assessment.pk})
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Study Reviewers'
+        return context
+
+
+
+class RoBPEReviewersUpdate(ProjectManagerOrHigherMixin, BaseUpdateWithFormset):
+    """
+    Creates the specified number of RiskOfBiases, one for each reviewer in the
+    form. If the `number of reviewers` field is 1, then the only review is also
+    the final review. If the `number of reviewers` field is more than one, then
+    a final review is created in addition to the `number of reviewers`
+    """
+    #model = models.RiskOfBiasAssessment
+    model = Assessment
+    form_class = forms.NumberOfEndpointReviewersForm
+    formset_factory = forms.RoBEndpointReviewerFormset
+    success_message = 'Risk of Bias reviewers updated.'
+    template_name = 'riskofbias/reviewers_form.html'
+	#study_reviewers_form = forms.RoBStudyReviewerFormset
+	
+    def get_assessment(self, request, *args, **kwargs):
+        return get_object_or_404(self.model, pk=kwargs['pk'])
+
+    def build_initial_formset_factory(self):
+        queryset = Endpoint.objects.get_qs(self.assessment)\
+            .prefetch_related('assessment__rob_settings')\
+            .prefetch_related(
+                Prefetch(
+                    'riskofbiasesperendpoint',
+                    queryset=models.RiskOfBiasPerEndpoint.objects.active(),
+                    to_attr='active_riskofbiases')
+                )
+
+        return self.formset_factory(queryset=queryset)
+
+    def pre_validate(self, form, formset):
+        # if number_of_study_reviewers changes, change required on fields
+        if form.is_valid() and 'number_of_endpoint_reviewers' in form.changed_data:
+            n = form.cleaned_data['number_of_endpoint_reviewers']
+            required_fields = ['reference_ptr', 'final_author']
+            if n == 1:
+                n = 0
+            [required_fields.append('author-{}'.format(i)) for i in range(n)]
+            for rob_form in formset.forms:
+                for field in rob_form.fields:
+                    if field not in required_fields:
+                        rob_form.fields[field].required = False
+
+    def post_object_save(self, form, formset):
+        if 'number_of_endpoint_reviewers' in form.changed_data:
+            n = form.cleaned_data['number_of_endpoint_reviewers']
+            old_n = form.fields['number_of_endpoint_reviewers'].initial
+            n_diff = n - old_n
+            # deactivate robs if number_of_endpoint_reviewers is lowered.
+            if n_diff < 0:
+                if n == 1:
+                    n = 0
+                for rob_form in formset.forms:
+                    deactivate_robs = rob_form.instance\
+                                      .get_active_robs(with_final=False)[n:]
+                    for rob in deactivate_robs:
+                        rob.deactivate()
+            # if n_of_r is increased, activate inactive robs with most recent last_updated
+            else:
+                for rob_form in formset.forms:
+                    activate_robs = rob_form.instance.riskofbiasesperendpoint\
+                                        .filter(active=False, final=False)\
+                                        .order_by('last_updated')[:n]
+                    for rob in activate_robs:
+                        rob.activate()
+
+    def get_success_url(self):
+        return reverse_lazy('riskofbias:arob_reviewers',
+                            kwargs={'pk': self.assessment.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Endpoint Reviewers'
+        return context
+
 
 # Risk of bias domain views
 class RoBDomainCreate(BaseCreate):
@@ -169,6 +279,14 @@ class RoBDomainCreate(BaseCreate):
     model = models.RiskOfBiasDomain
     form_class = forms.RoBDomainForm
     success_message = 'Risk of bias domain created.'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.kwargs['type']:
+            kwargs['type'] = self.kwargs['type']
+        else:
+            kwargs['type'] = 'study'
+        return kwargs
 
     def get_success_url(self):
         return reverse_lazy('riskofbias:arob_update',
@@ -287,6 +405,29 @@ class RoBEdit(TimeSpentOnPageMixin, BaseDetail):
     Also displays the metrics for the other active risk of bias reviews.
     """
     model = models.RiskOfBias
+    template_name = 'riskofbias/rob_edit.html'
+
+    def get_object(self, **kwargs):
+        # either project managers OR the author can edit/view.
+        obj = super().get_object(**kwargs)
+        if obj.author != self.request.user and \
+            not self.assessment.user_can_edit_assessment(self.request.user):
+            raise PermissionDenied
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['back_url'] = self.request.META['HTTP_REFERER'] \
+            if 'HTTP_REFERER' in self.request.META \
+            else self.object.get_absolute_url()
+        return context
+
+class RoBPEEdit(TimeSpentOnPageMixin, BaseDetail):
+    """
+    Displays a form for editing the risk of bias metrics for the final review.
+    Also displays the metrics for the other active risk of bias reviews.
+    """
+    model = models.RiskOfBiasPerEndpoint
     template_name = 'riskofbias/rob_edit.html'
 
     def get_object(self, **kwargs):

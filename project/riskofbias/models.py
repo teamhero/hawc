@@ -478,7 +478,7 @@ class RiskOfBiasPerEndpoint(models.Model):
     objects = managers.RiskOfBiasPerEndpointManager()
 
     baseendpoint = models.ForeignKey(
-        'assessment.Baseendpoint',
+        'animal.Endpoint',
         related_name='riskofbiasesperendpoint',
         null=True)
     final = models.BooleanField(
@@ -496,7 +496,7 @@ class RiskOfBiasPerEndpoint(models.Model):
         auto_now=True)
 
     class Meta:
-        verbose_name_plural = 'Risk of Biases per Endpoint'
+        verbose_name_plural = 'Risk of Bias per Endpoints'
         ordering = ('final',)
 
     def __str__(self):
@@ -513,10 +513,10 @@ class RiskOfBiasPerEndpoint(models.Model):
             args=[self.get_assessment().pk])
 
     def get_edit_url(self):
-        return reverse('riskofbias:rob_update', args=[self.pk])
+        return reverse('riskofbias:robpe_update', args=[self.pk])
 
     def get_crumbs(self):
-        return get_crumbs(self, self.baseendpoint)
+        return get_crumbs(self, self.baseendpoint.assessment)
 
     def get_json(self, json_encode=True):
         return SerializerHelper.get_serialized(self, json=json_encode)
@@ -537,14 +537,14 @@ class RiskOfBiasPerEndpoint(models.Model):
         or when a metric is altered.  RiskOfBiasScore are created/deleted as
         needed.
         """
-        metrics = RiskOfBiasMetric.objects.get_required_metrics(assessment, self.baseendpoint)\
-            .prefetch_related('scores')
-        scores = self.scores.all()
+        metrics = RiskOfBiasMetric.objects.get_required_metrics_endpoint(assessment, self.baseendpoint)\
+            .prefetch_related('scoresperendpoint')
+        scores = self.scoresperendpoint.all()
         # add any scores that are required and not currently created
         for metric in metrics:
             if not (metric.scores.all() & scores):
                 logging.info('Creating score: {}->{}'.format(self.baseendpoint, metric))
-                RiskOfBiasScorePerEndpoint.objects.create(riskofbias=self, metric=metric)
+                RiskOfBiasScorePerEndpoint.objects.create(riskofbiasperendpoint=self, metric=metric)
         # delete any scores that are no longer required
         for score in scores:
             if score.metric not in metrics:
@@ -553,11 +553,11 @@ class RiskOfBiasPerEndpoint(models.Model):
 
     def build_scores(self, assessment, baseendpoint):
         scores = [
-            RiskOfBiasScorePerEndpoint(riskofbias=self, metric=metric)
+            RiskOfBiasScorePerEndpoint(riskofbiasperendpoint=self, metric=metric)
             for metric in
-            RiskOfBiasMetric.objects.get_required_metrics(assessment, baseendpoint)
+            RiskOfBiasMetric.objects.get_required_metrics_endpoint(assessment, baseendpoint)
         ]
-        RiskOfBiasScore.objects.bulk_create(scores)
+        RiskOfBiasScorePerEndpoint.objects.bulk_create(scores)
 
     def activate(self):
         self.active = True
@@ -574,7 +574,7 @@ class RiskOfBiasPerEndpoint(models.Model):
         is empty, so HTML needs to be stripped out.
         """
         return all([
-            len(strip_tags(score.notes)) > 0 for score in self.scores.all() if score.score is not 0
+            len(strip_tags(score.notes)) > 0 for score in self.scoresperendpoint.all() if score.score is not 0
         ])
 
     @property

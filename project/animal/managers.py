@@ -1,4 +1,6 @@
 from django.apps import apps
+from django.db import models
+
 from utils.models import BaseManager, get_distinct_charfield_opts, \
     get_distinct_charfield
 
@@ -70,6 +72,16 @@ class EndpointManager(BaseManager):
     def get_effects(self, assessment_id):
         return get_distinct_charfield(self, assessment_id, 'effect')
 
+    def rob_scores(self, pk=None):
+        return self.get_qs(pk)\
+                .annotate(final_score=models.Sum(
+                    models.Case(
+                        models.When(riskofbiasesperendpoint__active=True,
+                                riskofbiasesperendpoint__final=True,
+                                then='riskofbiasesperendpoint__scoresperendpoint__score'),
+                        default=0)))\
+                .values('id', 'name', 'final_score')
 
+				
 class EndpointGroupManager(BaseManager):
     assessment_relation = 'endpoint__assessment'

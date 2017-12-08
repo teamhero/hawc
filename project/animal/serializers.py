@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 from assessment.serializers import EffectTagsSerializer
 
+from riskofbias.models import RiskOfBiasPerEndpoint
+from riskofbias.serializers import RiskOfBiasPESerializer
 from study.serializers import StudySerializer
 from utils.api import DynamicFieldsMixin
 from utils.helper import SerializerHelper
@@ -131,6 +133,14 @@ class EndpointSerializer(serializers.ModelSerializer):
             ret['bmd'] = ModelSerializer().to_representation(bmd)
 
         return ret
+
+    class Meta:
+        model = models.Endpoint
+        fields = '__all__'
+
+class EndpointRoBSerializer(serializers.ModelSerializer):
+#    assessment = serializers.PrimaryKeyRelatedField(read_only=True)
+    riskofbiasesperendpoint = RiskOfBiasPESerializer(many=True, read_only=True)
 
     class Meta:
         model = models.Endpoint

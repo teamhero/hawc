@@ -7,6 +7,7 @@ from . import views, api
 router = DefaultRouter()
 router.register(r'domain', api.RiskOfBiasDomain, base_name='domain')
 router.register(r'review', api.RiskOfBias, base_name='review')
+router.register(r'reviewpe', api.RiskOfBiasPE, base_name='reviewpe')
 router.register(r'metrics', api.AssessmentMetricViewset, base_name='metrics')
 router.register(r'metrics/scores', api.AssessmentMetricScoreViewset, base_name='metric_scores')
 router.register(r'scores', api.AssessmentScoreViewset, base_name='scores')
@@ -37,6 +38,9 @@ urlpatterns = [
     url(r'^assessment/(?P<pk>\d+)/domain/create/$',
         views.RoBDomainCreate.as_view(),
         name='robd_create'),
+    url(r'^assessment/(?P<pk>\d+)/domain/create/(?P<type>[\w\-]+)/$',
+        views.RoBDomainCreate.as_view(),
+        name='robd_create'),
     url(r'^domain/(?P<pk>\d+)/edit/$',
         views.RoBDomainUpdate.as_view(),
         name='robd_update'),
@@ -62,6 +66,9 @@ urlpatterns = [
     url(r'^assessment/(?P<pk>\d+)/study-assignments/edit/$',
         views.ARoBReviewersUpdate.as_view(),
         name='arob_reviewers_update'),
+    url(r'^assessment/(?P<pk>\d+)/endpoint-assignments/edit/$',
+        views.RoBPEReviewersUpdate.as_view(),
+        name='robpe_reviewers_update'),
 
     # risk of bias at study-level
     url(r'^study/(?P<pk>\d+)/$',
@@ -75,5 +82,8 @@ urlpatterns = [
     url(r'^(?P<pk>\d+)/edit/$',
         views.RoBEdit.as_view(),
         name='rob_update'),
+    url(r'^endpoint/(?P<pk>\d+)/edit/$',
+        views.RoBPEEdit.as_view(),
+        name='robpe_update'),
 
 ]

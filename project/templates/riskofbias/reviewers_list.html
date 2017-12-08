@@ -18,7 +18,8 @@
             <span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
-            <li><a href="{% url 'riskofbias:arob_reviewers_update' assessment.pk %}">Update</a></li>
+            <li><a href="{% url 'riskofbias:arob_reviewers_update' assessment.pk %}">Update Study Reviewers</a></li>
+            <li><a href="{% url 'riskofbias:robpe_reviewers_update' assessment.pk %}">Update Endpoint Reviewers</a></li>
         </ul>
     </div>
     {% endif %}
@@ -91,7 +92,7 @@
         {% endfor %}
 
     </table>
-  
+
   <h3 onclick="$('#RoBEndpointList').toggle();$('#RELOpen').toggle();$('#RELClose').toggle();">Endpoint Reviewers [<span id="RELOpen" style="display:none;">+</span><span id="RELClose">-</span>]</h3>
 	
     <table class="table table-condensed table-striped" id="RoBEndpointList">
@@ -120,11 +121,38 @@
  		<tbody>
         {% endif %}
 			<tr>
-				<td>{{ anendpoint.endpoint.animal_group.experiment.study.short_citation }}</td>
-				<td>{{ anendpoint.endpoint.animal_group.experiment.name }}
-				<td>{{ anendpoint.endpoint.animal_group.name }}
-				<td>{{ anendpoint.name }}</td>
-			</tr>
+				<td><a href="{{ anendpoint.endpoint.animal_group.experiment.study.get_absolute_url }}">{{ anendpoint.endpoint.animal_group.experiment.study.short_citation }}</a></td>
+				<td><a href="{{ anendpoint.endpoint.animal_group.experiment.get_absolute_url }}">{{ anendpoint.endpoint.animal_group.experiment.name }}</a></td>
+				<td><a href="{{ anendpoint.endpoint.animal_group.get_absolute_url }}">{{ anendpoint.endpoint.animal_group.name }}</a></td>
+				<td><a href="{{ anendpoint.endpoint.get_absolute_url }}">{{ anendpoint.name }}</a></td>
+				{% if anendpoint.active_RoBpE %}
+				    {% for robpe in anendpoint.active_RoBpE %}
+                        {% if forloop.last and forloop.counter < robpe_count %}
+                            <td colspan="2">
+                        {% else %}
+                            <td>
+                        {% endif %}
+                        {{robpe.author}}
+                        {% if request.user == robpe.author or obj_perms.edit_assessment %}
+                            <a href="{{robpe.get_edit_url}}">
+                                <i title="Edit"
+                                   class="fa fa-pencil-square-o"
+                                   aria-hidden="true"></i></a>
+                        {% endif %}
+                        {% if robpe.final %}
+                            <i class="fa fa-star"></i>
+                        {% endif %}
+                        {% if robpe.is_complete %}
+                            <i class="fa fa-check"></i>
+                        {% endif %}
+                        </td>
+                    {% endfor %}
+                {% else %}
+                <td>
+                    No risk of bias assigned.
+                </td>
+                {% endif %}
+				</tr>
         {% endfor %}
 		</tbody>
 	</table>

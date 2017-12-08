@@ -13,7 +13,7 @@ const defaultState = {
     active: [],
 };
 
-function study(state=defaultState, action){
+function rob(state=defaultState, action){
     switch (action.type){
 
     case types.REQUEST:
@@ -22,11 +22,21 @@ function study(state=defaultState, action){
         });
 
     case types.RECEIVE:
+		if (action.study)
         return Object.assign({}, state, {
             name: action.study.short_citation,
             final: action.study.final,
             riskofbiases: action.study.riskofbiases,
             active: action.study.riskofbiases,
+            isFetching: false,
+            itemsLoaded: true,
+        });
+		else if (action.endpoint)
+        return Object.assign({}, state, {
+            name: action.endpoint.name,
+            final: action.endpoint.final,
+            riskofbiases: action.endpoint.riskofbiases,
+            active: action.endpoint.riskofbiases,
             isFetching: false,
             itemsLoaded: true,
         });
@@ -81,7 +91,7 @@ function study(state=defaultState, action){
 
 const rootReducer = combineReducers({
     config,
-    study,
+    rob,
 });
 
 export default rootReducer;

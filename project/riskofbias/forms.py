@@ -7,6 +7,7 @@ from crispy_forms import layout as cfl
 from selectable import forms as selectable
 
 from assessment.models import Assessment, BaseEndpoint
+from animal.models import Endpoint
 from myuser.lookups import AssessmentTeamMemberOrHigherLookup
 from study.models import Study
 from utils.forms import BaseFormHelper
@@ -17,12 +18,19 @@ class RoBDomainForm(forms.ModelForm):
     class Meta:
         model = models.RiskOfBiasDomain
         exclude = ('assessment', )
+        widgets = {'type': forms.HiddenInput()}
 
     def __init__(self, *args, **kwargs):
         assessment = kwargs.pop('parent', None)
+        type = kwargs.pop('type', 'study')
+        initial = kwargs.get('initial', {})
+        initial['type'] = type
+        kwargs['initial'] = initial
         super().__init__(*args, **kwargs)
         if assessment:
             self.instance.assessment = assessment
+        if type:
+            self.instance.type = type
         self.helper = self.setHelper()
 
     def setHelper(self):
@@ -32,14 +40,17 @@ class RoBDomainForm(forms.ModelForm):
         }
         if self.instance.id:
             inputs['legend_text'] = 'Update risk of bias domain'
-            inputs['help_text'] = 'Update an existing domain.'
+            inputs['help_text'] = 'Update an existing domain'
         else:
             inputs['legend_text'] = 'Create new risk of bias domain'
-            inputs['help_text'] = 'Create a new risk of bias domain.'
+            inputs['help_text'] = 'Create a new risk of bias domain'
+			
+        if (self.instance.type == 'endpoint'):
+            inputs['legend_text'] = inputs['legend_text'] + ' for endpoints'
+            inputs['help_text'] = inputs['help_text'] + ' for endpoints'
 
         helper = BaseFormHelper(self, **inputs)
         helper['name'].wrap(cfl.Field, css_class='span6')
-        helper['type'].wrap(cfl.Field, css_class='span6')
         helper['description'].wrap(cfl.Field, css_class='html5text span12')
         return helper
 
@@ -274,7 +285,7 @@ class RoBStudyReviewersForm(forms.ModelForm):
 				
 class RoBEndpointReviewersForm(forms.ModelForm):
     class Meta:
-        model = BaseEndpoint
+        model = Endpoint
         fields = ()
 
     def __init__(self, *args, **kwargs):
@@ -288,7 +299,9 @@ class RoBEndpointReviewersForm(forms.ModelForm):
             author fields are generated in addition to the final_author field.
         """
         super().__init__(*args, **kwargs)
-        self.instance_name = 'BaseEndpoint'
+        self.instance_name = 'Endpoint'
+        self.column_headers = ('Study','Experiment','Animal Group','Endpoint')
+        self.column_values = (self.instance.endpoint.animal_group.experiment.study.short_citation,self.instance.endpoint.animal_group.experiment.name,self.instance.endpoint.animal_group.name,self.instance.endpoint.name)
         assessment_id = self.instance.assessment_id
         if hasattr(self.instance_name, 'active_riskofbiases'):
             robs = self.instance.active_riskofbiases
@@ -340,7 +353,7 @@ class RoBEndpointReviewersForm(forms.ModelForm):
              RiskOfBiasScore instances for each RiskOfBiasMetric.
          - activate the selected review.
         """
-        study = super().save(commit)
+        endpoint = super().save(commit)
         changed_reviewer_fields = (
             field
             for field in self.changed_data
@@ -349,19 +362,19 @@ class RoBEndpointReviewersForm(forms.ModelForm):
         for field in changed_reviewer_fields:
             new_author = self.cleaned_data[field]
             options = {
-                'study': study,
+                'baseendpoint': endpoint,
                 'final': bool(field is 'final_author')}
 
             if self.fields[field].initial:
-                deactivate_rob = models.RiskOfBias.objects\
+                deactivate_rob = models.RiskOfBiasPerEndpoint.objects\
                     .get(author_id=self.fields[field].initial, **options)
                 deactivate_rob.deactivate()
 
             if new_author:
-                activate_rob, created = models.RiskOfBias.objects\
+                activate_rob, created = models.RiskOfBiasPerEndpoint.objects\
                     .get_or_create(author_id=new_author.id, **options)
                 if created:
-                    activate_rob.build_scores(study.assessment, study)
+                    activate_rob.build_scores(endpoint.assessment, endpoint)
                 activate_rob.activate()
 
 
@@ -414,7 +427,7 @@ RoBStudyReviewerFormset = modelformset_factory(
 
 	
 RoBEndpointReviewerFormset = modelformset_factory(
-    model=BaseEndpoint,
+    model=Endpoint,
     form=RoBEndpointReviewersForm,
     fields=(),
     extra=0)

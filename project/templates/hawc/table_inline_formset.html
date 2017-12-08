@@ -18,9 +18,17 @@
                 <tr>
                     {% for field in formset.forms.0 %}
                         {% if forloop.first %}
+						    {% if formset.forms.0.column_headers %}
+							    {% for header in formset.forms.0.column_headers %}
+								    <th class="control-label">
+									    {{header}}
+									</th>
+								{% endfor %}
+							{% else %}
                             <th class="control-label">
                                 {{formset.forms.0.instance_name}}
                             </th>
+							{% endif %}
                         {% endif%}
                         {% if field.label and not field.is_hidden %}
                             <th for="{{ field.auto_id }}" class="control-label {% if field.field.required and not field|is_checkbox %}requiredField{% endif %}">
@@ -40,9 +48,17 @@
                 <tr class="formset-row">
                     {% for field in form %}
                     {% if forloop.first %}
-                    <th>
-                        <label>{{form.instance}}</label>
-                    </th>
+					    {% if form.column_values %}
+						    {% for colvalue in form.column_values %}
+                                <th>
+                                    <label>{{colvalue}}</label>
+                                </th>
+							{% endfor %}
+						{% else %}
+                            <th>
+                                <label>{{form.instance}}</label>
+                            </th>
+						{% endif %}
                     {% endif%}
                         {% include 'bootstrap/field.html' with tag="th" form_show_labels=False %}
                     {% endfor %}

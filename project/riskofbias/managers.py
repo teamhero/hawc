@@ -16,7 +16,11 @@ class RiskOfBiasMetricManager(BaseManager):
             requireds |= models.Q(required_animal=True)
         if study.epi or study.epi_meta:
             requireds |= models.Q(required_epi=True)
-        return self.get_qs(assessment).filter(requireds)
+        return self.get_qs(assessment).filter(requireds).filter(domain__type='study')
+
+    def get_required_metrics_endpoint(self, assessment, endpoint):
+        requireds = models.Q(required_animal=True)
+        return self.get_qs(assessment).filter(requireds).filter(domain__type='endpoint')
 
     def get_metrics_for_visuals(self, assessment_id):
         return self.get_qs(assessment_id).values('id', 'name')

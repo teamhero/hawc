@@ -17,6 +17,19 @@ function receiveStudy(study){
     };
 }
 
+function requestEndpoint(){
+    return {
+        type: types.REQUEST,
+    };
+}
+
+function receiveEndpoint(endpoint){
+    return {
+        type: types.RECEIVE,
+        endpoint,
+    };
+}
+
 function setError(error){
     return {
         type: types.SET_ERROR,
@@ -39,9 +52,9 @@ function updateFinalScores(scores){
 
 function formatOutgoingRiskOfBias(state, riskofbias){
     let riskofbias_id = state.config.riskofbias.id,
-        author,
+	    author,
         final,
-        scores = _.flatten(_.map(state.study.riskofbiases, (domain) =>{
+        scores = _.flatten(_.map(state.rob.riskofbiases, (domain) =>{
             return _.map(domain.values, (metric) => {
                 return _.omit(
                     _.find(metric.values, (score) => {
@@ -55,13 +68,17 @@ function formatOutgoingRiskOfBias(state, riskofbias){
                 );
             });
         }));
+	if (state.config.endpoint) {
+        Object.defineProperty(riskofbias, 'scoresperendpoint', Object.getOwnPropertyDescriptor(riskofbias, 'scores'));		
+        delete riskofbias['scores']; }
     return Object.assign({}, {
         author,
         final,
-        scores,
+        //scores,
         active: true,
         pk: parseInt(riskofbias_id),
-        study: parseInt(state.config.study.id),
+        study: state.config.study?parseInt(state.config.study.id):null,
+        endpoint: state.config.endpoint?parseInt(state.config.endpoint.id):null,
     }, riskofbias);
 }
 
@@ -104,6 +121,50 @@ export function fetchFullStudyIfNeeded(){
             .then((response) => response.json())
             .then((json)     => formatIncomingStudy(json))
             .then((json)     => dispatch(receiveStudy(json)))
+            .catch((ex)      => dispatch(setError(ex)));
+    };
+}
+
+
+function formatIncomingEndpoint(endpoint){
+    let dirtyRoBs = _.filter(endpoint[0].riskofbiasesperendpoint, (rob) => {return rob.active === true;}),
+        domains = _.flatten(_.map(dirtyRoBs, (riskofbias) => {
+            return _.map(riskofbias.scoresperendpoint, (score) => {
+                return Object.assign({}, score, {
+                    riskofbias_id: riskofbias.id,
+                    author: riskofbias.author,
+                    final: riskofbias.final,
+                    domain_name: score.metric.domain.name,
+                    domain_id: score.metric.domain.id,
+                });
+            });
+        })),
+        riskofbiases = d3.nest()
+            .key((d) => { return d.metric.domain.name;})
+            .key((d) => {return d.metric.name;})
+            .entries(domains),
+        finalRoB = _.findWhere(dirtyRoBs, { final: true });
+
+		return Object.assign({}, endpoint, {
+        riskofbiases,
+        final: _.has(finalRoB, 'scores') ? finalRoB.scores : [],
+    });
+}
+
+export function fetchFullEndpointIfNeeded(){
+    return (dispatch, getState) => {
+        let state = getState();
+        if (state.isFetching || state.itemsLoaded) return;
+        dispatch(requestEndpoint());
+        dispatch(resetError());
+        return fetch(
+                h.getObjectUrl(
+                    state.config.host,
+                    state.config.endpoint.url,
+                    state.config.endpoint.id), h.fetchGet)
+            .then((response) => response.json())
+            .then((json)     => formatIncomingEndpoint(json))
+            .then((json)     => dispatch(receiveEndpoint(json)))
             .catch((ex)      => dispatch(setError(ex)));
     };
 }

@@ -14,27 +14,50 @@
 
 {% block content %}
     <h2>{{object}}</h2>
-    {% if object.final and not object.study_reviews_complete %}
-        <h4 class="alert alert-danger">All other risk of bias reviews for
-            {{object.study}} must be complete in order to complete the final review.
-        </h4>
-    {% else %}
-        <div id='robTable'></div>
-    {% endif %}
+	{% if object.study %}
+        {% if object.final and not object.study_reviews_complete %}
+            <h4 class="alert alert-danger">All other risk of bias reviews for
+                {{object.study}} must be complete in order to complete the final review.
+            </h4>
+        {% else %}
+            <div id='robTable'></div>
+        {% endif %}
+	{% elif object.baseendpoint %}
+        {% if object.final and not object.endpoint_reviews_complete %}
+            <h4 class="alert alert-danger">All other risk of bias reviews for
+                {{object.baseendpoint}} must be complete in order to complete the final review.
+            </h4>
+        {% else %}
+            <div id='robTable'></div>
+        {% endif %}
+	{% endif %}
 {% endblock %}
 
 {% block extrajs %}
   <script id="config" type="text/json" charset="utf-8">
       {
           "assessment_id": "{{ assessment.id }}",
+	{% if object.study %}
           "study": {
               "id": "{{ object.study.pk }}",
               "url": "{% url 'study:api:study-list' %}"
           },
+		  "robtype": "study",
           "riskofbias": {
               "id": "{{ object.pk }}"  ,
               "url": "{% url 'riskofbias:api:review-list' %}"
           },
+	{% elif object.baseendpoint %}
+          "endpoint": {
+              "id": "{{ object.baseendpoint.pk }}/rob_scores",
+              "url": "{% url 'animal:api:endpoint-list' %}"
+          },
+		  "robtype": "endpoint",
+          "riskofbias": {
+              "id": "{{ object.pk }}"  ,
+              "url": "{% url 'riskofbias:api:reviewpe-list' %}"
+          },
+	{% endif %}
           "cancelUrl": "{{back_url}}",
           "csrf": "{{ csrf_token }}",
           "host": "//{{request.get_host}}",

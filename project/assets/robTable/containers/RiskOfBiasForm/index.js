@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import _ from 'underscore';
 
-import { fetchFullStudyIfNeeded, submitRiskOfBiasScores } from 'robTable/actions';
+import { fetchFullStudyIfNeeded, fetchFullEndpointIfNeeded, submitRiskOfBiasScores } from 'robTable/actions';
 import Completeness from 'robTable/components/Completeness';
 import DomainDisplay from 'robTable/components/DomainDisplay';
 import Loading from 'shared/components/Loading';
@@ -22,7 +22,10 @@ class RiskOfBiasForm extends Component {
     }
 
     componentWillMount(){
-        this.props.dispatch(fetchFullStudyIfNeeded());
+		if (this.props.config.robtype == 'study')
+            this.props.dispatch(fetchFullStudyIfNeeded());
+		if (this.props.config.robtype == 'endpoint')
+            this.props.dispatch(fetchFullEndpointIfNeeded());
     }
 
     submitForm(e){
@@ -86,9 +89,9 @@ class RiskOfBiasForm extends Component {
 function mapStateToProps(state){
     return {
         config: state.config,
-        itemsLoaded: state.study.itemsLoaded,
-        riskofbiases: state.study.riskofbiases,
-        error: state.study.error,
+        itemsLoaded: state.rob.itemsLoaded,
+        riskofbiases: state.rob.riskofbiases,
+        error: state.rob.error,
     };
 }
 

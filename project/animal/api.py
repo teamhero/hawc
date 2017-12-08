@@ -1,11 +1,13 @@
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from assessment.api import AssessmentViewset, DoseUnitsViewset
+from riskofbias.models import RiskOfBiasPerEndpoint
 
 from . import models, serializers
 from utils.api import CleanupFieldsBaseViewSet
 from utils.helper import tryParseInt
 
-from rest_framework.decorators import list_route
+from rest_framework import viewsets, decorators, filters
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 from rest_framework.exceptions import NotAcceptable
 
@@ -36,10 +38,34 @@ class Endpoint(AssessmentViewset):
     assessment_filter_args = "assessment"
     model = models.Endpoint
     serializer_class = serializers.EndpointSerializer
-    list_actions = ['list', 'effects', 'rob_filter', ]
-		
+    list_actions = ['list', 'effects', 'rob_filter', 'rob_scores', ]
+
     def get_queryset(self):
-        return self.model.objects.optimized_qs()
+        if self.action != "rob_scores":
+            return self.model.objects.optimized_qs()
+        else:
+            return self.model.objects.prefetch_related(
+                'riskofbiasesperendpoint',
+            )
+		
+#    def get_queryset(self):
+#        return self.model.objects.optimized_qs()
+			
+    @detail_route()
+    def rob_scores(self, request, pk=None):
+        qs = self.model.objects.filter(pk=pk).prefetch_related(
+                'riskofbiasesperendpoint__scoresperendpoint', 
+            )
+        serializer = serializers.EndpointRoBSerializer(qs, many=True, )
+        return Response(serializer.data)
+
+#	@detail_route()
+#    def rob_scores(self, request, pk=None):
+#        assessment_id = tryParseInt(self.request.query_params.get('assessment_id'), -1)
+#        rob_scores = models.Endpoint.objects.prefetch_related(
+#                'riskofbiasesperendpoint__scores__metric__domain', )
+#        serializer = serializers.ModelSerializer(rob_scores)
+#        return Response(serializer.data)
  
     @list_route()
     def effects(self, request):
@@ -70,7 +96,7 @@ class Endpoint(AssessmentViewset):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
-
+ 
 class ExperimentCleanupFieldsView(CleanupFieldsBaseViewSet):
     serializer_class = serializers.ExperimentCleanupFieldsSerializer
     model = models.Experiment
