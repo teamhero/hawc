@@ -326,6 +326,7 @@ class Outcome(BaseEndpoint):
         (3, 'self-reported'),
         (4, 'questionnaire'),
         (5, 'hospital admission'),
+        (7, 'registry'),
         (6, 'other'),
     )
 
