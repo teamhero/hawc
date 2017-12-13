@@ -119,7 +119,7 @@
    <p>When an endpoint is entered into the HAWC database for use in an assessment, risk of bias metrics can be entered for a metric of bias for each endpoint.
    Risk of Bias metrics are organized by domain. The following questions are required for evaluation for {{assessment}}.</p>
    {% if crud == "Update" %}
-      <a class="btn btn-info" href="{% url 'riskofbias:robd_create' assessment.pk %}">Create a new domain</a>
+      <a class="btn btn-info" href="{% url 'riskofbias:robd_create_type' assessment.pk 'endpoint'%}">Create a new domain</a>
    {% endif %}
 
   {% for object in endpoint_domains %}

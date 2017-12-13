@@ -282,7 +282,7 @@ class RoBDomainCreate(BaseCreate):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        if self.kwargs['type']:
+        if 'type' in self.kwargs:
             kwargs['type'] = self.kwargs['type']
         else:
             kwargs['type'] = 'study'

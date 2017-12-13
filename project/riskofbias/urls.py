@@ -40,7 +40,7 @@ urlpatterns = [
         name='robd_create'),
     url(r'^assessment/(?P<pk>\d+)/domain/create/(?P<type>[\w\-]+)/$',
         views.RoBDomainCreate.as_view(),
-        name='robd_create'),
+        name='robd_create_type'),
     url(r'^domain/(?P<pk>\d+)/edit/$',
         views.RoBDomainUpdate.as_view(),
         name='robd_update'),
