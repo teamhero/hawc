@@ -103,7 +103,6 @@ class RoBMetricForm(forms.ModelForm):
 class RoBMetricAnswersForm(forms.ModelForm):
     class Meta:
         model = models.RiskOfBiasMetricAnswers
-        fields = ('answer_choice', 'answer_symbol', 'answer_score', 'answer_shade', 'answer_order')
         exclude = ('metric', )
 
     def __init__(self, *args, **kwargs):
@@ -116,7 +115,7 @@ class RoBMetricAnswersForm(forms.ModelForm):
     def setHelper(self):
         inputs = {
             'cancel_url': reverse('riskofbias:arob_update',
-                                  args=[self.instance.metric.pk])
+                                  args=[self.instance.metric.domain.assessment.pk])
         }
         if self.instance.id:
             inputs['legend_text'] = 'Update risk of bias metric answers'
