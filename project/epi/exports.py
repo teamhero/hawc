@@ -81,7 +81,7 @@ class OutcomeDataPivot(FlatFileExporter):
             'statistical metric',
             'statistical metric abbreviation',
             'statistical metric description',
-            'result summary',
+            'Epi Result Comments',
             'dose response',
             'statistical power',
             'statistical test results',

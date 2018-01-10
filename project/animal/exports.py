@@ -188,6 +188,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'response units',
             'expected adversity direction',
             'maximum endpoint change',
+            'results_notes',
 
             'low_dose',
             'NOEL',
@@ -260,6 +261,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
                 ser['response_units'],
                 ser['expected_adversity_direction'],
                 ser['percentControlMaxChange'],
+                ser['results_notes'],
             ]
 
             # dose-group specific information
