@@ -29,9 +29,11 @@ class ScoreForm extends Component {
                 10: 'Not reported',
             },
             score: null,
+            source: '',
             notes: props.score.notes,
         };
         this.handleEditorInput = this.handleEditorInput.bind(this);
+        this.handleChange = this.handleChange.bind(this);
         this.selectScore = this.selectScore.bind(this);
     }
 
@@ -73,6 +75,10 @@ class ScoreForm extends Component {
         this.validateInput(this.state.score, event);
     }
 
+    handleChange(event){
+        this.setState({value: event.target.value});
+    }
+
     validateInput(score, notes){
         if (this.state.notes.replace(/<\/?[^>]+(>|$)/g, '') == '' && score != 0) {
             this.props.updateNotesLeft(this.props.score.id, 'add');
@@ -93,7 +99,15 @@ class ScoreForm extends Component {
                           handleSelect={this.selectScore}/>
                     <br/><br/>
                     <ScoreIcon shade={selectedShade}
-                             symbol={selectedSymbol}/>
+                             symbol={selectedSymbol} />
+                    <br/>
+                     <label>
+                        Source Reference Text:<br/>
+                        <input type='text'
+                            id = {name}
+                            value=''
+                            onChange={this.handleChange} />
+                    </label>
                 </div>
                 <ReactQuill id={name}
                          value={notes}
@@ -101,12 +115,7 @@ class ScoreForm extends Component {
                          toolbar={false}
                          theme='snow'
                          className='score-editor' />
-                <ReactQuill id={'1'}
-                         value={"adam test"}
-                         onChange={this.handleEditorInput}
-                         toolbar={false}
-                         theme='snow'
-                         className='score-editor' />
+               
             </div>
         );
     }

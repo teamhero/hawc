@@ -41,8 +41,6 @@ class RiskOfBiasDomain(models.Model):
         ,help_text = "Is this domain for overall confidence?"
     )
 
-    source = models.TextField(default = '')
-
     class Meta:
         unique_together = ('assessment', 'name')
         ordering = ('pk', )
@@ -480,6 +478,7 @@ class RiskOfBiasScore(models.Model):
         default=10)
     notes = models.TextField(
         blank=True)
+    source = models.TextField(default = '')
 
     class Meta:
         ordering = ('metric', 'id')
