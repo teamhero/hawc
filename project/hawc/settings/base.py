@@ -268,7 +268,7 @@ BMDS_USERNAME = os.getenv('BMDS_USERNAME', 'username')
 BMDS_PASSWORD = os.getenv('BMDS_PASSWORD', 'password')
 
 # increase allowable fields in POST for updating reviewers
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 # Chemspider token details
 CHEMSPIDER_TOKEN = os.getenv('CHEMSPIDER_TOKEN', '')
