@@ -76,7 +76,7 @@ class ScoreForm extends Component {
     }
 
     handleChange(event){
-        this.setState({value: event.target.value});
+        this.setState({source: event});
     }
 
     validateInput(score, notes){
@@ -89,7 +89,7 @@ class ScoreForm extends Component {
 
     render() {
         let { name } = this.props.score.metric,
-            { scoreChoices, score, notes, selectedSymbol, selectedShade } = this.state;
+            { scoreChoices, score, notes, source, selectedSymbol, selectedShade } = this.state;
         return (
             <div className='score-form'>
                 <div>
@@ -105,7 +105,7 @@ class ScoreForm extends Component {
                         Source Reference Text:<br/>
                         <input type='text'
                             id = {name}
-                            value=''
+                            defaultValue=''
                             onChange={this.handleChange} />
                     </label>
                 </div>
