@@ -113,7 +113,7 @@ class RoBMetricAnswersForm(forms.ModelForm):
 class RoBScoreForm(forms.ModelForm):
     class Meta:
         model = models.RiskOfBiasScore
-        fields = ('metric', 'notes', 'score')
+        fields = ('metric', 'notes', 'score', 'source')
 
     def __init__(self, *args, **kwargs):
         study = kwargs.pop('parent', None)
@@ -305,7 +305,7 @@ RoBFormSet = modelformset_factory(
     models.RiskOfBiasScore,
     form=RoBScoreForm,
     formset=BaseRoBFormSet,
-    fields=('metric', 'score', 'notes'),
+    fields=('metric', 'score', 'notes', 'source'),
     extra=0)
 
 

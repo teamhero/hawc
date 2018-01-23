@@ -82,7 +82,7 @@ class ScoreForm extends Component {
     }
 
     handleChange(event){
-        this.setState({source: event});
+        this.setState({source: event.target.value});
     }
 
     validateInput(score, notes){
@@ -131,6 +131,7 @@ ScoreForm.propTypes = {
     score: PropTypes.shape({
         score: PropTypes.number.isRequired,
         notes: PropTypes.string.isRequired,
+        source: PropTypes.string,
         metric: PropTypes.shape({
             name: PropTypes.string.isRequired,
         }).isRequired,
