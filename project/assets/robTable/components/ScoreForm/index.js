@@ -29,7 +29,7 @@ class ScoreForm extends Component {
                 10: 'Not reported',
             },
             score: null,
-            source: '',
+            source: props.score.source,
             notes: props.score.notes,
         };
         this.handleEditorInput = this.handleEditorInput.bind(this);
@@ -53,6 +53,12 @@ class ScoreForm extends Component {
         if(nextProps.score.notes !== this.props.score.notes){
             this.setState({
                 notes: nextProps.score.notes,
+            });
+        }
+        // if source is changed, change source to new source
+        if(nextProps.score.source !== this.props.score.source){
+            this.setState({
+                source: nextProps.score.source,
             });
         }
         // if score is changed, change to new score
@@ -105,7 +111,7 @@ class ScoreForm extends Component {
                         Source Reference Text:<br/>
                         <input type='text'
                             id = {name}
-                            defaultValue=''
+                            defaultValue={source}
                             onChange={this.handleChange} />
                     </label>
                 </div>
