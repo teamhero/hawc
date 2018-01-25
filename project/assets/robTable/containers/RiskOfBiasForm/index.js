@@ -33,7 +33,8 @@ class RiskOfBiasForm extends Component {
                 return {
                     id: form.props.score.id,
                     notes: form.state.notes,
-                    score: form.state.score };
+                    score: form.state.score,
+                    source: form.state.source };
             });
         }));
         this.props.dispatch(submitRiskOfBiasScores({scores}));
