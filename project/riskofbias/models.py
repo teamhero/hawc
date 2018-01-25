@@ -478,7 +478,9 @@ class RiskOfBiasScore(models.Model):
         default=10)
     notes = models.TextField(
         blank=True)
-    source = models.TextField(default = '')
+    source = models.TextField(
+        blank=True,
+        default = '')
 
     class Meta:
         ordering = ('metric', 'id')
