@@ -9,7 +9,7 @@ from myuser.models import HAWCUser
 
 # Create your models here.
 
-class extract(models.Model):
+class Extract(models.Model):
 	project_id = models
 
 
