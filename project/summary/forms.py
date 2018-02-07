@@ -441,7 +441,9 @@ class VisualForm(forms.ModelForm):
             self.instance.assessment = assessment
         if visual_type is not None:  # required if value is 0
             self.instance.visual_type = visual_type
-
+        if self.instance.visual_type != 2:
+            self.fields['sort_order'].widget = forms.HiddenInput()
+			
     def setHelper(self):
 
         for fld in list(self.fields.keys()):

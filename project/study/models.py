@@ -5,6 +5,7 @@ import collections
 import itertools
 
 from django.db import models, transaction
+from django.db.models import Prefetch
 from django.apps import apps
 from django.core.exceptions import (ValidationError, ObjectDoesNotExist,
                                     MultipleObjectsReturned)
@@ -337,6 +338,20 @@ class Study(Reference):
                .filter(active=True, final=False)\
                .order_by('last_updated')\
                .prefetch_related('author')
+			   
+    def get_overall_confidence(self):
+        final_confidence_set = self.riskofbiases\
+                .prefetch_related('scores__metric__domain')\
+                .filter(active=True, final=True, scores__metric__domain__is_overall_confidence=True)
+					   
+        if final_confidence_set.exists():
+            if final_confidence_set.count() != 1:
+                return -1
+            else: 
+                fc = final_confidence_set.values_list('scores__score', flat=True)[0]
+                return (fc+1)%11
+        else:
+            return -1
 
     def optimized_for_serialization(self):
         return self.__class__.objects\
