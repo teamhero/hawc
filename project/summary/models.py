@@ -1,4 +1,5 @@
 from datetime import datetime
+from operator import methodcaller
 import json
 
 from django.db import models
@@ -183,6 +184,8 @@ class Visual(models.Model):
         (ROB_HEATMAP, "risk of bias heatmap"),
         (ROB_BARCHART, "risk of bias barchart"), )
 
+    SORT_ORDER_CHOICES = (("short_citation","Short Citation"),("overall_confidence","Final Study Confidence"),)	
+	
     title = models.CharField(
         max_length=128)
     slug = models.SlugField(
@@ -218,6 +221,7 @@ class Visual(models.Model):
         default=False,
         verbose_name='Publish visual for public viewing',
         help_text='For assessments marked for public viewing, mark visual to be viewable by public')
+    sort_order = models.CharField(max_length=40,choices=SORT_ORDER_CHOICES, default="short_citation",)
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -308,7 +312,11 @@ class Visual(models.Model):
                 else:
                     qs = self.studies.all()
 
-        return qs
+        if self.sort_order == "overall_confidence":
+            sorted_studies = sorted(qs, key=methodcaller('get_overall_confidence'), reverse=True)
+            return sorted_studies
+        else:
+            return qs.order_by(self.sort_order)
 
     def get_editing_dataset(self, request):
         # Generate a pseudo-return when editing or creating a dataset.
