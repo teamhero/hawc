@@ -4,17 +4,19 @@
     <li class="nav-header">Selected assessment</li>
     <li class="active"><a href="{% url 'assessment:detail' assessment.pk %}"> {{ assessment }}</a></li>
 
-    <li class="nav-header">Available modules</li>
+    {% if assessment.enable_literature_review == 1 and user.is_authenticated or assessment.enable_project_management == 1 and user.is_authenticated or assessment.enable_data_extraction == 1 and user.is_authenticated or assessment.enable_summary_text == 1 and user.is_authenticated or assessment.enable_literature_review == 2 or assessment.enable_project_management == 2 or assessment.enable_data_extraction == 2 or assessment.enable_summary_text == 2 %}
+        <li class="nav-header">Available modules</li>
+    {% endif %}
 
-    {% if assessment.enable_literature_review %}
+    {% if assessment.enable_literature_review == 2 or assessment.enable_literature_review == 1 and user.is_authenticated %}
         <li><a href="{% url 'lit:overview' assessment.pk %}">Literature review</a></li>
     {% endif %}
 
-    {% if assessment.enable_project_management %}
+    {% if assessment.enable_project_management == 2 or assessment.enable_project_management == 1 and user.is_authenticated %}
         <li><a href="{% url 'mgmt:assessment_dashboard' assessment.pk %}">Management dashboard</a></li>
     {% endif %}
 
-    {% if assessment.enable_data_extraction %}
+    {% if assessment.enable_data_extraction == 2 or assessment.enable_data_extraction == 1 and user.is_authenticated %}
         <li><a href="{% url 'study:list' assessment.pk %}">Study list</a></li>
 
         {% if assessment.enable_risk_of_bias and obj_perms.edit %}
@@ -25,7 +27,7 @@
         <li><a href="{% url 'summary:visualization_list' assessment.pk %}">Visualizations</a></li>
     {% endif %}
 
-    {% if assessment.enable_summary_text %}
+    {% if assessment.enable_summary_text == 2 or assessment.enable_summary_text == 1 and user.is_authenticated %}
         <li><a href="{% url 'summary:list' assessment.pk %}">Executive summary</a></li>
     {% endif %}
 

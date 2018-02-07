@@ -34,6 +34,12 @@ def get_cas_url(cas):
 class Assessment(models.Model):
     objects = managers.AssessmentManager()
 
+    MODULE_CHOICES = (
+        (2,'Publicly Visible'),
+        (1,'Internal Only'),
+        (0,'Disabled'),
+    )
+
     name = models.CharField(
         max_length=80,
         verbose_name='Assessment Name',
@@ -81,35 +87,41 @@ class Assessment(models.Model):
         default=False,
         help_text="If public, anyone with a link can view, "
                   "but do not show a link on the public-assessment page.")
-    enable_literature_review = models.BooleanField(
-        default=True,
+    enable_literature_review = models.PositiveIntegerField(
+        default=1,
+        choices=MODULE_CHOICES,
         help_text="Search or import references from PubMed and other literature "
                   "databases, define inclusion, exclusion, or descriptive tags, "
                   "and apply these tags to retrieved literature for your analysis.")
-    enable_project_management = models.BooleanField(
-        default=True,
+    enable_project_management = models.PositiveIntegerField(
+        default=1,
+        choices=MODULE_CHOICES,
         help_text="Enable project management module for data extraction and "
                   "Study Evaluation. If enabled, each study will have multiple "
                   "tasks which can be assigned and tracked for completion.")
-    enable_data_extraction = models.BooleanField(
-        default=True,
+    enable_data_extraction = models.PositiveIntegerField(
+        default=1,
+        choices=MODULE_CHOICES,
         help_text="Extract animal bioassay, epidemiological, or in-vitro data from "
                   "key references and create customizable, dynamic visualizations "
                   "or summary data and associated metadata for display.")
-    enable_risk_of_bias = models.BooleanField(
-        default=True,
+    enable_risk_of_bias = models.PositiveIntegerField(
+        default=1,
+        choices=MODULE_CHOICES,
         help_text="Define criteria for a systematic review of literature, and apply "
                   "these criteria to references in your literature-review. "
                   "View details on findings and identify areas with a potential "
                   "risk of bias.")
-    enable_bmd = models.BooleanField(
-        default=True,
+    enable_bmd = models.PositiveIntegerField(
+        default=1,
+        choices=MODULE_CHOICES,
         verbose_name="Enable BMD modeling",
         help_text="Conduct benchmark dose (BMD) modeling on animal bioassay data "
                   "available in the HAWC database, using the US EPA's Benchmark "
                   "Dose Modeling Software (BMDS).")
-    enable_summary_text = models.BooleanField(
-        default=True,
+    enable_summary_text = models.PositiveIntegerField(
+        default=1,
+        choices=MODULE_CHOICES,
         help_text="Create custom-text to describe methodology and results of the "
                   "assessment; insert tables, figures, and visualizations to using "
                   "\"smart-tags\" which link to other data in HAWC.")
