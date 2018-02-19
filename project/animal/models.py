@@ -40,7 +40,7 @@ class Experiment(models.Model):
     LITTER_EFFECT_CHOICES = (
         ("NA", "Not-applicable"),
         ("NR", "Not-reported"),
-        ("YS", "Yes, statistical controls"),
+        ("YS", "Yes, statistical control"),
         ("YD", "Yes, study-design"),
         ("N",  "No"),
         ("O",  "Other"))
