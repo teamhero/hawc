@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('riskofbias', '0021_riskofbiasmetric_is_overall_confidence'),
+        ('riskofbias', '0018_riskofbiasmetric_is_overall_confidence'),
     ]
 
     operations = [
