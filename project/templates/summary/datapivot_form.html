@@ -53,6 +53,7 @@
             ["iv_category", "iv_categories"],
             ["iv_chemical", "iv_chemicals"],
             ["effect_tag", "effect_tags"],
+            ["effect_subtype", "effect_subtypes"],
         ];
         _.each(fields, function(d){
             $('#id_prefilter_{0}'.printf(d[0])).on('change', function(){
