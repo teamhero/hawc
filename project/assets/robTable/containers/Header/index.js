@@ -18,15 +18,28 @@ class Header extends Component {
         } else if(display == 'all'){
             headerText = 'Show all active reviews';
         }
-        return (
-            <div>
-                <h3>
-                    {headerText}
-                </h3>
-                <span className='help-text'>{smallText}</span>
-                <p><a className='btn btn-mini btn-primary' target='_blank' href={'https://hero.epa.gov/hero/index.cfm/reference/downloads/reference_id/' + heroID}>Full text link <i className='fa fa-fw fa-file-pdf-o'></i></a><span>&nbsp;</span></p>
-            </div>
-        );
+
+        if(heroID == 0) {
+            return (
+                <div>
+                    <h3>
+                        {headerText}
+                    </h3>
+                    <span className='help-text'>{smallText}</span>
+                    <p>&nbsp;</p>
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    <h3>
+                        {headerText}
+                    </h3>
+                    <span className='help-text'>{smallText}</span>
+                    <p><a className='btn btn-mini btn-primary' target='_blank' href={'https://hero.epa.gov/hero/index.cfm/reference/downloads/reference_id/' + heroID}>Full text link <i className='fa fa-fw fa-file-pdf-o'></i></a><span>&nbsp;</span></p>
+                </div>
+            );
+        }
     }
 }
 
