@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import FormView
 
 from assessment.models import Assessment
+from study.models import Study
 from lit.models import Reference
 from mgmt.views import EnsurePreparationStartedMixin
 from utils.views import (MessageMixin, BaseDetail, BaseDelete,
