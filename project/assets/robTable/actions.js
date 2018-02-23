@@ -83,12 +83,19 @@ function formatIncomingStudy(study){
             .key((d) => {return d.metric.name;})
             .entries(domains),
         finalRoB = _.findWhere(dirtyRoBs, { final: true });
-
-    return Object.assign({}, study, {
-        riskofbiases,
-        final: _.has(finalRoB, 'scores') ? finalRoB.scores : [],
-        heroid: study.identifiers[0].unique_id,
-    });
+        if (typeof study.identifiers[0] === 'undefined' || study.identifiers[0] === null) {
+            return Object.assign({}, study, {
+                riskofbiases,
+                final: _.has(finalRoB, 'scores') ? finalRoB.scores : [],
+                heroid: 0,
+            });
+        } else {
+            return Object.assign({}, study, {
+                riskofbiases,
+                final: _.has(finalRoB, 'scores') ? finalRoB.scores : [],
+                heroid: study.identifiers[0].unique_id,
+            });
+        }
 }
 
 export function fetchFullStudyIfNeeded(){

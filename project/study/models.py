@@ -371,7 +371,8 @@ class Study(Reference):
             noheroid = '0'
             return noheroid
         except ObjectDoesNotExist:
-            return None
+            noheroid = '0'
+            return noheroid
 
 class Attachment(models.Model):
     objects = managers.AttachmentManager()
