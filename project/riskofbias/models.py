@@ -394,29 +394,26 @@ class RiskOfBiasMetricAnswers(models.Model):
         related_name='answers')
     answer_choice = models.TextField(
         default = 'Not reported',
-        blank=False,
-        unique=True
+        blank=False
     )
     answer_symbol = models.TextField(
         default = 'NR',
-        blank=False,
-        unique=True
+        blank=False
     )
     answer_score = models.PositiveSmallIntegerField(
-        default = 10,
-        unique=True
+        default = 10
     )
     answer_shade = models.CharField(
         max_length=7,
         default = '#FFCC00'
     )
     answer_order = models.IntegerField(
-        default = 1,
-        unique=True
+        default = 1
     )
     class Meta:
         verbose_name_plural = "Risk of bias metric answers"
         ordering = ('metric', 'answer_order')
+        unique_together = (('metric', 'answer_choice', 'answer_symbol', 'answer_score', 'answer_order'),)
 
     def get_assessment(self):
         return self.metric.domain.get_assessment()
@@ -598,5 +595,6 @@ class RiskOfBiasAssessment(models.Model):
 
 reversion.register(RiskOfBiasDomain)
 reversion.register(RiskOfBiasMetric)
+reversion.register(RiskOfBiasMetricAnswers)
 reversion.register(RiskOfBias)
 reversion.register(RiskOfBiasScore)
