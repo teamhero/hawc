@@ -109,6 +109,16 @@ class RoBMetricAnswersForm(forms.ModelForm):
         helper['description'].wrap(cfl.Field, css_class='html5text span12')
         return helper
 
+        def clean(self):
+            cleaned_data = super().clean()
+            if 'answer_choice' and 'answer_symbol' and 'answer_score' and 'answer_order' in self.changed_data and self._meta.model.objects\
+                    .filter(metric=self.instance.metric,
+                            answer_choice=cleaned_data['answer_choice'],
+                            answer_symbol=cleaned_data['answer_symbol'],
+                            answer_score=cleaned_data['answer_score'],
+                            answer_order=cleaned_data['answer_order']).count() > 0:
+                raise forms.ValidationError('Answer already exists for metric.')
+
 
 class RoBScoreForm(forms.ModelForm):
     class Meta:

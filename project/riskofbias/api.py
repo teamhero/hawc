@@ -63,7 +63,7 @@ class AssessmentMetricAnswersViewSet(viewsets.ReadOnlyModelViewSet):
     model = models.RiskOfBiasMetricAnswers
     serializer_class = serializers.AssessmentMetricAnswersSerializer
     pagenation_class = DisabledPagination
-    assessment_filter_args = "answers__metric_domain"
+    assessment_filter_args = "answers__metric__domain"
 
     def get_queryset(self):
         return self.model.objects.all()

@@ -14,16 +14,18 @@ class AssessmentMetricChoiceSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'description')
 
 
-class AssessmentMetricSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.RiskOfBiasMetric
-        fields = '__all__'
-
 class AssessmentMetricAnswersSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = models.RiskOfBiasMetricAnswers
+        fields = '__all__'
+
+
+class AssessmentMetricSerializer(serializers.ModelSerializer):
+    answers = AssessmentMetricAnswersSerializer(many=True)
+
+    class Meta:
+        model = models.RiskOfBiasMetric
         fields = '__all__'
 
 

@@ -54,3 +54,4 @@ requirements/base.txt
 project/extract/models.py
 project/extract/urls.py
 project/extract/views.py
+.vscode/settings.json
