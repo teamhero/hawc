@@ -5,6 +5,10 @@
 
 {% block branding %}
     <h1 id="site-name"><a href="/admin/">HAWC Extract Tag Tree Data</a></h1>
+
+	{% for element in elements %}
+ 	<p> {{ element }} </p>
+ 	{% endfor %}
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
