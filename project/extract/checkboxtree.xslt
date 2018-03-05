@@ -1,17 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions">
 	<xsl:output method="html" encoding="UTF-8" indent="yes" omit-xml-declaration="yes" />
-	<xsl:variable name="specifierPre" as="xs:string" select="if(/projectTags/specifierPre) then /projectTags/specifierPre else ''"/>
-	<xsl:variable name="specifierPost" as="xs:string" select="if(/projectTags/specifierPost) then concat('_',/projectTags/specifierPost) else '_'"/>
-	<xsl:variable name="htmlIdPrefix" as="xs:string" select="if(/projectTags/htmlIdPrefix) then concat(/projectTags/htmlIdPrefix, '_') else ''"/>
-	<xsl:variable name="tagLink" as="xs:string" select="if (/projectTags/tagLink) then /projectTags/tagLink else ''"/>
-	<xsl:variable name="radioTree" as="xs:string" select="if (/projectTags/radioTree) then /projectTags/radioTree else ''"/>
+	<xsl:variable name="specifierPre">
+		<xsl:choose>
+			<xsl:when test="/projectTags/specifierPre">
+				<xsl:value-of select="/projectTags/specifierPre" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="specifierPost">
+		<xsl:choose>
+			<xsl:when test="/projectTags/specifierPost">
+				<xsl:value-of select="/projectTags/specifierPost" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="htmlIdPrefix">
+		<xsl:choose>
+			<xsl:when test="/projectTags/htmlIdPrefix">
+				<xsl:value-of select="/projectTags/htmlIdPrefix" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="tagLink">
+		<xsl:choose>
+			<xsl:when test="/projectTags/tagLink">
+				<xsl:value-of select="/projectTags/tagLink" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
+	<xsl:variable name="radioTree">
+		<xsl:choose>
+			<xsl:when test="/projectTags/radioTree">
+				<xsl:value-of select="/projectTags/radioTree" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:variable>
 	<xsl:template match="/">
 		 <head>
 		 	<script type="text/javascript" src="jquery-1.7.min.js">&#160;</script>
 			<script type="text/javascript" src="jquery.treeview.js">&#160;</script>
 			<style type="text/css">
-    			<xsl:value-of select="document('jquery.tagtree.css')" disable-output-escaping="yes" />
+    			<xsl:value-of select="document('jquery.treeview.css')" disable-output-escaping="yes" />
 			</style>
 		</head>
 		<xsl:for-each select="projectTags/category">
@@ -28,8 +73,18 @@
 	</xsl:template>
 
 	<xsl:template match="project">
+		<xsl:variable name="usageCSS">
+			<xsl:choose>
+				<xsl:when test="usages/usage">
+					<xsl:text>expandable lastExpandable</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>last</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
 		<ul>
-			<li class="closed {if (usages/usage) then 'expandable lastExpandable' else 'last'}">
+			<li class="{concat('closed ',$usageCSS)}">
 				<xsl:if test="usages/usage">
 					<div id="{concat('hitarea_',$htmlIdPrefix,'project',$specifierPre,'_',project_id)}" class="hitarea closed-hitarea expandable-hitarea lastExpandable-hitarea"></div>
 				</xsl:if>
@@ -104,7 +159,17 @@
 	<xsl:template match="usage">
 		<xsl:param name="projID"/>
 		<xsl:param name="parentID"/>
-		<li class="closed {if (usage) then 'expandable lastExpandable' else 'last'}">
+		<xsl:variable name="usageCSS">
+			<xsl:choose>
+				<xsl:when test="usage">
+					<xsl:text>expandable lastExpandable</xsl:text>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:text>last</xsl:text>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		<li class="{concat('closed ',$usageCSS)}">
 			<xsl:if test="usage">
 				<div id="{concat('hitarea_',$htmlIdPrefix,'usage',$specifierPre,'_',usage_id)}" class="hitarea closed-hitarea expandable-hitarea lastExpandable-hitarea"></div>
 			</xsl:if>
