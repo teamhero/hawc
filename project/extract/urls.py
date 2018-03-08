@@ -8,7 +8,7 @@ router = DefaultRouter()
 urlpatterns = [
 
     url(r'^hero/$',
-        views.index, name='hero'),
+        views.Home.as_view(), name='hero'),
     url(r'^test/$',
-        views.test, name='test'),
+        views.Test.as_view(), name='test'),
 ]
