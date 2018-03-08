@@ -25,6 +25,7 @@ public/static
 public/media
 venv
 .vagrant
+sql
 
 # javascript
 node_modules
