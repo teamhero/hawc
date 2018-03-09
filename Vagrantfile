@@ -12,17 +12,9 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-<<<<<<< HEAD
   config.vm.box = "ubuntu/xenial64"
   # config.vm.box = "tknerr/baseimage-ubuntu-16.04"
   # config.vm.box_version = "1.0.0"
-=======
-  # config.vm.box = "ubuntu/xenial64"
-  # config.vm.box = "tknerr/baseimage-ubuntu-16.04"
-  # config.vm.box_version = "1.0.0"
-  # config.vm.box = "bento/ubuntu-16.04"
-  config.vm.box = "generic/ubuntu1604"
->>>>>>> fc3bc4d66647c714bdaed131029ab759050f68e1
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
