@@ -92,9 +92,7 @@
         input[type='radio'] { left: 0px;}
       </style>
     {% endblock %}
-
-    {% block endheader %}{% endblock %}
-  </head>
+</head>
 
 
   <body {% block bodyattrs %}class="fill html one-sidebar sidebar-first block-og-menu microsite" style="padding-top:0px"{% endblock %}>
@@ -348,5 +346,6 @@
 	  </script>
    {% block extrajs %}{% endblock %}
     {% block portaljs %}{% endblock %}
+    {% block endheader %}{% endblock %}
   </body>
 </html>
