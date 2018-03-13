@@ -60,10 +60,10 @@
       <script type="text/javascript" src="https://www.epa.gov/sites/all/libraries/template2/jquery.js"></script>
       <script type="text/javascript" src="https://www.epa.gov/sites/all/libraries/template2/js.js"></script>
       <script type="text/javascript" src="https://www.epa.gov/sites/all/modules/custom/epa_core/js/alert.js"></script>
-      <script type="text/javascript" src="{{STATIC_URL}}javascript/jquery/jquery-ui-1.8.min.js"></script>
-      <script type="text/javascript" src="{{STATIC_URL}}javascript/jsfunctions.js"></script>
-      <script type="text/javascript" src="{{STATIC_URL}}javascript/hero.compatibility.js"></script>
-      <script type="text/javascript" src="{{STATIC_URL}}javascript/jquery/jquery.validate.min.js"></script>
+      <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-1.8.min.js"></script>
+      <script type="text/javascript" src="{{STATIC_URL}}js/jsfunctions.js"></script>
+      <script type="text/javascript" src="{{STATIC_URL}}js/hero.compatibility.js"></script>
+      <script type="text/javascript" src="{{STATIC_URL}}js/jquery.validate.min.js"></script>
       <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/thirdparty/font-awesome.min.css" />
       <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/hero/hero.css" />
 
@@ -92,6 +92,8 @@
         input[type='radio'] { left: 0px;}
       </style>
     {% endblock %}
+
+    {% block endheader %}{% endblock %}
   </head>
 
 

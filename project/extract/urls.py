@@ -9,6 +9,6 @@ urlpatterns = [
 
     url(r'^hero/$',
         views.Home.as_view(), name='hero'),
-    url(r'^test/$',
-        views.Test.as_view(), name='test'),
+    url(r'^tagtree/$',
+        views.TagTree.as_view(), name='tagtree'),
 ]

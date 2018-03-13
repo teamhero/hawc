@@ -52,11 +52,6 @@
 		</xsl:choose>
 	</xsl:variable>
 	<xsl:template match="/">
-		 <head>
-		 	<script type="text/javascript" src="jquery-1.7.min.js"></script>
-			<script type="text/javascript" src="jquery.treeview.js"></script>
-			<link href="jquery.treeview.css" rel="stylesheet" type="text/css" />
-		</head>
 		<xsl:for-each select="projectTags/category">
 			<div class="tagtab" id="{concat('tab_category',$specifierPre,'_',category_id)}">
 				<div style="width:100%;">

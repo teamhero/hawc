@@ -20,20 +20,20 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 
 # Create your views here.
 
-class Test(TemplateView):
+class TagTree(TemplateView):
     template_name = 'extract/index.html'
 
-    def get(self, request):
-    	#data = open(os.path.join(BASE, "checkboxtree.xslt"), encoding="utf8")
-    	data = open(os.path.join(BASE, "checkboxtree_test.xslt"), encoding="utf8")
-    	#doc = urllib.request.urlopen("http://localhost/hero/index.cfm/content/tagtreexml/")
-    	doc = open(os.path.join(BASE, "test.xml"), encoding="utf8")
-    	dom = ET.parse(doc)
-    	xslt = ET.parse(data)
-    	transform = ET.XSLT(xslt)
-    	newdom = transform(dom)
-    	print(ET.tostring(newdom, pretty_print=True))
-    	return HttpResponse(newdom, content_type='text/xml')
+    def get_context_data(self, **kwargs):
+        data = open(os.path.join(BASE, "checkboxtree.xslt"), encoding="utf8")
+        doc = urllib.request.urlopen("http://localhost/hero/index.cfm/content/tagtreexml/")
+        #doc = open(os.path.join(BASE, "test.xml"), encoding="utf8")
+        dom = ET.parse(doc)
+        xslt = ET.parse(data)
+        transform = ET.XSLT(xslt)
+        newdom = transform(dom)
+        context = super().get_context_data(**kwargs)
+        context['myVar'] = ET.tostring(newdom, pretty_print=True)
+        return context
 
 class Home(TemplateView):
     template_name = 'extract/index.html'

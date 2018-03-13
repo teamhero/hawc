@@ -1,14 +1,31 @@
-{% extends "admin/base.html" %}
-{% load i18n %}
+{% extends "portal.html" %}
 
-{% block title %}{{ title }} | HAWC Admin{% endblock %}
-
-{% block branding %}
-    <h1 id="site-name"><a href="/admin/">HAWC Extract Tag Tree Data</a></h1>
-
-	{% for element in elements %}
- 	<p> {{ element }} </p>
- 	{% endfor %}
+{% block endheader %}
+ 	<script type="text/javascript" src="{{STATIC_URL}}js/jquery-1.7.min.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.tooltip.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/manageproject.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/manageusage.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.treeview.js"></script>
+	<link href="{{STATIC_URL}}css/jquery/jquery.treeview.css" rel="stylesheet" type="text/css" />
+	<link href="{{STATIC_URL}}css/hero/hero_treeview.css" rel="stylesheet" type="text/css" />
+	<style type="text/css">
+		#content ul{ list-style-type: none !important; }
+		#content li ul, #content li { margin: 0 !important; }
+		.treeview ul { border:0 !important; }
+		.treeview li.last { background-position: initial; }
+		.project_checkbox {display: none;}
+		.usage_checkbox {display: none;}
+	</style>
 {% endblock %}
 
-{% block nav-global %}{% endblock %}
+{% block title %}
+   Tag Tree | HAWC
+{% endblock %}
+
+{% block content %}
+{{ myVar|safe }}
+{% endblock %}
+
+
+
