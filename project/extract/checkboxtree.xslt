@@ -56,8 +56,8 @@
 			<div class="tagtab" id="{concat('tab_category',$specifierPre,'_',category_id)}">
 				<div style="width:100%;">
 					<div class="checkboxsection">
-						<div class="" id="{concat('tree',$specifierPost,category_id)}">
-				<xsl:apply-templates select="project" />
+						<div class="treeview" id="{concat('tree',$specifierPost,category_id)}">
+							<xsl:apply-templates select="project" />
 						</div>
 					</div>
 				</div>
@@ -79,7 +79,7 @@
 		<ul>
 			<li class="{concat('closed ',$usageCSS)}">
 				<xsl:if test="usages/usage">
-					<div id="{concat('hitarea_',$htmlIdPrefix,'project',$specifierPre,'_',project_id)}" class="hitarea closed-hitarea expandable-hitarea lastExpandable-hitarea"></div>
+					<div id="{concat('hitarea_',$htmlIdPrefix,'project',$specifierPre,'_',project_id)}" class="hitarea closed-hitarea expandable-hitarea lastExpandable-hitarea"><xsl:comment></xsl:comment></div>
 				</xsl:if>
 				<xsl:choose>
 					<xsl:when test="/projectTags/tagLink">
