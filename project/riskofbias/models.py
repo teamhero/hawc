@@ -163,6 +163,10 @@ class RiskOfBiasMetric(models.Model):
         default=True,
         verbose_name='Required for epidemiology?',
         help_text='Is this metric required for human epidemiological studies?<br/><b>CAUTION:</b> Removing requirement will destroy all epi responses previously entered for this metric.')
+    required_invitro = models.BooleanField(
+        default=True,
+        verbose_name='Required for in-vitro?',
+        help_text='Is this metric required for in-vitro studies?<br/><b>CAUTION:</b> Removing requirement will destroy all in-vitro responses previously entered for this metric.')
     hide_description = models.BooleanField(
         default=False,
         verbose_name='Hide description?',

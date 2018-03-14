@@ -104,6 +104,8 @@
               {%if metric.required_animal %}<i class='fa fa-check'></i>{% else %}<i class='fa fa-minus'></i>{% endif %}<br>
             <strong>Required for epidemiological: </strong>
               {%if metric.required_epi %}<i class='fa fa-check'></i>{% else %}<i class='fa fa-minus'></i>{% endif %}
+            <strong>Required for in-vitro: </strong>
+              {%if metric.required_invitro %}<i class='fa fa-check'></i>{% else %}<i class='fa fa-minus'></i>{% endif %}
           </td>
           <td>
             {{metric.description|safe}}<br>
