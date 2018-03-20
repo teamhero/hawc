@@ -32,8 +32,9 @@ class TagTree(TemplateView):
         transform = ET.XSLT(xslt)
         newdom = transform(dom)
         context = super().get_context_data(**kwargs)
-        print(ET.tostring(dom,pretty_print=True))
-        context['myVar'] = ET.tostring(newdom, pretty_print=True)
+        #print(ET.tostring(dom,pretty_print=True))
+        #context['myVar'] = ET.tostring(newdom, pretty_print=True)
+        context['myVar'] = newdom
         return context
 
 class Home(TemplateView):
