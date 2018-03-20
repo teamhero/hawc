@@ -18,57 +18,13 @@
 	<script language="javascript" type="text/javascript">
 
 		$(document).ready(function() {
-			$("#addReferenceContent div.tabs").tabs();
-			$("#addReferenceContent div.tabs > ul").addClass("tabs-js");
 
-			var $addReference = $("#addReference");
-			if ($addReference.length > 0) {
-				$addReference.find('.button[type="submit"]').button({
-					icons: {
-						primary: 	'',
-						secondary: 	'ui-icon-arrowthick-1-e'
-					}
-				});
-				$addReference.submit(function(event) {
-					event.preventDefault();
-					var submitForm = false;
-					var $otherTabs = $(".twoColumnLeftCell > .ui-tabs-hide").detach();
-					var errorMsg = "";
-					var warnMsg = "";
-					var isTagSelected =  ($addReference.find('input[name="project_id"]:checked').length > 0) || ($addReference.find('input[name="usage_id"]:checked').length > 0);
-					var hasImportSource = ($.trim($addReference.find('textarea[name="importData"]').val()) != "");
-					if (!hasImportSource) {
-						$addReference.find('input[type="file"]').each(function() {
-							hasImportSource = hasImportSource || ($(this).val() != "");
-						});
-					}
-						if (!$('input[name="fetch_pdf"]:checked').val()) {
-							errorMsg += "Please select a PDF Option before submitting.\n";
-						}
-					if (!isTagSelected) {
-						errorMsg += "Please select at least one Project or Tag.\n";
-					}
-					if (!hasImportSource) {
-						errorMsg += "Please upload one or more files or provide some text.\n";
-					}
-					if (errorMsg.length) {
-						alert(errorMsg);
-						$otherTabs.appendTo("div.twoColumnLeftCell");
-					} else if (warnMsg.length) {
-						if (confirm(warnMsg)) {
-							submitForm = true;
-						} else {
-							$otherTabs.appendTo("div.twoColumnLeftCell");
-						}
-					} else {
-						submitForm = true;
-					}
-					if (submitForm) {
-						$('#th_submit').addClass('disabled').attr('disabled', 'disabled');
-						$addReference.unbind("submit").submit();
-					}
-				});
-			}
+			setTimeout('$("#tree_2").treeview({prerendered:true})', 500);
+			setTimeout('$("#tree_1").treeview({prerendered:true})', 1000);
+			setTimeout('$("#tree_21").treeview({prerendered:true})', 1500);
+			setTimeout('$("#tree_18").treeview({prerendered:true})', 2000);
+			setTimeout('$("#tree_10").treeview({prerendered:true})', 2500);
+			$("#tags").tabs();
 
 			var checkParent	= function(elementId) {
 				if ((typeof(elementId) != "undefined") && (elementId != "")) {
