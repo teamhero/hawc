@@ -263,9 +263,8 @@ PUBMED_EMAIL = os.getenv('PUBMED_EMAIL', DEFAULT_FROM_EMAIL)
 
 
 # BMD modeling settings
-BMD_HOST = os.getenv('BMDS_HOST', 'http://example.com')
-BMDS_USERNAME = os.getenv('BMDS_USERNAME', 'username')
-BMDS_PASSWORD = os.getenv('BMDS_PASSWORD', 'password')
+BMDS_SUBMISSION_URL = os.getenv('BMDS_SUBMISSION_URL', 'https://sandbox.ntp.niehs.nih.gov/job-runner/api/v1/bmds-dfile/')
+BMDS_TOKEN = os.getenv('BMDS_TOKEN', '3bc3637734cf88e6df57f113d36f26f547554ada')
 
 # increase allowable fields in POST for updating reviewers
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
@@ -307,4 +306,4 @@ EMAIL_HOST = os.environ.get('DJANGO_EMAIL_HOST', None)
 EMAIL_HOST_USER = os.environ.get('DJANGO_EMAIL_USER', None)
 EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_EMAIL_PASSWORD', None)
 EMAIL_PORT = int(os.environ.get('DJANGO_EMAIL_PORT', 25))
-EMAIL_USE_SSL = bool(os.environ.get('DJANGO_EMAIL_USE_SSL') == 'True')
+EMAIL_USE_SSL = bool(os.environ.get('DJANGO_EMAIL_USE_SSL') == 'False')
