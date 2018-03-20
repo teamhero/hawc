@@ -56,7 +56,7 @@
 			<div class="tagtab" id="{concat('tab_category',$specifierPre,'_',category_id)}">
 				<div style="width:100%;">
 					<div class="checkboxsection">
-						<div class="treeview" id="{concat('tree',$specifierPost,category_id)}">
+						<div class="treeview" id="{concat('tree_',$specifierPost,category_id)}">
 							<xsl:apply-templates select="project" />
 						</div>
 					</div>
@@ -98,12 +98,10 @@
 							<xsl:attribute name="type">checkbox</xsl:attribute>
 							<xsl:attribute name="id"><xsl:value-of select="concat($htmlIdPrefix,'project',$specifierPre,'_',project_id)"/></xsl:attribute>
 							<xsl:attribute name="name">project_id</xsl:attribute>
-							<xsl:if test="/projectTags/untagList">
 								<xsl:choose>
 									<xsl:when test="/projectTags/untagList/projectID = project_id"><xsl:attribute name="class">project_checkbox</xsl:attribute></xsl:when>
 									<xsl:otherwise><xsl:attribute name="class">project_checkbox noUntag</xsl:attribute></xsl:otherwise>
 								</xsl:choose>
-							</xsl:if>
 							<xsl:attribute name="value"><xsl:value-of select="project_id"/></xsl:attribute>
 							<xsl:if test="/projectTags/checkedList/projectID = project_id">
 								<xsl:attribute name="checked">checked</xsl:attribute>

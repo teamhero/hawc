@@ -1,11 +1,9 @@
 {% extends "portal.html" %}
 
 {% block endheader %}
- 	<script type="text/javascript" src="{{STATIC_URL}}debug/jquery/1.9.1/jquery.js"></script>
-	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.cookie.js"></script>
-	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.tooltip.js"></script>
 	<script type="text/javascript" src="{{STATIC_URL}}js/manageproject.js"></script>
 	<script type="text/javascript" src="{{STATIC_URL}}js/manageusage.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.cookie.js"></script>
 	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.treeview.js"></script>
 	<link href="{{STATIC_URL}}css/jquery/jquery.treeview.css" rel="stylesheet" type="text/css" />
 	<link href="{{STATIC_URL}}css/hero/hero_treeview.css" rel="stylesheet" type="text/css" />
@@ -23,37 +21,6 @@
 			$("#addReferenceContent div.tabs").tabs();
 			$("#addReferenceContent div.tabs > ul").addClass("tabs-js");
 
-			$(function() {
-				setTimeout('$("#tree_2").treeview({prerendered:true})', 500);
-				setTimeout('$("#tree_1").treeview({prerendered:true})', 1000);
-				setTimeout('$("#tree_21").treeview({prerendered:true})', 1500);
-				setTimeout('$("#tree_18").treeview({prerendered:true})', 2000);
-				setTimeout('$("#tree_10").treeview({prerendered:true})', 2500);
-
-				$("#tags").tabs();
-				tagAction = "tag";
-				$(".project_checkbox,.usage_checkbox").click(function() {
-					var weAreTagging = ($("#hID_untag:checked").length == 0) ? true : false;
-					if (!$(this).hasClass("noParentCheck")) {
-						// This element does not have the 'noParentCheck' class, continue
-						if ($(this).attr('checked')) {
-							if (weAreTagging) {
-								checkParent($(this).attr("id"));
-							}
-							else {
-								checkChildren($(this).attr("id"));
-							}
-						}
-						else if (weAreTagging) {
-							uncheckChildren($(this).attr("id"));
-						}
-						else {
-							uncheckParent($(this).attr("id"));
-						}
-					}
-				});
-			});
-
 			var $addReference = $("#addReference");
 			if ($addReference.length > 0) {
 				$addReference.find('.button[type="submit"]').button({
@@ -62,38 +29,32 @@
 						secondary: 	'ui-icon-arrowthick-1-e'
 					}
 				});
-
 				$addReference.submit(function(event) {
 					event.preventDefault();
 					var submitForm = false;
-
 					var $otherTabs = $(".twoColumnLeftCell > .ui-tabs-hide").detach();
-
 					var errorMsg = "";
 					var warnMsg = "";
-
 					var isTagSelected =  ($addReference.find('input[name="project_id"]:checked').length > 0) || ($addReference.find('input[name="usage_id"]:checked').length > 0);
-
 					var hasImportSource = ($.trim($addReference.find('textarea[name="importData"]').val()) != "");
 					if (!hasImportSource) {
 						$addReference.find('input[type="file"]').each(function() {
 							hasImportSource = hasImportSource || ($(this).val() != "");
 						});
 					}
-
+						if (!$('input[name="fetch_pdf"]:checked').val()) {
+							errorMsg += "Please select a PDF Option before submitting.\n";
+						}
 					if (!isTagSelected) {
 						errorMsg += "Please select at least one Project or Tag.\n";
 					}
-
 					if (!hasImportSource) {
 						errorMsg += "Please upload one or more files or provide some text.\n";
 					}
-
 					if (errorMsg.length) {
 						alert(errorMsg);
 						$otherTabs.appendTo("div.twoColumnLeftCell");
 					} else if (warnMsg.length) {
-
 						if (confirm(warnMsg)) {
 							submitForm = true;
 						} else {
@@ -102,13 +63,61 @@
 					} else {
 						submitForm = true;
 					}
-
 					if (submitForm) {
 						$('#th_submit').addClass('disabled').attr('disabled', 'disabled');
 						$addReference.unbind("submit").submit();
 					}
 				});
 			}
+
+			var checkParent	= function(elementId) {
+				if ((typeof(elementId) != "undefined") && (elementId != "")) {
+					var $element = $("#" + elementId);
+					if ($element.length > 0) {
+							$element.attr("checked", true);
+						var parentId = $element.attr("data-parent-id");
+						if ((typeof(parentId) != "undefined") && (parentId != "")) {
+							checkParent(parentId);
+						}
+					}
+				}
+			};
+			
+			var uncheckParent = function(elementId) {
+				if ((typeof(elementId) != "undefined") && (elementId != "")) {
+					var $element = $("#" + elementId);
+					if ($element.length > 0) {
+						$element.attr("checked", false);
+						var parentId = $element.attr("data-parent-id");
+						if ((typeof(parentId) != "undefined") && (parentId != "")) {
+							uncheckParent(parentId);
+						}
+					}
+				}
+			}
+
+			var uncheckChildren	= function(elemID) {
+				if ($('#' + elemID)) {
+					$('input[data-parent-id^="' + elemID + '"]').attr('checked', false);
+					$('input[data-parent-id="' + elemID + '"]').each(function (i) {uncheckChildren(this.id)});
+				}
+			};
+
+			var checkChildren = function(elemID) {
+				if ($('#' + elemID)) {
+					$('input[data-parent-id^="' + elemID + '"]').attr('checked', true);
+					$('input[data-parent-id="' + elemID + '"]').each(function (i) {checkChildren(this.id)});
+				}
+			};
+
+			function resetTree() {
+				$("#tree_2").treeview({prerendered:true});
+				$("#tree_1").treeview({prerendered:true});
+				$("#tree_21").treeview({prerendered:true});
+				$("#tree_18").treeview({prerendered:true});
+				$("#tree_10").treeview({prerendered:true});
+			}
+
 		});
 	</script>
 {% endblock %}
@@ -118,5 +127,22 @@
 {% endblock %}
 
 {% block content %}
+<div id="tags">
+	
+	<ul class="tabs">
+	
+		<li><a href="#tab_category_2">IRIS</a></li>
+	
+		<li><a href="#tab_category_1">NAAQS</a></li>
+	
+		<li><a href="#tab_category_21">PPRTV</a></li>
+	
+		<li><a href="#tab_category_18">Other</a></li>
+	
+		<li><a href="#tab_category_10">ExpoDocs</a></li>
+	
+	</ul>
+
 {{ myVar|safe }}
+</div>
 {% endblock %}
