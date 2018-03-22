@@ -94,9 +94,8 @@ class OutcomeDataPivot(FlatFileExporter):
             'exposure group name',
             'exposure group comparison name',
             'exposure group numeric',
-            'reference vs. exposure group name',
-            'reference vs. number of exposed cases',
-            'estimate and 95% confidence interval range',
+            'Reference/Exposure group',
+            'Result, summary numerical',
 
             'key',
             'result group id',
@@ -192,8 +191,7 @@ class OutcomeDataPivot(FlatFileExporter):
                         rg['group']['name'],
                         rg['group']['comparative_name'],
                         rg['group']['numeric'],
-                        ser['study_population']['study']['short_citation'] + '|' + rg['group']['name'],
-                        ser['study_population']['study']['short_citation'] + '|' + str(rg['n']),
+                        ser['study_population']['study']['short_citation'] + ' (' + rg['group']['name'] + ', n=' + str(rg['n']) + ')',
                         str(rg['estimate']) + ' (' + str(rg['lower_ci']) + ' - ' + str(rg['upper_ci']) + ')',
 
                         rg['id'],
