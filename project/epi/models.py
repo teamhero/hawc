@@ -19,8 +19,6 @@ from utils.helper import SerializerHelper, HAWCDjangoJSONEncoder
 
 from . import managers
 
-# This is a test comment to see if my SourceTree connection to GitHub is working now.
-
 class Criteria(models.Model):
     objects = managers.CriteriaManager()
 
