@@ -27,7 +27,6 @@ OPTIONAL_NOTE = "<span class='help-text-notes optional'>Optional</span>"
 def formatHelpTextNotes(s):
     return "<span class='help-text-notes'>%s</span>" % s
 
-
 class Criteria(models.Model):
     objects = managers.CriteriaManager()
 
