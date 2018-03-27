@@ -122,7 +122,7 @@ class Experiment(models.Model):
         blank=True)
     description = models.TextField(
         blank=True,
-        verbose_name="Description and animal husbandry",
+        verbose_name="Comments",
         help_text="Text-description of the experimental protocol used. "
                   "May also include information such as animal husbandry. "
                   "Note that dosing-regime information and animal details are "
@@ -305,7 +305,7 @@ class AnimalGroup(models.Model):
         null=True)  # not enforced in db, but enforced in views
     comments = models.TextField(
         blank=True,
-        verbose_name="Description",
+        verbose_name="Animal Husbandry",
         help_text="Any addition notes for this animal-group.")
     created = models.DateTimeField(
         auto_now_add=True)
@@ -760,11 +760,11 @@ class Endpoint(BaseEndpoint):
         verbose_name='Confidence interval (CI)',
         help_text='A 95% CI is written as 0.95.')
     NOEL = models.SmallIntegerField(
-        verbose_name="NOEL",
+        verbose_name="NOAEL",
         default=-999,
         help_text="No observed effect level")
     LOEL = models.SmallIntegerField(
-        verbose_name="LOEL",
+        verbose_name="LOAEL",
         default=-999,
         help_text="Lowest observed effect level")
     FEL = models.SmallIntegerField(

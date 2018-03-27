@@ -21,8 +21,8 @@ class EndpointListTable {
                 'Animal group',
                 'Endpoint',
                 'Units',
-                'NOEL',
-                'LOEL',
+                'NOAEL',
+                'LOAEL',
             ];
         tbl.setColGroup([12, 16, 17, 31, 10, 7, 7]);
         tbl.addHeaderRow(headers);

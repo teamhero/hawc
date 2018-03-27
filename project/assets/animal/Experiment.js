@@ -63,7 +63,7 @@ class Experiment {
             .add_tbody_tr('Animal diet', this.data.diet)
             .add_tbody_tr('Litter effects', getLitterEffects(), {annotate: this.data.litter_effect_notes})
             .add_tbody_tr('Guideline compliance', this.data.guideline_compliance)
-            .add_tbody_tr('Description and animal husbandry', this.data.description);
+            .add_tbody_tr('Comments', this.data.description);
 
         if (this.data.cas_url){
             casTd = tbl.get_tbl().find('th:contains("CAS")').next();

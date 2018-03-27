@@ -339,8 +339,8 @@ class Endpoint extends Observee {
                 this.data.expected_adversity_direction_text);
         }
 
-        tbl.add_tbody_tr('NOEL', critical_dose('NOEL'))
-           .add_tbody_tr('LOEL', critical_dose('LOEL'))
+        tbl.add_tbody_tr('NOAEL', critical_dose('NOEL'))
+           .add_tbody_tr('LOAEL', critical_dose('LOEL'))
            .add_tbody_tr('FEL',  critical_dose('FEL'))
            .add_tbody_tr('BMD',  bmd_response('BMD', true))
            .add_tbody_tr('BMDL',  bmd_response('BMDL', false))

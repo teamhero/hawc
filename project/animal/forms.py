@@ -583,8 +583,8 @@ class EndpointFilterForm(forms.Form):
         ('system', 'system'),
         ('organ', 'organ'),
         ('effect', 'effect'),
-        ('-NOEL', 'NOEL'),
-        ('-LOEL', 'LOEL'),
+        ('-NOEL', 'NOAEL'),
+        ('-LOEL', 'LOAEL'),
         ('effect_subtype', 'effect subtype'),
         ('animal_group__experiment__chemical', 'chemical'),
     )
