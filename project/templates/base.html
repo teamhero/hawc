@@ -33,19 +33,27 @@
       <meta http-equiv="Pragma" content="no-cache">
       <meta http-equiv="Expires" content="-1">
 
+      <link type="text/css" rel="stylesheet" href="https://www.epa.gov/sites/all/libraries/template2/s.css" media="all" />
+
       <!--[if lt IE 9]><link type="text/css" rel="stylesheet" href="https://www.epa.gov/sites/all/themes/epa/css/ie.css" media="all" /><![endif]-->
       <link rel="alternate" type="application/atom+xml" title="EPA.gov All Press Releases" href="https://www.epa.gov/newsreleases/search/rss" />
       <link rel="alternate" type="application/atom+xml" title="EPA.gov Headquarters Press Releases" href="/https://www.epa.gov/newsreleases/search/rss/field_press_office/headquarters" />
       <link rel="alternate" type="application/atom+xml" title="Greenversations, EPA's Blog" href="https://blog.epa.gov/blog/feed/" />
 
+      <script type="text/javascript" src="https://www.epa.gov/sites/all/libraries/template2/jquery.js"></script>
+      <script type="text/javascript" src="https://www.epa.gov/sites/all/libraries/template2/js.js"></script>
+      <script type="text/javascript" src="https://www.epa.gov/sites/all/modules/custom/epa_core/js/alert.js"></script>
+
     {% block extrahead %}{% endblock %}
     {% if debug %}
       <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}debug/font-awesome/css/font-awesome.css" />
+      <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/hero/hero.css" />
       <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}debug/twitter-bootstrap/2.2.2/css/bootstrap.css" />
       <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}debug/twitter-bootstrap/2.2.2/css/bootstrap-responsive.css" />
       <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}debug/jqueryui/1.10.3/css/jquery-ui.css">
     {% else %}
       <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css" />
+      <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/hero/hero.css" />
       <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap.min.css" />
       <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap-responsive.min.css" />
       <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/css/base/minified/jquery-ui.min.css" />
@@ -55,44 +63,19 @@
     <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/flex.css" />
 
       <!-- test HERO template -->
-    <link type="text/css" rel="stylesheet" href="https://www.epa.gov/sites/all/libraries/template2/s.css" media="all" />
       <script type="text/javascript" src="https://www.epa.gov/sites/all/modules/custom/epa_core/js/foresee-trigger.js"></script>
-      <script type="text/javascript" src="https://www.epa.gov/sites/all/libraries/template2/jquery.js"></script>
-      <script type="text/javascript" src="https://www.epa.gov/sites/all/libraries/template2/js.js"></script>
-      <script type="text/javascript" src="https://www.epa.gov/sites/all/modules/custom/epa_core/js/alert.js"></script>
-      <script type="text/javascript" src="{{STATIC_URL}}javascript/jquery/jquery-ui-1.8.min.js"></script>
-      <script type="text/javascript" src="{{STATIC_URL}}javascript/jsfunctions.js"></script>
-      <script type="text/javascript" src="{{STATIC_URL}}javascript/hero.compatibility.js"></script>
-      <script type="text/javascript" src="{{STATIC_URL}}javascript/jquery/jquery.validate.min.js"></script>
-      <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/thirdparty/font-awesome.min.css" />
-      <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/hero/hero.css" />
-
-      <!-- test HERO template -->
-      <style type="text/css">
-        /*<cfif structKeyExists(prc, 'layoutWidth') and isNumeric(prc.layoutWidth) and prc.layoutWidth gt 0>
-        #content {width: 800ppx;}
-        footer.main-footer { max-width: #prc.layoutWidth#px;}
-        header.masthead { max-width: #prc.layoutWidth#px;}
-        nav.nav { max-width: #prc.layoutWidth#px;}
-        </cfif>
-        <cfif structKeyExists(prc, 'wideLayout') and isNumeric(prc.wideLayout) and prc.wideLayout eq 1>*/
-          .main-content {max-width: auto; margin:0;}
-        /*</cfif>
-        <cfif structKeyExists(prc, 'hideMenu') and isNumeric(prc.hideMenu) and prc.hideMenu eq 1>
-          .one-sidebar .main-column {width: 100%;}
-          .main-content .region-sidebar {display: none;}
-          .main-column {float: none; width: 100%;}
-        </cfif>*/
-        input[type='radio'] { left: 0px;}
-      </style>
-
+      <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-1.8.min.js"></script>
+      <script type="text/javascript" src="{{STATIC_URL}}js/jsfunctions.js"></script>
+      <script type="text/javascript" src="{{STATIC_URL}}js/hero.compatibility.js"></script>
+      <script type="text/javascript" src="{{STATIC_URL}}js/jquery.validate.min.js"></script>
+      
     {% block extrastyle %}
       <style type="text/css">
         .main-content {max-width: auto; margin:0;}
         input[type='radio'] { left: 0px;}
       </style>
     {% endblock %}
-  </head>
+</head>
 
 
   <body {% block bodyattrs %}class="fill html one-sidebar sidebar-first block-og-menu microsite" style="padding-top:0px"{% endblock %}>
@@ -317,13 +300,13 @@
     {% if debug %}
       <script type="text/javascript" src="{{STATIC_URL}}debug/underscore/underscore.js"></script>
       <script type="text/javascript" src="{{STATIC_URL}}debug/jquery/1.9.1/jquery.js" ></script>
-      <script type="text/javascript" src="{{STATIC_URL}}debug/twitter-bootstrap/2.2.2/bootstrap.js" ></script>
       <script type="text/javascript" src="{{STATIC_URL}}debug/jqueryui/1.10.3/jquery-ui.js"></script>
+      <script type="text/javascript" src="{{STATIC_URL}}debug/twitter-bootstrap/2.2.2/bootstrap.js" ></script>
     {% else %}
-      <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
       <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js" ></script>
-      <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/bootstrap.min.js" ></script>
       <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+      <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+      <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/bootstrap.min.js" ></script>
       {% block google_analytics %}
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -346,5 +329,6 @@
 	  </script>
    {% block extrajs %}{% endblock %}
     {% block portaljs %}{% endblock %}
+    {% block endheader %}{% endblock %}
   </body>
 </html>

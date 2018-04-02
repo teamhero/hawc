@@ -1,0 +1,104 @@
+{% extends "portal.html" %}
+
+{% block endheader %}
+	<script type="text/javascript" src="{{STATIC_URL}}js/manageproject.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/manageusage.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.treeview.js"></script>
+	<link href="{{STATIC_URL}}css/jquery/jquery.treeview.css" rel="stylesheet" type="text/css" />
+	<link href="{{STATIC_URL}}css/hero/hero_treeview.css" rel="stylesheet" type="text/css" />
+	<style type="text/css">
+		#content ul{ list-style-type: none !important; }
+		#content li ul, #content li { margin: 0 !important; }
+		.treeview ul { border:0 !important; }
+		.treeview li.last { background-position: initial; }
+		.project_checkbox {display: none;}
+		.usage_checkbox {display: none;}
+	</style>
+	<script language="javascript" type="text/javascript">
+
+		$(document).ready(function() {
+
+			setTimeout('$("#tree_2").treeview({prerendered:true})', 500);
+			setTimeout('$("#tree_1").treeview({prerendered:true})', 1000);
+			setTimeout('$("#tree_21").treeview({prerendered:true})', 1500);
+			setTimeout('$("#tree_18").treeview({prerendered:true})', 2000);
+			setTimeout('$("#tree_10").treeview({prerendered:true})', 2500);
+			$("#tags").tabs();
+
+			var checkParent	= function(elementId) {
+				if ((typeof(elementId) != "undefined") && (elementId != "")) {
+					var $element = $("#" + elementId);
+					if ($element.length > 0) {
+							$element.attr("checked", true);
+						var parentId = $element.attr("data-parent-id");
+						if ((typeof(parentId) != "undefined") && (parentId != "")) {
+							checkParent(parentId);
+						}
+					}
+				}
+			};
+			
+			var uncheckParent = function(elementId) {
+				if ((typeof(elementId) != "undefined") && (elementId != "")) {
+					var $element = $("#" + elementId);
+					if ($element.length > 0) {
+						$element.attr("checked", false);
+						var parentId = $element.attr("data-parent-id");
+						if ((typeof(parentId) != "undefined") && (parentId != "")) {
+							uncheckParent(parentId);
+						}
+					}
+				}
+			}
+
+			var uncheckChildren	= function(elemID) {
+				if ($('#' + elemID)) {
+					$('input[data-parent-id^="' + elemID + '"]').attr('checked', false);
+					$('input[data-parent-id="' + elemID + '"]').each(function (i) {uncheckChildren(this.id)});
+				}
+			};
+
+			var checkChildren = function(elemID) {
+				if ($('#' + elemID)) {
+					$('input[data-parent-id^="' + elemID + '"]').attr('checked', true);
+					$('input[data-parent-id="' + elemID + '"]').each(function (i) {checkChildren(this.id)});
+				}
+			};
+
+			function resetTree() {
+				$("#tree_2").treeview({prerendered:true});
+				$("#tree_1").treeview({prerendered:true});
+				$("#tree_21").treeview({prerendered:true});
+				$("#tree_18").treeview({prerendered:true});
+				$("#tree_10").treeview({prerendered:true});
+			}
+
+		});
+	</script>
+{% endblock %}
+
+{% block title %}
+   Tag Tree | HAWC
+{% endblock %}
+
+{% block content %}
+<div id="tags">
+	
+	<ul class="tabs">
+	
+		<li><a href="#tab_category_2">IRIS</a></li>
+	
+		<li><a href="#tab_category_1">NAAQS</a></li>
+	
+		<li><a href="#tab_category_21">PPRTV</a></li>
+	
+		<li><a href="#tab_category_18">Other</a></li>
+	
+		<li><a href="#tab_category_10">ExpoDocs</a></li>
+	
+	</ul>
+
+{{ myVar|safe }}
+</div>
+{% endblock %}

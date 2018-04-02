@@ -99,6 +99,7 @@ INSTALLED_APPS = (
     'animal',
     'epi',
     'epimeta',
+    'extract',
     'invitro',
     'bmd',
     'summary',
