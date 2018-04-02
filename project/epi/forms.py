@@ -794,6 +794,9 @@ class ResultForm(forms.ModelForm):
 
         self.fields['comments'] = self.fields.pop('comments')  # move to end
 
+        self.fields['resulttags'].widget = selectable.AutoCompleteSelectMultipleWidget(
+            lookup_class=EffectTagLookup)
+
         if outcome:
             self.instance.outcome = outcome
         else:
@@ -853,7 +856,7 @@ class ResultForm(forms.ModelForm):
         for fld in list(self.fields.keys()):
             widget = self.fields[fld].widget
             if type(widget) != forms.CheckboxInput:
-                if fld in self.ADJUSTMENT_FIELDS:
+                if fld in self.ADJUSTMENT_FIELDS or fld == "resulttags":
                     widget.attrs['class'] = 'span10'
                 else:
                     widget.attrs['class'] = 'span12'
