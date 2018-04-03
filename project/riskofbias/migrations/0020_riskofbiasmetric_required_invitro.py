@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='riskofbiasmetric',
             name='required_invitro',
-            field=models.BooleanField(default=True, help_text='Is this metric required for in-vitro studies?', verbose_name='Required for in-vitro?'),
+            field=models.BooleanField(default=False, help_text='Is this metric required for in-vitro studies?', verbose_name='Required for in-vitro?'),
         ),
     ]
