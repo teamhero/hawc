@@ -39,3 +39,15 @@ class DataPivotUploadManager(BaseManager):
 
 class DataPivotQueryManager(BaseManager):
     assessment_relation = 'assessment'
+
+
+class EvidenceProfileManager(BaseManager):
+    assessment_relation = 'assessment'
+
+
+class EvidenceProfileStreamManager(BaseManager):
+    assessment_relation = 'assessment'
+
+
+class EvidenceProfileScenarioManager(BaseManager):
+    assessment_relation = 'assessment'

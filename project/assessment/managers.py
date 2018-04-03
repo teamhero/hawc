@@ -115,3 +115,8 @@ class BaseEndpointManager(BaseManager):
 
 class TimeSpentEditingManager(BaseManager):
     assessment_relation = 'assessment'
+
+
+class ConfidenceFactorManager(BaseManager):
+    def assessment_qs(self, assessment_id):
+        return self.all()
