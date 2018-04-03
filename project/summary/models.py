@@ -19,6 +19,7 @@ from animal.exports import EndpointGroupFlatDataPivot, EndpointFlatDataPivot
 from epi.exports import OutcomeDataPivot
 from epimeta.exports import MetaResultFlatDataPivot
 import invitro.exports as ivexports
+from myuser.models import HAWCUser
 
 from reversion import revisions as reversion
 from treebeard.mp_tree import MP_Node
@@ -691,6 +692,68 @@ class Prefilter(object):
     @staticmethod
     def setFiltersFromObj(filters, prefilters):
         filters.update(json.loads(prefilters))
+
+
+class EvidenceProfile(models.Model):
+    objects = managers.EvidenceProfileManager()
+
+    hawcUser = models.ForeignKey(HAWCUser)
+    assessment = models.ForeignKey(Assessment)
+
+    title = models.CharField(max_length=128, help_text="Enter the title of this evidence profile table (spaces and special-characters allowed).")
+    slug = models.SlugField(verbose_name="URL Name", help_text="The URL (web address) used to describe this object (no spaces or special-characters).")
+    settings = models.TextField(default="undefined", help_text="Paste content from a settings file from a different evidence profile, or keep set to \"undefined\".")
+    caption = models.TextField(default="")
+
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "evidence profiles"
+        ordering = ("title", )
+
+    def __str__(self):
+        return self.title
+
+class EvidenceProfileStream(models.Model):
+    objects = managers.EvidenceProfileStreamManager()
+
+    evidenceprofile = models.ForeignKey(EvidenceProfile, related_name='streams')
+
+    stream_title = models.CharField(max_length=128, help_text="Enter the title of this profile streaam (spaces and special-characters allowed).")
+    confidence_judgement = models.TextField(default="{}")
+    outcomes = models.TextField(default="[]")
+
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "profile streams"
+        ordering = ("stream_title", )
+
+    def __str__(self):
+        return self.stream_title
+
+
+class EvidenceProfileScenario(models.Model):
+    objects = managers.EvidenceProfileScenarioManager()
+
+    evidenceprofilestream = models.ForeignKey(EvidenceProfileStream, related_name='scenarios')
+
+    outcome = models.CharField(max_length=128, help_text="This must be one of the available \"outcome\" values listed in the parent envidence profile stream")
+    scenario_name = models.CharField(max_length=128, help_text="")
+
+    studies = models.TextField(default="{}")
+    confidencefactors_increase = models.TextField(default="[]")
+    confidencefactors_decrease = models.TextField(default="[]")
+    summary_of_findings = models.TextField(default="{}")
+
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "stream scenarios"
+        ordering = ("outcome", "scenario_name", )
 
 
 reversion.register(SummaryText)

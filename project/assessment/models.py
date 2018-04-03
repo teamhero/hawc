@@ -453,6 +453,26 @@ class TimeSpentEditing(models.Model):
             cache.delete(cache_name)
 
 
+class ConfidenceFactor(models.Model):
+    objects = managers.ConfidenceFactorManager()
+
+    name = models.CharField(max_length=45, help_text="Enter confidence factor name", unique=True)
+    description = models.TextField(blank=True)
+
+    increases_confidence = models.BooleanField(default=False, help_text="Check here if this factor INCREASES confidence in a study")
+    decreases_confidence = models.BooleanField(default=False, help_text="Check here if this factor DECREASES confidence in a study")
+
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "confidence factors"
+        ordering = ("name", )
+
+    def __str__(self):
+        return self.name
+
+
 reversion.register(Assessment)
 reversion.register(EffectTag)
 reversion.register(Species)
