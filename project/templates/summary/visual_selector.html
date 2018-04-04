@@ -26,6 +26,10 @@
             value="{% url 'summary:dp_new-prompt' assessment.id %}">
             Data pivot</option>
           <option
+            data-showcase="#evidenceProfile"
+            value="{% url 'summary:evidenceprofile-new' assessment.id %}">
+            Evidence profile table</option>
+          <option
             data-showcase="#visual0"
             value="{% url 'summary:visualization_create' assessment.id 0 %}">
             Bioassay endpoint aggregation</option>
@@ -52,6 +56,32 @@
   </div>
 
   <div style="display: none;">
+
+    <div id="dataPivot">
+      <h2>Data Pivot</h2>
+      <div class="row">
+        <img class="span10 offset1" src="{{STATIC_URL}}/img/summary/data_pivot.png">
+        <img class="span10 offset1" src="{{STATIC_URL}}/img/summary/data_pivot-barchart.png">
+      </div>
+      <p class="help-block">
+        Data from any data-stream in HAWC (bioassay, epidemiology, in-vitro) or
+        from a tab-delimited file can be used to generate custom forest-plot
+        style visualizations. Displayed text-fields and numbers to plot are
+        customizable; results can be sorted and filter, and conditional-formatting
+        can also be applied.
+      </p>
+    </div>
+
+    <div id="evidenceProfile">
+      <h2>Evidence Profile</h2>
+      <div class="row">
+        <img class="span10 offset1" src="{{STATIC_URL}}/img/summary/evidenceprofile.png">
+        <img class="span10 offset1" src="{{STATIC_URL}}/img/summary/evidenceprofile-barchart.png">
+      </div>
+      <p class="help-block">
+        Studies within a HAWC assessment can be organized into a table detailing what instills confidence (or lack thereof) in their conclusions.
+      </p>
+    </div>
 
     <div id="visual0">
       <h2>Bioassay endpoint aggregation</h2>
@@ -82,21 +112,6 @@
         An endpoint can only plotted if it has dose-response data extracted, and
         at least <strong>3-dose groups</strong> (an interpolation is created
         between non-control dose-groups, and 2+ are required to create a line).
-      </p>
-    </div>
-
-    <div id="dataPivot">
-      <h2>Data Pivot</h2>
-      <div class="row">
-        <img class="span10 offset1" src="{{STATIC_URL}}/img/summary/data_pivot.png">
-        <img class="span10 offset1" src="{{STATIC_URL}}/img/summary/data_pivot-barchart.png">
-      </div>
-      <p class="help-block">
-        Data from any data-stream in HAWC (bioassay, epidemiology, in-vitro) or
-        from a tab-delimited file can be used to generate custom forest-plot
-        style visualizations. Displayed text-fields and numbers to plot are
-        customizable; results can be sorted and filter, and conditional-formatting
-        can also be applied.
       </p>
     </div>
 

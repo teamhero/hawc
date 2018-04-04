@@ -712,6 +712,10 @@ class EvidenceProfile(models.Model):
     def __str__(self):
         return self.title
 
+    @staticmethod
+    def get_list_url(assessment_id):
+        return reverse('summary:visualization_list', args=[str(assessment_id)])
+
 class EvidenceProfileStream(models.Model):
     objects = managers.EvidenceProfileStreamManager()
 

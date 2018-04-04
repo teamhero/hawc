@@ -94,4 +94,6 @@ urlpatterns = [
     url(r'^data-pivot/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/delete/$',
         views.DataPivotDelete.as_view(),
         name='dp_delete'),
+
+    url(r'evidenceprofile/assessment/(?P<pk>\d+)/new/', views.EvidenceProfileNew.as_view(), name='evidenceprofile-new'),
 ]
