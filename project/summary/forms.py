@@ -183,6 +183,8 @@ class PrefilterMixin(object):
 
         if type(self.instance) is models.Visual:
             evidence_type = models.BIOASSAY
+        elif (type(self.instance) is models.EvideceProfile):
+            print("This is an evidence profile")
         else:
             evidence_type = self.initial.get('evidence_type') or \
                 self.instance.evidence_type
@@ -709,3 +711,82 @@ class SmartTagForm(forms.Form):
             if hasattr(widget, 'update_query_parameters'):
                 widget.update_query_parameters({'related': assessment_id})
                 widget.attrs['class'] += " smartTagSearch"
+
+
+class EvidenceProfile(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        assessment = kwargs.pop('parent', None)
+        super().__init__(*args, **kwargs)
+        if assessment:
+            self.instance.assessment = assessment
+        self.helper = self.setHelper()
+        self.fields['settings'].widget.attrs['rows'] = 2
+
+    def setHelper(self):
+
+        for fld in list(self.fields.keys()):
+            widget = self.fields[fld].widget
+            if type(widget) != forms.CheckboxInput:
+                widget.attrs['class'] = 'span12'
+
+        if self.instance.id:
+            inputs = {
+                "legend_text": "Update {}".format(self.instance),
+                "help_text":   "Update an existing evidence profile.",
+                "cancel_url": self.instance.get_absolute_url()
+            }
+        else:
+            inputs = {
+                "legend_text": "Create new evidence profile",
+                "help_text":   """
+                    Create a custom-visualization for this assessment.
+                    Generally, you will select a subset of available data, then
+                    customize the visualization the next-page.
+                """,
+                "cancel_url": self.instance.get_list_url(self.instance.assessment.id)
+            }
+
+        helper = BaseFormHelper(self, **inputs)
+        helper.form_class = None
+        helper.form_id = "evidenceProfileForm"
+        return helper
+
+    def clean_slug(self):
+        return clean_slug(self)
+
+
+class EvidenceProfileForm(PrefilterMixin, EvidenceProfile):
+    prefilter_include = ('study', 'effect_tags')
+
+    class Meta:
+        model = models.EvidenceProfile
+        fields = ('title', 'slug', 'settings', 'caption', )
+        """
+        fields = ('evidence_type', 'export_style', 'title', 'preferred_units',
+                  'slug', 'settings', 'caption',
+                  'published_only', 'prefilters')
+        """
+
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["evidence_type"].choices = (
+            (models.BIOASSAY, 'Animal Bioassay'),
+            (models.EPI, 'Epidemiology'),
+            (models.EPI_META, 'Epidemiology meta-analysis/pooled analysis'),
+            (models.IN_VITRO, 'In vitro'))
+        self.fields['preferred_units'].required = False
+        self.helper = self.setHelper()
+
+    def save(self, commit=True):
+        self.instance.preferred_units = self.cleaned_data.get('preferred_units', [])
+        return super().save(commit=commit)
+
+    def clean_export_style(self):
+        evidence_type = self.cleaned_data['evidence_type']
+        export_style = self.cleaned_data['export_style']
+        if evidence_type not in (models.IN_VITRO, models.BIOASSAY) and export_style != self.instance.EXPORT_GROUP:
+            raise forms.ValidationError("Outcome/Result level export not implemented for this data-type.")
+        return export_style
+    """

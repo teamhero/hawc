@@ -365,3 +365,32 @@ class DataPivotDelete(GetDataPivotObjectMixin, BaseDelete):
 
     def get_success_url(self):
         return reverse_lazy('summary:visualization_list', kwargs={'pk': self.assessment.pk})
+
+
+class EvidenceProfileNew(BaseCreate):
+    # abstract view; extended below for actual use
+    parent_model = Assessment
+    parent_template_name = 'assessment'
+    success_message = 'Evidence Profile created.'
+    template_name = 'summary/evidenceprofile_form.html'
+
+    model = models.EvidenceProfile
+    form_class = forms.EvidenceProfileForm
+
+    def get_success_url(self):
+        super().get_success_url()
+        return self.object.get_visualization_update_url()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.request.GET.get('reset_row_overrides'):
+            kwargs['initial']['settings'] = \
+                models.EvidenceProfile.reset_row_overrides(kwargs['initial']['settings'])
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['file_loader'] = False
+        context['smart_tag_form'] = forms.SmartTagForm(assessment_id=self.assessment.id)
+        return context
+
