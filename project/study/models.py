@@ -27,14 +27,19 @@ class Study(Reference):
     objects = managers.StudyManager()
 
     COI_REPORTED_CHOICES = (
+        (4, '---'),
         (0, 'Authors report they have no COI'),
         (1, 'Authors disclosed COI'),
         (2, 'Unknown'),
         (3, 'Not reported'))
 
     TEXT_CLEANUP_FIELDS = (
+        'short_citation',
+        'full_citation',
         'coi_details',
         'funding_source',
+        'ask_author',
+        'summary',
     )
 
     STUDY_TYPE_FIELDS = {
@@ -66,7 +71,7 @@ class Study(Reference):
         help_text="Complete study citation, in desired format.")
     coi_reported = models.PositiveSmallIntegerField(
         choices=COI_REPORTED_CHOICES,
-        default=0,
+        default=4,
         verbose_name="COI reported",
         help_text='Was a conflict of interest reported by the study authors?')
     coi_details = models.TextField(

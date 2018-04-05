@@ -57,6 +57,10 @@ class Experiment(models.Model):
         'cas',
         'chemical_source',
         'vehicle',
+        'description',
+        'diet',
+        'litter_effect_notes',
+        'guideline_compliance',
     )
 
     study = models.ForeignKey(
@@ -247,6 +251,7 @@ class AnimalGroup(models.Model):
         'animal_source',
         'lifestage_exposed',
         'lifestage_assessed',
+        'comments',
     )
 
     experiment = models.ForeignKey(
@@ -642,6 +647,11 @@ class Endpoint(BaseEndpoint):
         'data_location',
         'response_units',
         'statistical_test',
+        'diagnostic',
+        'data_location',
+        'trend_value',
+        'results_notes',
+        'endpoint_notes',
     )
 
     DATA_TYPE_CHOICES = (
