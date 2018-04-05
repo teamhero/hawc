@@ -239,6 +239,7 @@
     {
       "name": "Overall Study Confidence Domain",
       "description": "",
+      "is_overall_confidence": true,
       "metrics": [
         {
           "name": "Overall confidence domain (animal)",
