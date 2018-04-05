@@ -408,10 +408,10 @@ class Endpoint extends Observee {
                 self.data.groups[endpoint_group_index].significance_level));
         }
         if (self.data.LOEL == endpoint_group_index) {
-            footnotes.push('LOEL (Lowest Observed Effect Level)');
+            footnotes.push('LOAEL (Lowest Observed Adverse Effect Level)');
         }
         if (self.data.NOEL == endpoint_group_index) {
-            footnotes.push('NOEL (No Observed Effect Level)');
+            footnotes.push('NOAEL (No Observed Adverse Effect Level)');
         }
         if (self.data.FEL == endpoint_group_index) {
             footnotes.push('FEL (Frank Effect Level)');

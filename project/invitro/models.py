@@ -417,13 +417,13 @@ class IVEndpoint(BaseEndpoint):
         default=0,
         choices=OBSERVATION_TIME_UNITS)
     NOEL = models.SmallIntegerField(
-        verbose_name="NOEL",
+        verbose_name="NOAEL",
         default=-999,
-        help_text='No observed effect level')
+        help_text='No observed adverse effect level')
     LOEL = models.SmallIntegerField(
-        verbose_name="LOEL",
+        verbose_name="LOAEL",
         default=-999,
-        help_text='Lowest observed effect level')
+        help_text='Lowest observed adverse effect level')
     monotonicity = models.PositiveSmallIntegerField(
         default=8,
         choices=MONOTONICITY_CHOICES)

@@ -115,7 +115,7 @@ class EndpointAggregation extends BaseVisual {
 
         tbl.addHeaderRow([
             'Study', 'Experiment', 'Animal Group', 'Endpoint',
-            'NOEL', 'LOEL', 'BMD', 'BMDL']);
+            'NOAEL', 'LOAEL', 'BMD', 'BMDL']);
 
         this.endpoints.forEach(function(e){
             tbl.addRow([
