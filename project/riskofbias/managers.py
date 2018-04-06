@@ -24,6 +24,10 @@ class RiskOfBiasMetricManager(BaseManager):
         return self.get_qs(assessment_id).values('id', 'name')
 
 
+class RiskOfBiasMetricAnswersManager(BaseManager):
+    assessment_relation = 'metric__domain__assessment'
+
+
 class RiskOfBiasManager(BaseManager):
     assessment_relation = 'study__assessment'
 
