@@ -230,7 +230,7 @@ class RoBMetricAnswersCreate(BaseCreate):
     model = models.RiskOfBiasMetricAnswers
     form_class = forms.RoBMetricAnswersForm
     success_message  = 'Study Evaluation metric answer created.'
-
+        
     def get_success_url(self):
         return reverse_lazy('riskofbias:arob_update',
                             kwargs={'pk': self.assessment.pk})

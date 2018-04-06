@@ -87,15 +87,6 @@ class AssessmentMetricScoreViewset(AssessmentViewset):
     def get_queryset(self):
         return self.model.objects.all()
 
-class AssessmentMetricAnswersRecordedViewset(viewsets.ReadOnlyModelViewSet):
-    model = models.RiskOfBiasMetric
-    serializer_class = serializers.AssessmentRiskOfBiasAnswersRecordedSerializer
-    pagination_class = DisabledPagination
-    assessment_filter_args = "metric__domain"
-
-    def get_queryset(self):
-        return self.model.objects.all()
-
 
 class AssessmentScoreViewset(TeamMemberOrHigherMixin, ListUpdateModelMixin, AssessmentEditViewset):
     model = models.RiskOfBiasScore

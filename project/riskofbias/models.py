@@ -53,8 +53,8 @@ class RiskOfBiasDomain(models.Model):
     @classmethod
     def build_default(cls, assessment):
         """
-        Construct default Study Evaluation domains/metrics for an assessment.
-        The Study Evaluation domains and metrics are those defined by NTP/OHAT
+        Construct default Study Evaluation domains/metrics/answers for an assessment.
+        The Study Evaluation domains, metrics, and answers are those defined by NTP/OHAT
         protocols for Study Evaluation
         """
         fn = os.path.join(
@@ -72,11 +72,16 @@ class RiskOfBiasDomain(models.Model):
                 name=domain['name'],
                 description=domain['description'])
             RiskOfBiasMetric.build_metrics_for_one_domain(d, domain['metrics'])
+            for metric in objects['metrics']:
+                m = RiskOfBiasMetric.objects.get(metric.pk)
+                RiskOfBiasMetricAnswers.build_answers_for_one_metric(m, metric['answers'])
+
+        
 
     @classmethod
     def copy_across_assessment(cls, cw, studies, assessment):
-        # Copy domain and metrics across studies as well. If a domain and
-        # metric have identical names in the new assessment as the old,
+        # Copy domain,metrics, and answers across studies as well. If a domain,
+        # metric, and answer(s) have identical names in the new assessment as the old,
         # then don't create new metrics and domains. If the names are not
         # identical, then create a new one. Save metric old:new IDs in a
         # crosswalk which is returned.
@@ -90,13 +95,25 @@ class RiskOfBiasDomain(models.Model):
         source_assessment = source_assessment[0]
         cw[Assessment.COPY_NAME][source_assessment.id] = assessment.id
 
+        def get_answer_key(answer):
+            return '{}: {}'.format(answer.metric.name, answer.choice)
+
         def get_key(metric):
             return '{}: {}'.format(metric.domain.name, metric.name)
+
+        # create a map of metric + answers for new assessment
+        answers = RiskOfBiasMetricAnswers.objects\
+            .filter(metric__domain__assessment=assessment)
+        answer_mapping = {get_answer_key(answer): answer.id for answer in answers}
 
         # create a map of domain + metric for new assessment
         metrics = RiskOfBiasMetric.objects\
             .filter(domain__assessment=assessment)
         metric_mapping = {get_key(metric): metric.id for metric in metrics}
+
+        # if any duplicate exist; create new
+        if len(answer_mapping) != answers.count():
+            answer_mapping = {}
 
         # if any duplicates exist; create new
         if len(metric_mapping) != metrics.count():
@@ -187,7 +204,6 @@ class RiskOfBiasMetric(models.Model):
 
     def get_assessment(self):
         return self.domain.get_assessment()
-
     @classmethod
     def build_metrics_for_one_domain(cls, domain, metrics):
         """
@@ -261,6 +277,15 @@ class RiskOfBias(models.Model):
         else:
             return robs
 
+    """def update_score_answers(self, assessment):
+        answers = RiskOfBiasMetricAnswers.objects.all()\
+            .prefetch_related('scores')
+
+        for answer in answers:
+            if answer is None:
+                logging.info('Creating score answer(s): {}->{}'.format(self.study, answer))
+                RiskOfBiasScore.objects.create(answer=answer)"""
+
     def update_scores(self, assessment):
         """Sync RiskOfBiasScore for this study based on assessment requirements.
 
@@ -323,16 +348,21 @@ class RiskOfBias(models.Model):
             .rob_domains.all()\
             .delete()
 
-        # copy domains and metrics to assessment
+        # copy domains,metrics, and answers to assessment
         for domain in copy_from_assessment.rob_domains.all():
             metrics = list(domain.metrics.all())  # force evaluation
             domain.id = None
             domain.assessment = copy_to_assessment
             domain.save()
             for metric in metrics:
+                answers = list(metric.answers.all())
                 metric.id = None
                 metric.domain = domain
                 metric.save()
+                for answer in answers:
+                    answer.id = None
+                    answer.metric = metric
+                    answer.save()
 
     @classmethod
     def delete_caches(cls, ids):
@@ -381,62 +411,11 @@ class RiskOfBias(models.Model):
                 score.id = None
                 score.riskofbias_id = rob.id
                 score.metric_id = cw[RiskOfBiasMetric.COPY_NAME][score.metric_id]
+                score.answers_id = cw[RiskOfBiasMetricAnswers.COPY_NAME][score.answers_id]
                 score.save()
 
         return cw
 
-
-class RiskOfBiasMetricAnswers(models.Model):
-    metric = models.ForeignKey(
-        RiskOfBiasMetric,
-        related_name='answers',
-        null=True,
-        blank=True)
-    answer_choice = models.TextField(
-        default = 'Not reported',
-        blank=False
-    )
-    answer_symbol = models.TextField(
-        default = 'NR',
-        blank=False
-    )
-    answer_score = models.PositiveSmallIntegerField(
-        default = 10
-    )
-    answer_shade = models.CharField(
-        max_length=7,
-        default = '#FFCC00'
-    )
-    answer_order = models.IntegerField(
-        default = 1
-    )
-    class Meta:
-        verbose_name_plural = "Study Evaluation metric answers"
-        ordering = ('metric', 'answer_order')
-        unique_together = (('metric', 'answer_choice', 'answer_symbol', 'answer_score', 'answer_order'),)
-
-    def get_assessment(self):
-        return self.metric.domain.get_assessment()
-
-class RiskOfBiasAnswersRecorded(models.Model):
-    riskofbias = models.ForeignKey(
-        RiskOfBias,
-        related_name='answers_recorded'
-    )
-    answers = models.ForeignKey(
-        RiskOfBiasMetricAnswers,
-        related_name='answers_recorded'
-    )
-    recorded_score = models.PositiveSmallIntegerField(
-        default = 10
-    )
-    recorded_notes = models.TextField(
-        blank=True
-    )
-    created = models.DateTimeField(
-        auto_now_add=True)
-    last_updated = models.DateTimeField(
-        auto_now=True)
 
 class RiskOfBiasScore(models.Model):
     objects = managers.RiskOfBiasScoreManager()
@@ -488,6 +467,9 @@ class RiskOfBiasScore(models.Model):
     def get_assessment(self):
         return self.metric.get_assessment()
 
+    def get_metric(self):
+        return self.metric
+
     @staticmethod
     def flat_complete_header_row():
         return (
@@ -532,6 +514,93 @@ class RiskOfBiasScore(models.Model):
         rob_ids, study_ids = list(zip(*id_lists))
         RiskOfBias.delete_caches(rob_ids)
         Study.delete_caches(study_ids)
+
+class RiskOfBiasMetricAnswers(models.Model):
+    objects = managers.RiskOfBiasMetricAnswersManager()
+    
+    score = models.ForeignKey(
+        RiskOfBiasScore,
+        related_name='answers',
+        null=True,
+        blank=True)
+    metric = models.ForeignKey(
+        RiskOfBiasMetric,
+        related_name='answers',
+        null=True,
+        blank=True)
+    choice = models.TextField(
+        default = 'Not reported',
+        blank=False
+    )
+    symbol = models.TextField(
+        default = 'NR',
+        blank=False
+    )
+    answer_score = models.PositiveSmallIntegerField(
+        default = 10
+    )
+    shade = models.CharField(
+        max_length=7,
+        default = '#FFCC00'
+    )
+    order = models.IntegerField(
+        default = 1
+    )
+
+    COPY_NAME = 'answers'
+
+    class Meta:
+        verbose_name_plural = "Study Evaluation metric answers"
+        ordering = ('metric', 'order')
+        unique_together = (('score', 'metric', 'choice', 'symbol', 'answer_score', 'order'),)
+
+    def __str__(self):
+        return self.choice
+
+    def get_assessment(self):
+        return self.metric.domain.get_assessment()
+
+    def get_score(self):
+        return self.score
+
+    def get_metric(self):
+        return self.metric
+
+    def get_choice(self):
+        return self.choice
+
+    def get_symbol(self):
+        return self.choice
+
+    def get_answer_score(self):
+        return self.answer_score
+
+    def get_shade(self):
+        return self.shade
+
+    def get_order(self):
+        return self.order
+
+    def save(self, force_insert=False, force_update=False):
+        if not self.score:
+            scores = RiskOfBiasScore.objects.filter(metric=self.metric)
+            for s in scores:
+                if s.metric == self.metric:
+                    self.score = RiskOfBiasScore.objects.get(id=s.pk)
+        super(RiskOfBiasMetricAnswers, self).save(force_insert, force_update)
+
+    @classmethod
+    def build_answers_for_one_metric(cls, metric, answers):
+        """
+        Build multiple Study Evaluation answers given a metric django object and a
+        list of python dictionaries for each answer.
+        """
+        objs = []
+        for answer in answers:
+            obj = RiskOfBiasMetricAnswers(**answer)
+            obj.metric =  metric
+            objs.append(obj)
+        RiskOfBiasMetricAnswers.objects.bulk_create(objs)
 
 
 class RiskOfBiasAssessment(models.Model):
