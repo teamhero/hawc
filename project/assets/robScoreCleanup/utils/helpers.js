@@ -12,7 +12,7 @@ var helpers = Object.assign({}, shared, {
         },
         2: {
             shade: '#FFCC00',
-            text: 'Poor',
+            text: 'Deficient',
         },
         3: {
             shade: '#6FFF00',

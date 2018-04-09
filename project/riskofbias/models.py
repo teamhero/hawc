@@ -391,7 +391,7 @@ class RiskOfBiasScore(models.Model):
     RISK_OF_BIAS_SCORE_CHOICES = (
         (10, 'Not reported'),
         (1, 'Critically deficient'),
-        (2, 'Poor'),
+        (2, 'Deficient'),
         (3, 'Adequate'),
         (4, 'Good'),
         (0, 'Not applicable'))
