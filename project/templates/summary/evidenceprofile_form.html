@@ -1,0 +1,53 @@
+{% extends 'portal.html' %}
+
+{% load crispy_forms_tags %}
+{% load add_class %}
+{% load selectable_tags %}
+
+{% block title %}
+  {{assessment}} | {{crud}} Evidence Profile | HAWC
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li><a href="{{assessment.get_absolute_url}}">{{assessment}}</a><span class="divider">/</span></li>
+  <li><a href="{% url 'summary:visualization_list' assessment.id %}">Visualizations</a><span class="divider">/</span></li>
+  {% if crud == "Update" %}
+    <li><a href="{{object.get_absolute_url}}">{{object}}</a><span class="divider">/</span></li>
+  {% endif %}
+  <li class="active">{{crud}}<span class="divider">/</span></li>
+{% endblock %}
+
+
+{% block content %}
+  {% crispy form %}
+  {% include "summary/_smartTagEditModal.html" with form=smart_tag_form only %}
+{% endblock %}
+
+{% block extrajs %}
+  {{ smart_tag_form.media }}
+
+  <script type="text/javascript">
+    // Run the assessmentStartup() method for this app
+    window.app.assessmentStartup(
+      function(assessment) {
+        {% if crud == "Create" %}
+          // This object is being created, build the 'slug' field based on the 'title' field by updating the slug every
+          // time the title is changed (50 character maximum for the slug)
+          $('#id_title').on(
+            'keyup'
+            ,function() {
+              $('#id_slug').val(URLify($(this).val(), 50));
+            }
+          );
+        {% endif %}
+
+        window.app.smartTagsStartup(
+          function(smartTags) {
+            // Create a "smart tag" textarea editor for the 'caption' field
+            new smartTags.SmartTagEditor($('#id_caption'), {submitEl: '#evidenceProfileForm'});
+          }
+        );
+      }
+    );
+  </script>
+{% endblock extrajs %}

@@ -22,7 +22,7 @@
       <div>
         <select class="span10 textinput textInput" id="vis_selector" maxlength="128" name="guideline_compliance" type="text">
           <option data-showcase="#dataPivot" value="{% url 'summary:dp_new-prompt' assessment.id %}">Data pivot</option>
-          <option data-showcase="#evidenceProfile" value="{% url 'summary:evidenceprofile-new' assessment.id %}">Evidence profile table</option>
+          <option data-showcase="#evidenceProfile" value="{% url 'summary:evidenceprofile_new' assessment.id %}">Evidence profile table</option>
           <option data-showcase="#visual0" value="{% url 'summary:visualization_create' assessment.id 0 %}">Bioassay endpoint aggregation</option>
           <option data-showcase="#visual1" value="{% url 'summary:visualization_create' assessment.id 1 %}">Bioassay endpoint crossview</option>
           <option data-showcase="#visual2" value="{% url 'summary:visualization_create' assessment.id 2 %}">Study Evaluation heatmap</option>

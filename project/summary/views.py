@@ -367,30 +367,83 @@ class DataPivotDelete(GetDataPivotObjectMixin, BaseDelete):
         return reverse_lazy('summary:visualization_list', kwargs={'pk': self.assessment.pk})
 
 
+# This class is a "mix-in" superclass for use within Evidence Profile-related views that attempts to retrieve the desired object from the
+# database
+class GetEvidenceProfileObjectMixin(object):
+    # This method is the one that attempts to get the object from the database
+    def get_object(self):
+        # Get the 'slug' and the parent Assessent's primary key value from the URL
+        slug = self.kwargs.get('slug')
+        assessment = self.kwargs.get('pk')
+
+        # Attempt to get the objectusing the assessment and slug derived from the URL
+        obj = get_object_or_404(models.EvidenceProfile, assessment=assessment, slug=slug)
+
+        # Return the object retrieved
+        return super().get_object(object=obj)
+
+
+# This class is used for creating a new Evidence Profile object
 class EvidenceProfileNew(BaseCreate):
-    # abstract view; extended below for actual use
+    # Set some basic attributes for this view
     parent_model = Assessment
     parent_template_name = 'assessment'
     success_message = 'Evidence Profile created.'
     template_name = 'summary/evidenceprofile_form.html'
 
+    # Define the type of object being created and the form object that will be used
     model = models.EvidenceProfile
     form_class = forms.EvidenceProfileForm
 
+    # This method returns the URL that the requestor will be re-directed to after this request is handled
     def get_success_url(self):
+        """
+        # Not sure why this is called, other than the fact that it is called in other get_success_url() functions I have seen; the resulting
+        # object returned is not used or even retained; it is a good candidate for removal
         super().get_success_url()
+        """
+
+        # Get the value for this Evidence Profile's visualization URL and return it
         return self.object.get_visualization_update_url()
 
+    # This method gets the keyword arguments (kwargs) from a form
     def get_form_kwargs(self):
+        # Call the superclass's get_form_kwargs() to get the basic set of keyword arguments
         kwargs = super().get_form_kwargs()
+
         if self.request.GET.get('reset_row_overrides'):
-            kwargs['initial']['settings'] = \
-                models.EvidenceProfile.reset_row_overrides(kwargs['initial']['settings'])
+            # This request has an HTTP GET parameter named 'reset_row_overrides', set the kwargs['initial']['settings'] (making sure it is
+            # a JSON object with the desired format)
+            kwargs['initial']['settings'] = models.EvidenceProfile.reset_row_overrides(kwargs['initial']['settings'])
+
         return kwargs
 
+    # This function sets the basic "context data" for this view
     def get_context_data(self, **kwargs):
+        # Call the superclass's get_cotext_data() method and set the resulting object's "file_loader" attribute to FALSE
         context = super().get_context_data(**kwargs)
         context['file_loader'] = False
+
+        # Set a "smart_tag_form" attribute for this view
         context['smart_tag_form'] = forms.SmartTagForm(assessment_id=self.assessment.id)
+
         return context
+
+    # This method handles a valid submitted form
+    def form_valid(self, form):
+        # Set the submitted form's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
+        form.instance.hawcuser = self.request.user
+        return super().form_valid(form)
+
+
+class EvidenceProfileUpdateSettings(GetEvidenceProfileObjectMixin, BaseUpdate):
+    success_message = 'Evidence Profile updated.'
+    model = models.EvidenceProfile
+    form_class = forms.EvidenceProfileForm
+    template_name = 'summary/evidenceprofile_form.html'
+
+
+class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
+    model = models.EvidenceProfile
+    template_name = "summary/evidenceprofile_detail.html"
 

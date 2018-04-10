@@ -24,8 +24,7 @@ from myuser.models import HAWCUser
 from reversion import revisions as reversion
 from treebeard.mp_tree import MP_Node
 
-from utils.helper import HAWCtoDateString, HAWCDjangoJSONEncoder, \
-    SerializerHelper, tryParseInt
+from utils.helper import HAWCtoDateString, HAWCDjangoJSONEncoder, SerializerHelper, tryParseInt
 
 from . import managers
 
@@ -694,73 +693,166 @@ class Prefilter(object):
         filters.update(json.loads(prefilters))
 
 
+# This object is the top-level object for an Evidence Profile
 class EvidenceProfile(models.Model):
+    # Set the manager for this object
     objects = managers.EvidenceProfileManager()
 
-    hawcUser = models.ForeignKey(HAWCUser)
+    # Declare the necessary foriegn key attributes for this object (relating back to the HAWC User who created this EvidenceProfile
+    # and its parent Assessment)
+    hawcuser = models.ForeignKey(HAWCUser)
     assessment = models.ForeignKey(Assessment)
 
+    # Declare the basic attributes for this object
     title = models.CharField(max_length=128, help_text="Enter the title of this evidence profile table (spaces and special-characters allowed).")
     slug = models.SlugField(verbose_name="URL Name", help_text="The URL (web address) used to describe this object (no spaces or special-characters).")
     settings = models.TextField(default="undefined", help_text="Paste content from a settings file from a different evidence profile, or keep set to \"undefined\".")
     caption = models.TextField(default="")
 
+    # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
+    # This method sets some basic commonly-used attributes for this object
     class Meta:
         verbose_name_plural = "evidence profiles"
         ordering = ("title", )
 
+    # This method returns the "stringified" version of this object (its title)
     def __str__(self):
         return self.title
 
+    # This method returns the URL for the page that lists the visualizations for this Assessment
     @staticmethod
     def get_list_url(assessment_id):
         return reverse('summary:visualization_list', args=[str(assessment_id)])
 
+    # This method processes the incoming string argument before returning the modified version
+    @staticmethod
+    def reset_row_overrides(settings):
+        # First, take the incoming argument and attempt to convert it into a JSON object (assume it is a JSON-formatted string)
+        settings_as_json = json.loads(settings)
+
+        # Now add an attribute called 'row_overrides' to the object
+        settings_as_json['row_overrides'] = []
+
+        # Re-convert the object to a JSON-formatted string and return it
+        return json.dumps(settings_as_json)
+
+    # This method returns the URL for this EvidenceProfile's detail page
+    def get_absolute_url(self):
+        return reverse('summary:evidenceprofile_detail', kwargs={'pk': self.assessment_id, 'slug': self.slug})
+
+    # This method returns the "update" URL for this EvidenceProfile
+    def get_visualization_update_url(self):
+        return reverse('summary:evidenceprofile_update', kwargs={'pk': self.assessment_id, 'slug': self.slug})
+
+    # This method returns the object's parent Assessment
+    def get_assessment(self):
+        return self.assessment
+
+
+# This object is the second-level object for an EvidenceProfile object (multiple EvidenceProfileStream objects
+# within an EvidenceProfile)
 class EvidenceProfileStream(models.Model):
+    # Set the manager for this object
     objects = managers.EvidenceProfileStreamManager()
 
+    # Declare the necessary foriegn key attributes for this object (relating back to the HAWC User who created this
+    # EvidenceProfileStream and its parent EvidenceProfile)
+    hawcuser = models.ForeignKey(HAWCUser)
     evidenceprofile = models.ForeignKey(EvidenceProfile, related_name='streams')
 
+    # Declare the basic attributes for this object
+    stream_type = models.PositiveSmallIntegerField(choices=STUDY_TYPE_CHOICES, default=BIOASSAY)
     stream_title = models.CharField(max_length=128, help_text="Enter the title of this profile streaam (spaces and special-characters allowed).")
     confidence_judgement = models.TextField(default="{}")
     outcomes = models.TextField(default="[]")
 
+    # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
+    # This method sets some basic commonly-used attributes for this object
     class Meta:
         verbose_name_plural = "profile streams"
         ordering = ("stream_title", )
 
+    # This method returns the "stringified" version of this object (its title)
     def __str__(self):
         return self.stream_title
 
+    # This method returns a linkg to the parent EvidenceProfile's details page
+    def get_absolute_url(self):
+        return reverse('summary:evidenceprofile_detail', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 
+    # This method returns the "update" URL for this EvidenceProfileStream's parent EvidenceProfile
+    def get_visualization_update_url(self):
+        return reverse('summary:evidenceprofile_update', kwargs={'pk': self.assessment_id, 'slug': self.slug})
+
+    # This method returns the object's parent EvidenceProfile
+    def get_evidenceprofile(self):
+        return self.evidenceprofile
+
+    # This method returns the object's grand-parent Assessment
+    def get_assessment(self):
+        return self.evidenceprofile.assessment
+
+
+# This object is the second-level object for an EvidenceProfile object (multiple EvidenceProfileStream objects
+# within an EvidenceProfile)
 class EvidenceProfileScenario(models.Model):
+    # Set the manager for this object
     objects = managers.EvidenceProfileScenarioManager()
 
+    # Declare the necessary foriegn key attributes for this object (relating back to the HAWC User who created this
+    # EvidenceProfileScenario and the parent EvidenceProfileStream)
+    hawcuser = models.ForeignKey(HAWCUser)
     evidenceprofilestream = models.ForeignKey(EvidenceProfileStream, related_name='scenarios')
 
+    # Declare the basic attributes for this object
     outcome = models.CharField(max_length=128, help_text="This must be one of the available \"outcome\" values listed in the parent envidence profile stream")
     scenario_name = models.CharField(max_length=128, help_text="")
-
     studies = models.TextField(default="{}")
     confidencefactors_increase = models.TextField(default="[]")
     confidencefactors_decrease = models.TextField(default="[]")
     summary_of_findings = models.TextField(default="{}")
 
+    # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
 
+    # This method sets some basic commonly-used attributes for this object
     class Meta:
         verbose_name_plural = "stream scenarios"
         ordering = ("outcome", "scenario_name", )
+
+    # This method returns the "stringified" version of this object (its name)
+    def __str__(self):
+        return self.scenario_name
+
+    # This method returns a linkg to the grand-parent EvidenceProfile's details page
+    def get_absolute_url(self):
+        return reverse('summary:evidenceprofile_detail', kwargs={'pk': self.assessment_id, 'slug': self.slug})
+
+    # This method returns the "update" URL for this EvidenceProfileScenario's grand-parent EvidenceProfile
+    def get_visualization_update_url(self):
+        return reverse('summary:evidenceprofile_update', kwargs={'pk': self.assessment_id, 'slug': self.slug})
+
+    def get_evidenceprofilestream(self):
+        return self.evidenceprofilestream
+
+    # This method returns the object's grand-parent EvidenceProfile
+    def get_evidenceprofile(self):
+        return self.evidencrprofilestream.evidenceprofile
+
+    # This method returns the object's great-grand-parent Assessment
+    def get_assessment(self):
+        return self.evidenceprofilestream.evidenceprofile.assessment
 
 
 reversion.register(SummaryText)
 reversion.register(DataPivotUpload)
 reversion.register(DataPivotQuery)
+reversion.register(EvidenceProfile)
 reversion.register(Visual)
