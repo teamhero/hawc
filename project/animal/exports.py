@@ -139,15 +139,12 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             e['animal_group']['strain']
         )
 
-    @staticmethod
-    def _get_bmd_values(bmd, preferred_units):
-        # only return BMD values if they're in the preferred units
-        if bmd and bmd['dose_units'] in preferred_units:
-            return [
-                bmd['output']['BMD'],
-                bmd['output']['BMDL']
-            ]
-        return [None, None]
+    @classmethod
+    def _get_tags(cls, e):
+        effs = [tag['name'] for tag in e['effects']]
+        if len(effs) > 0:
+            return '|{0}|'.format('|'.join(effs))
+        return ''
 
     def _get_header_row(self):
         # move qs.distinct() call here so we can make qs annotations.
@@ -197,8 +194,6 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'LOAEL',
             'FEL',
             'high_dose',
-            'BMD',
-            'BMDL',
 
             'key',
             'dose index',
@@ -284,9 +279,6 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
                 ])
             else:
                 row.extend([None] * 5)
-            
-            # bmd/bmdl information
-            row.extend(self._get_bmd_values(ser['bmd'], preferred_units))
 
             # endpoint-group information
             for i, eg in enumerate(ser['groups']):
@@ -403,7 +395,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
                 significance_list.append('No')
 
         return significance_list
-    
+
     @staticmethod
     def _get_bmd_values(bmd, preferred_units):
         # only return BMD values if they're in the preferred units
@@ -479,6 +471,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
 
             # bmd/bmdl information
             row.extend(self._get_bmd_values(ser['bmd'], preferred_units))
+
             dose_list = [self._get_dose(doses, i) for i in range(len(doses))]
             sigs = self._get_significance_and_direction(ser['groups'])
 
