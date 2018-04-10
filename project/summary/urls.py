@@ -95,5 +95,7 @@ urlpatterns = [
         views.DataPivotDelete.as_view(),
         name='dp_delete'),
 
-    url(r'evidenceprofile/assessment/(?P<pk>\d+)/new/', views.EvidenceProfileNew.as_view(), name='evidenceprofile-new'),
+    url(r'evidenceprofile/assessment/(?P<pk>\d+)/new/', views.EvidenceProfileNew.as_view(), name='evidenceprofile_new'),
+    url(r'^evidenceprofile/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/$', views.EvidenceProfileDetail.as_view(), name='evidenceprofile_detail'),
+    url(r'^evidenceprofile/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/update/$', views.EvidenceProfileUpdateSettings.as_view(), name='evidenceprofile_update'),
 ]
