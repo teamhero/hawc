@@ -21,7 +21,6 @@ from litter_getter import ris, pubmed
 
 from . import constants, managers, tasks
 
-
 class TooManyPubMedResults(Exception):
     """
     Raised when returned Query is too large
@@ -32,7 +31,19 @@ class TooManyPubMedResults(Exception):
     def __str__(self):
         return repr(self.value)
 
+class Extract(models.Model):
+    project_id = models
 
+class Category(models.Model):
+    category_id = models.IntegerField(default=0)
+    category_name = models.CharField(max_length=200)
+
+class Project(models.Model):
+    project_id = models.ForeignKey(Category, on_delete=models.CASCADE)
+    projectName = models.CharField(max_length=200)
+    projectAbbr = models.CharField(max_length=200)
+    casrn = models.CharField(max_length=200)
+    
 class Search(models.Model):
     objects = managers.SearchManager()
 

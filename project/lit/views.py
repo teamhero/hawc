@@ -18,6 +18,20 @@ from assessment.models import Assessment
 
 from . import constants, forms, exports, models
 
+from django.template import Context, loader
+from django.http import HttpRequest
+from django.shortcuts import HttpResponse
+from django.shortcuts import render
+from django.core import serializers
+from xml.dom import minidom
+from xml.dom.minidom import parse
+import xml.parsers.expat
+import lxml.etree as ET
+import urllib.request
+import sys
+import os.path
+
+BASE = os.path.dirname(os.path.abspath(__file__))
 
 class LitOverview(BaseList):
     parent_model = Assessment
@@ -394,8 +408,10 @@ class TagByUntagged(TagReferences):
 class SearchRefList(BaseDetail):
     model = models.Search
     template_name = "lit/reference_list.html"
+    print("HERE1 ")
 
     def get_object(self, **kwargs):
+        print("HERE3")
         obj = get_object_or_404(models.Search,
                                 slug=self.kwargs.get(self.slug_url_kwarg),
                                 assessment=self.kwargs.get('pk'))
@@ -403,10 +419,17 @@ class SearchRefList(BaseDetail):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        data = open(os.path.join(BASE, "checkboxtree.xslt"), encoding="utf8")
+        doc = urllib.request.urlopen("http://localhost/hero/index.cfm/content/tagtreexml/")
+        dom = ET.parse(doc)
+        xslt = ET.parse(data)
+        transform = ET.XSLT(xslt)
+        newdom = transform(dom)
         context['ref_objs'] = self.object.get_all_reference_tags()
         context['object_type'] = 'search'
         context['tags'] = models.ReferenceFilterTag.get_all_tags(self.assessment.id)
         context['untagged'] = self.object.references_untagged
+        context['myVar'] = newdom
         return context
 
 
@@ -428,19 +451,24 @@ class SearchTagsVisualization(BaseDetail):
         context['objectType'] = self.model.__name__
         return context
 
-
 class RefList(BaseList):
     parent_model = Assessment
     model = models.Reference
 
     def get_context_data(self, **kwargs):
+        data = open(os.path.join(BASE, "checkboxtree.xslt"), encoding="utf8")
+        doc = urllib.request.urlopen("http://localhost/hero/index.cfm/content/tagtreexml/")
+        dom = ET.parse(doc)
+        xslt = ET.parse(data)
+        transform = ET.XSLT(xslt)
+        newdom = transform(dom)
         context = super().get_context_data(**kwargs)
         context['object_type'] = 'reference'
         context['ref_objs'] = models.Reference.objects.get_full_assessment_json(self.assessment)
         context['tags'] = models.ReferenceFilterTag.get_all_tags(self.assessment.id)
         context['untagged'] = models.Reference.objects.get_untagged_references(self.assessment)
+        context['myVar'] = newdom
         return context
-
 
 class RefUploadExcel(ProjectManagerOrHigherMixin, MessageMixin, FormView):
     """

@@ -14,22 +14,166 @@
   <li class="active">References<span class="divider">/</span></li>
 {% endblock %}
 
+{% block endheader %}
+  <script type="text/javascript" src="{{STATIC_URL}}js/manageproject.js"></script>
+  <script type="text/javascript" src="{{STATIC_URL}}js/manageusage.js"></script>
+  <script type="text/javascript" src="{{STATIC_URL}}js/jquery.cookie.js"></script>
+  <script type="text/javascript" src="{{STATIC_URL}}js/jquery.treeview.js"></script>
+  <link href="{{STATIC_URL}}css/jquery/jquery.treeview.css" rel="stylesheet" type="text/css" />
+  <link href="{{STATIC_URL}}css/hero/hero_treeview.css" rel="stylesheet" type="text/css" />
+  <style type="text/css">
+    #content ul{ list-style-type: none !important; }
+    #content li ul, #content li { margin: 0 !important; }
+    .treeview ul { border:0 !important; }
+    .treeview li.last { background-position: initial; }
+    .project_checkbox {display: none;}
+    .usage_checkbox {display: none;}
+    .shrink{ -webkit-transform:scale(0.7);-moz-transform:scale(0.7);-ms-transform:scale(0.7);transform:scale(0.7);}
+  </style>
+  <script language="javascript" type="text/javascript">
+
+    $(document).ready(function() {
+
+      setTimeout('$("#tree_0").treeview({prerendered:true})', 100);
+      setTimeout('$("#tree_2").treeview({prerendered:true})', 500);
+      setTimeout('$("#tree_1").treeview({prerendered:true})', 1000);
+      setTimeout('$("#tree_21").treeview({prerendered:true})', 1500);
+      setTimeout('$("#tree_18").treeview({prerendered:true})', 2000);
+      setTimeout('$("#tree_10").treeview({prerendered:true})', 2500);
+      $("#tags").tabs();
+
+      var checkParent = function(elementId) {
+        if ((typeof(elementId) != "undefined") && (elementId != "")) {
+          var $element = $("#" + elementId);
+          if ($element.length > 0) {
+              $element.attr("checked", true);
+            var parentId = $element.attr("data-parent-id");
+            if ((typeof(parentId) != "undefined") && (parentId != "")) {
+              checkParent(parentId);
+            }
+          }
+        }
+      };
+      
+      var uncheckParent = function(elementId) {
+        if ((typeof(elementId) != "undefined") && (elementId != "")) {
+          var $element = $("#" + elementId);
+          if ($element.length > 0) {
+            $element.attr("checked", false);
+            var parentId = $element.attr("data-parent-id");
+            if ((typeof(parentId) != "undefined") && (parentId != "")) {
+              uncheckParent(parentId);
+            }
+          }
+        }
+      }
+
+      var uncheckChildren = function(elemID) {
+        if ($('#' + elemID)) {
+          $('input[data-parent-id^="' + elemID + '"]').attr('checked', false);
+          $('input[data-parent-id="' + elemID + '"]').each(function (i) {uncheckChildren(this.id)});
+        }
+      };
+
+      var checkChildren = function(elemID) {
+        if ($('#' + elemID)) {
+          $('input[data-parent-id^="' + elemID + '"]').attr('checked', true);
+          $('input[data-parent-id="' + elemID + '"]').each(function (i) {checkChildren(this.id)});
+        }
+      };
+
+      function resetTree() {
+        $("#tree_0").treeview({prerendered:true});
+        $("#tree_2").treeview({prerendered:true});
+        $("#tree_1").treeview({prerendered:true});
+        $("#tree_21").treeview({prerendered:true});
+        $("#tree_18").treeview({prerendered:true});
+        $("#tree_10").treeview({prerendered:true});
+      }
+
+    });
+  </script>
+{% endblock %}
+
 {% block content %}
   <div class="row-fluid">
-    <div class="span3">
+<!--     <div class="span3">
       <h3>Taglist</h3>
       <div id="taglist">
       </div><br>
       <p class='nestedTag' id="untaggedReferences">Untagged References: ({{untagged.count}})</p>
     </div>
     <div class="span9">
-      <div id="references_detail_div">
+ -->
+    <div>
+       <div id="references_detail_div">
         <h3>Available References</h3>
         <p class="help-block">Click on a tag to view tagged references.</p>
       </div>
+      <div id="tags">
+        <h3>Taglist</h3>
+        <ul class="tabs">
+          <li class="shrink"><a href="#tab_category_0">HAWC</a></li>
+          <li class="shrink"><a href="#tab_category_2">IRIS</a></li>
+          <li class="shrink"><a href="#tab_category_1">NAAQS</a></li>
+          <li class="shrink"><a href="#tab_category_21">PPRTV</a></li>
+          <li class="shrink"><a href="#tab_category_18">Other</a></li>
+          <li class="shrink"><a href="#tab_category_10">ExpoDocs</a></li>
+        </ul>
+        <div class="tagtab" id="tab_category_0">
+          <div style="width:100%;">
+            <div class="checkboxsection">
+              <div class="treeview" id="tree_0">
+                <ul xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions">
+                  <li class="closed expandable lastExpandable">
+                    <div id="hitarea_project_2000000" class="hitarea closed-hitarea expandable-hitarea lastExpandable-hitarea"></div>
+                    <input type="checkbox" id="project_2000000" name="project_id" class="project_checkbox noUntag" value="2000000">
+                    <label for="project_2000000">Inclusion</label>
+                    <ul style="display:none;">
+                      <li class="closed last">
+                        <input type="checkbox" id="usage_2000001" name="usage_id" value="2000001" data-parent-id="project_2000000">
+                        <label for="usage_2000001">Human Study</label>
+                      </li>
+                      <li class="closed last">
+                        <input type="checkbox" id="usage_2000002" name="usage_id" value="2000002" data-parent-id="project_2000000">
+                        <label for="usage_2000002">Animal Study</label>
+                      </li>
+                      <li class="closed last">
+                        <input type="checkbox" id="usage_2000003" name="usage_id" value="2000003" data-parent-id="project_2000000">
+                        <label for="usage_2000003">Mechanistic Study</label>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+                <ul xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fn="http://www.w3.org/2005/xpath-functions">
+                  <li class="closed expandable lastExpandable">
+                    <div id="hitarea_project_2000004" class="hitarea closed-hitarea expandable-hitarea lastExpandable-hitarea"></div>
+                    <input type="checkbox" id="project_2000004" name="project_id" class="project_checkbox noUntag" value="2000004">
+                    <label for="project_37">Exclusion</label>
+                    <ul style="display:none;">
+                      <li class="closed last">
+                        <input type="checkbox" id="usage_2000005" name="usage_id" value="2000005" data-parent-id="project_2000004">
+                        <label for="usage_2000005">Tier I</label>
+                      </li>
+                      <li class="closed last">
+                        <input type="checkbox" id="usage_2000006" name="usage_id" value="2000006" data-parent-id="project_2000004">
+                        <label for="usage_2000006">Tier II</label>
+                      </li>
+                      <li class="closed last">
+                        <input type="checkbox" id="usage_2000007" name="usage_id" value="2000007" data-parent-id="project_2000004">
+                        <label for="usage_2000007">Tier III</label>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      {{ myVar|safe }}
+      </div>
     </div>
   </div>
-
 {% endblock %}
 
 {% block extrajs %}
@@ -39,7 +183,6 @@
       window.tagtree = new lit.TagTree({{tags|safe}});
       window.canEdit = {{obj_perms.edit|lower}};
       window.search_id = parseInt("{{object.id}}", 10) || null;
-
       tagtree.add_references({{ref_objs|safe}});
 
       $('#taglist')
@@ -55,7 +198,6 @@
               refviewer = new lit.ReferencesViewer($('#references_detail_div'), options);
           tag.get_reference_objects_by_tag(refviewer);
         });
-
         $('#untaggedReferences').click(function(e){
           $('.nestedTag').removeClass("selected");
           $(e.target).addClass("selected");

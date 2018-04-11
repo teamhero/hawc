@@ -26,7 +26,7 @@ class TagTree(TemplateView):
     def get_context_data(self, **kwargs):
         data = open(os.path.join(BASE, "checkboxtree.xslt"), encoding="utf8")
         doc = urllib.request.urlopen("http://localhost/hero/index.cfm/content/tagtreexml/")
-        #doc = open(os.path.join(BASE, "test.xml"), encoding="utf8")
+        #doc2 = open(os.path.join(BASE, "hawc.xml"), encoding="utf8")
         dom = ET.parse(doc)
         xslt = ET.parse(data)
         transform = ET.XSLT(xslt)
