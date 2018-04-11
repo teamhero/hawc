@@ -29,7 +29,7 @@ class RiskOfBiasDomain(models.Model):
         related_name='rob_domains')
     name = models.CharField(
         max_length=128)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -181,6 +181,10 @@ class RiskOfBiasMetric(models.Model):
         default=True,
         verbose_name='Required for epidemiology?',
         help_text='Is this metric required for human epidemiological studies?')
+    required_invitro = models.BooleanField(
+        default=True,
+        verbose_name='Required for in-vitro?',
+        help_text='Is this metric required for in-vitro studies?')
     hide_description = models.BooleanField(
         default=False,
         verbose_name='Hide description?',
