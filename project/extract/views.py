@@ -12,6 +12,7 @@ import xml.parsers.expat
 import lxml.etree as ET
 import urllib.request
 import sys
+import requests
 import json
 import os.path
 from . import models
@@ -43,18 +44,31 @@ class Home(TemplateView):
     def get(*args, **kwargs):
         return HttpResponse("HERO Extracted Code will go here.")
 
-# def test(request):
+class Hero(TemplateView):
+    template_name = 'extract/hero.html'
+    heroURL = "http://localhost/hero/index.cfm/api/1.0/referencetagger/getprojects"
+    apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3N1ZXJfcGVyc29uX2lkIjoyMjY3LCJpc3N1ZXJfb3JnYW5pemF0aW9uX2lkIjoyNzI5LCJpc3N1ZV9kYXRlIjoiQXByaWwsIDEyIDIwMTggMTc6MDg6MTgiLCJpc3N1ZWVfb3JnYW5pemF0aW9uX2lkIjoxMDg2LCJpc3N1ZWVfcGVyc29uX2lkIjoxODcyfQ.U3Njg7P5b3W0jx8BSec9-t1dPmgMKKVVVGLlP5hF3HE"
 
-#     data = open(os.path.join(BASE, "checkboxtree.xslt"), encoding="utf8")
-#     template_name = 'extract/index.html'	
-#     doc = urllib.request.urlopen("http://localhost/hero/index.cfm/content/tagtreexml/")
-#     dom = ET.parse(doc)
-#     xslt = ET.parse(data)
-#     transform = ET.XSLT(xslt)
-#     newdom = transform(dom)
+    def __init__(self):
+        response = requests.post(
+            self.heroURL
+            ,headers = {
+                "Authorization": "Bearer " + self.apiToken
+            }
+        )
 
-#     #print(ET.tostring(newdom, pretty_print=True))
-#     #return render(request, ET.tostring(newdom, pretty_print=True))
-#     #return HttpResponse(ET.tostring(newdom, pretty_print=True))
-#     return HttpResponse(newdom)
-#     #return HttpResponse(doc, content_type='text/xml')
+        print(json.dumps(json.loads(response.text), indent=4))
+
+    def get_context_data(self, **kwargs):
+        response = requests.post(
+            self.heroURL
+            ,headers = {
+                "Authorization": "Bearer " + self.apiToken
+            }
+        )
+        context = super().get_context_data(**kwargs)
+        context['myVar'] = json.dumps(json.loads(response.text), indent=4)
+        return context
+
+if (__name__ == "__main__"):
+    test_object()
