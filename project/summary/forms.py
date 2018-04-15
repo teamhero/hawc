@@ -711,10 +711,10 @@ class SmartTagForm(forms.Form):
                 widget.attrs['class'] += " smartTagSearch"
 
 
-# This clss is the form used for adding/editing an Evidence Profile object
+# This class is the form used for adding/editing an Evidence Profile object
 class EvidenceProfileForm(forms.ModelForm):
     class Meta:
-        # Set the base model and form fields for this formA
+        # Set the base model and form fields for this form
         model = models.EvidenceProfile
         fields = ('title', 'slug', 'settings', 'caption', )
 
@@ -728,9 +728,50 @@ class EvidenceProfileForm(forms.ModelForm):
             # A parent Assessment object was found, copy a reference to it into this object's instance
             self.instance.assessment = assessment
 
-        ## Set the desired helper classes, etc. for this form
+        # Create an ordered dictionary of new fields that will be added to the form
+        new_fields = OrderedDict()
+        new_fields.update(
+            [
+                (
+                    "confidence_judgement_rating"
+                    ,forms.IntegerField(
+                        required = False
+                        ,label = "Rating (0 - 5)"
+                        ,min_value = 0
+                        ,max_value = 5
+                        ,help_text = "Overall rating for confidence in this studies presented in this evidence profile"
+                        ,widget = forms.NumberInput(
+                            attrs = {
+                                "style": "width:48px;"
+                            }
+                        )
+                    )
+                )
+                ,(
+                    "confidence_judgement_explanation"
+                    ,forms.CharField(
+                        required = False
+                        ,label = "Explanation"
+                        ,help_text = "Explain why you selected the overall rating you did"
+                        ,widget = forms.Textarea(
+                            attrs = {
+                                "rows": 2
+                            }
+                        )
+                    )
+                )
+            ]
+        )
+
+        # Iterate through the new set of fields and add them to self.fields
+        for key, value in new_fields.items():
+            self.fields[key] = value
+        
+
+        # Set the desired helper classes, etc. for this form
         self.helper = self.setHelper()
 
+    # This method attempts to set the desired helper widgets for the form fields
     def setHelper(self):
         # Iterate through the set of form fields and look for those that do not use the forms.CheckboxInput widget
         for fieldName in list(self.fields.keys()):
@@ -739,10 +780,9 @@ class EvidenceProfileForm(forms.ModelForm):
                 # This form field does not use the forms.CheckboxInput widget, add the 'span12' class to its widget
                 widget.attrs['class'] = 'span12'
 
-            if (fieldName == 'settings'):
-                # For the 'settings' form field, constrain its textarea height to two rows
-                self.fields['settings'].widget.attrs['rows'] = 2
-
+            if (fieldName == "settings"):
+                # For the "settings" field, constrain their textarea height to two rows
+                self.fields[fieldName].widget.attrs["rows"] = 2
 
         if (self.instance.id):
             # This is an existing evidence profile that is being edited, set inputs accordingly
