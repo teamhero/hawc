@@ -692,7 +692,7 @@ class Prefilter(object):
 
 # This object is the top-level object for an Evidence Profile
 class EvidenceProfile(models.Model):
-    # Set the manager for this object
+    # Set the database interface manager for this object
     objects = managers.EvidenceProfileManager()
 
     # Declare the necessary foriegn key attributes for this object (relating back to the HAWC User who created this EvidenceProfile
@@ -704,7 +704,8 @@ class EvidenceProfile(models.Model):
     title = models.CharField(max_length=128, help_text="Enter the title of this evidence profile table (spaces and special-characters allowed).")
     slug = models.SlugField(verbose_name="URL Name", help_text="The URL (web address) used to describe this object (no spaces or special-characters).")
     settings = models.TextField(default="undefined", help_text="Paste content from a settings file from a different evidence profile, or keep set to \"undefined\".")
-    caption = models.TextField(default="")
+    caption = models.TextField(default="", blank=True)
+    cross_stream_conclusions = models.TextField(default="{}")
 
     # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
@@ -752,7 +753,7 @@ class EvidenceProfile(models.Model):
 # This object is the second-level object for an EvidenceProfile object (multiple EvidenceProfileStream objects
 # within an EvidenceProfile)
 class EvidenceProfileStream(models.Model):
-    # Set the manager for this object
+    # Set the database interface manager for this object
     objects = managers.EvidenceProfileStreamManager()
 
     # Declare the necessary foriegn key attributes for this object (relating back to the HAWC User who created this
@@ -799,7 +800,7 @@ class EvidenceProfileStream(models.Model):
 # This object is the second-level object for an EvidenceProfile object (multiple EvidenceProfileStream objects
 # within an EvidenceProfile)
 class EvidenceProfileScenario(models.Model):
-    # Set the manager for this object
+    # Set the database interface manager for this object
     objects = managers.EvidenceProfileScenarioManager()
 
     # Declare the necessary foriegn key attributes for this object (relating back to the HAWC User who created this
@@ -809,7 +810,7 @@ class EvidenceProfileScenario(models.Model):
 
     # Declare the basic attributes for this object
     outcome = models.CharField(max_length=128, help_text="This must be one of the available \"outcome\" values listed in the parent envidence profile stream")
-    scenario_name = models.CharField(max_length=128, help_text="")
+    scenario_name = models.CharField(max_length=128, help_text="(optional) If a stream only has one scenario, there is no reason to give it a name", blank=True)
     studies = models.TextField(default="{}")
     confidencefactors_increase = models.TextField(default="[]")
     confidencefactors_decrease = models.TextField(default="[]")
@@ -828,7 +829,7 @@ class EvidenceProfileScenario(models.Model):
     def __str__(self):
         return self.scenario_name
 
-    # This method returns a linkg to the grand-parent EvidenceProfile's details page
+    # This method returns a link to the grand-parent EvidenceProfile's details page
     def get_absolute_url(self):
         return reverse('summary:evidenceprofile_detail', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 

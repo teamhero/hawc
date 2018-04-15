@@ -18,7 +18,10 @@ from utils.helper import HAWCDjangoJSONEncoder
 from . import forms, validators
 
 
+# This class serves as the base superclass used to create the database interface manager for several objects that are child
+# objects of a HAWC Assessment object
 class BaseManager(models.Manager):
+    # The Assessment-objecte relationship is established in the subclass
     assessment_relation = None
 
     def get_qs(self, assessment_id=None):
@@ -28,8 +31,11 @@ class BaseManager(models.Manager):
         '''
         if assessment_id:
             return self.assessment_qs(assessment_id)
+
         return self.get_queryset()
 
+    # Query the database using the defined object-Assessment relationship where the Assessment's primary key has the
+    # value in the argument assessment_id
     def assessment_qs(self, assessment_id):
         return self.get_queryset().filter(Q(**{self.assessment_relation: assessment_id}))
 

@@ -44,7 +44,7 @@
         window.app.smartTagsStartup(
           function(smartTags) {
             // Create a "smart tag" textarea editor for the 'caption' field
-            new smartTags.SmartTagEditor($('#id_caption'), {submitEl: '#evidenceProfileForm'});
+            new smartTags.SmartTagEditor($('#id_caption,#id_confidence_judgement_explanation'), {submitEl: '#evidenceProfileForm'});
           }
         );
       }

@@ -457,7 +457,7 @@ class EvidenceProfileNew(BaseCreate):
     def form_valid(self, form):
         # Set the submitted form's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
         form.instance.hawcuser = self.request.user
-        return super().form_valid(form)
+        # return super().form_valid(form)
 
 
 class EvidenceProfileUpdateSettings(GetEvidenceProfileObjectMixin, BaseUpdate):
