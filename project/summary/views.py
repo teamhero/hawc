@@ -455,9 +455,14 @@ class EvidenceProfileNew(BaseCreate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-        # Set the submitted form's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
+        # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
+        # form fields
+        form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
+
+        # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
         form.instance.hawcuser = self.request.user
-        # return super().form_valid(form)
+
+        return super().form_valid(form)
 
 
 class EvidenceProfileUpdateSettings(GetEvidenceProfileObjectMixin, BaseUpdate):
