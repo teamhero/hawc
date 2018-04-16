@@ -809,3 +809,20 @@ class EvidenceProfileForm(forms.ModelForm):
     # This method makes sure that the Evidence Profile's "slug" attribute is valid and URL-friendly
     def clean_slug(self):
         return clean_slug(self)
+
+    # This method overrides the super-class's clean() method
+    def clean(self):
+        # First, use the super-class's clean() method as a starting point
+        cleaned_data = super().clean()
+
+        # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
+        # within this evidence profile
+        cleaned_data["cross_stream_conclusions"] = {
+            "inferences": []
+            ,"confidence_judgement": {
+               "rating": cleaned_data.get("confidence_judgement_rating")
+               ,"explanation": cleaned_data.get("confidence_judgement_explanation")
+            }
+        }
+
+        return cleaned_data
