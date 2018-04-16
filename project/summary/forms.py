@@ -489,8 +489,8 @@ class EndpointAggregationSelectMultipleWidget(selectable.AutoCompleteSelectMulti
     """
 
     def render(self, name, value, attrs=None):
-        if value and isinstance(value, QuerySet):
-            value = Endpoint.objects.filter(id__in=value.values_list('id', flat=True))
+        if value:
+            value = [value.id for value in value]
         return super(selectable.AutoCompleteSelectMultipleWidget, self).render(name, value, attrs)
 
 
