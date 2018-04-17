@@ -6,6 +6,7 @@ from django.http import HttpRequest
 from django.shortcuts import HttpResponse
 from django.shortcuts import render
 from django.core import serializers
+from django.conf.urls import url, include
 from xml.dom import minidom
 from xml.dom.minidom import parse
 import xml.parsers.expat
@@ -43,6 +44,38 @@ class Home(TemplateView):
 
     def get(*args, **kwargs):
         return HttpResponse("HERO Extracted Code will go here.")
+
+class HeroProject(TemplateView):
+    template_name = 'extract/hero.html'
+    heroURL = "http://localhost/hero/index.cfm/api/1.0/referencetagger/getprojecttagtree"
+    apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3N1ZXJfcGVyc29uX2lkIjoyMjY3LCJpc3N1ZXJfb3JnYW5pemF0aW9uX2lkIjoyNzI5LCJpc3N1ZV9kYXRlIjoiRGVjZW1iZXIsIDIwIDIwMTcgMTU6Mzk6MTUiLCJpc3N1ZWVfb3JnYW5pemF0aW9uX2lkIjoxMDUsImlzc3VlZV9wZXJzb25faWQiOjE1MDh9.qeq4QmAE5SDw5c82UPm51ucjfE3DyOz9X_Wlv91aXtQ"
+
+    # def __init__(self, *args):
+    #     response = requests.post(
+    #         self.heroURL
+    #         ,data = '{"project_id": 1437}'
+    #         ,headers = {
+    #             "Authorization": "Bearer " + self.apiToken
+    #             ,"Content-Type": "application/json"
+    #         }
+    #     )
+        #print(json.dumps(json.loads(response.text), indent=4))
+
+    def get_context_data(self, *args, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+        project_id = self.kwargs.get('pk')
+        context['project_id'] = self.kwargs.get('pk')
+        response = requests.post(
+            self.heroURL
+            ,data = '{"project_id":' + project_id + '}'
+            ,headers = {
+                "Authorization": "Bearer " + self.apiToken
+                ,"Content-Type": "application/json"
+            }
+        )
+        context['myVar'] = json.dumps(json.loads(response.text), indent=4)
+        return context
 
 class Hero(TemplateView):
     template_name = 'extract/hero.html'

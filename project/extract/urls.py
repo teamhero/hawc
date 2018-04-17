@@ -11,4 +11,8 @@ urlpatterns = [
         views.Hero.as_view(), name='hero'),
     url(r'^tagtree/$',
         views.TagTree.as_view(), name='tagtree'),
+    url(r'^project/(?P<pk>\d+)/$',
+        views.HeroProject.as_view(),
+        name='hero_project'),
+    
 ]

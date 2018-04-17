@@ -408,10 +408,8 @@ class TagByUntagged(TagReferences):
 class SearchRefList(BaseDetail):
     model = models.Search
     template_name = "lit/reference_list.html"
-    print("HERE1 ")
 
     def get_object(self, **kwargs):
-        print("HERE3")
         obj = get_object_or_404(models.Search,
                                 slug=self.kwargs.get(self.slug_url_kwarg),
                                 assessment=self.kwargs.get('pk'))

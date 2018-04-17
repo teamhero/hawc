@@ -10,7 +10,7 @@ from myuser.models import HAWCUser
 # Create your models here.
 
 class Extract(models.Model):
-	project_id = models
+	project_id = models.IntegerField(default=0)
 
 class Category(models.Model):
     category_id = models.IntegerField(default=0)
@@ -21,3 +21,4 @@ class Project(models.Model):
     projectName = models.CharField(max_length=200)
     projectAbbr = models.CharField(max_length=200)
     casrn = models.CharField(max_length=200)
+
