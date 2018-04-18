@@ -5,6 +5,7 @@ import ScoreIcon from 'robTable/components/ScoreIcon';
 import Select from 'shared/components/Select';
 import './ScoreForm.css';
 
+//const API = 'http://localhost:8000/rob/api/answers/';
 
 class ScoreForm extends Component {
 
@@ -30,9 +31,16 @@ class ScoreForm extends Component {
             },
             score: null,
             notes: props.score.notes,
+            answers: [],
         };
         this.handleEditorInput = this.handleEditorInput.bind(this);
         this.selectScore = this.selectScore.bind(this);
+    }
+
+    componentDidMount() {
+        fetch('/rob/api/answers/')
+          .then(response => response.json())
+          .then(data => this.setState({ answers: data.answers }));
     }
 
     componentWillMount(){
@@ -84,6 +92,30 @@ class ScoreForm extends Component {
     render() {
         let { name } = this.props.score.metric,
             { scoreChoices, score, notes, selectedSymbol, selectedShade } = this.state;
+        let { answers } = this.props.state.answers;
+        let optionItems = answers.map((answer) =>
+                <option key={answer.answer_score}>{answer.choice}</option>
+            );
+        if (name === answers.metric) {
+            return (
+                <div className='score-form'>
+                    <div>
+                        <select>
+                            {optionItems}
+                        </select>
+                        <br/><br/>
+                        <ScoreIcon shade={answers.shade}
+                                symbol={answers.symbol}/>
+                    </div>
+                    <ReactQuill id={name}
+                            value={notes}
+                            onChange={this.handleEditorInput}
+                            toolbar={false}
+                            theme='snow'
+                            className='score-editor' />
+                </div>
+            );
+        }
         return (
             <div className='score-form'>
                 <div>
