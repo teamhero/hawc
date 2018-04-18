@@ -41,10 +41,23 @@
           );
         {% endif %}
 
+        // Start up and initialize the Smart Tags JavaScript object
         window.app.smartTagsStartup(
           function(smartTags) {
             // Create a "smart tag" textarea editor for the 'caption' field
             new smartTags.SmartTagEditor($('#id_caption,#id_confidence_judgement_explanation'), {submitEl: '#evidenceProfileForm'});
+          }
+        );
+
+        // Start up and initialize the Evidence Profile JavaScript object
+        window.app.evidenceProfileStartup(
+          function(evidenceProfile) {
+            console.log(evidenceProfile);
+
+            // Get the Cross-Stream Conclusions from the Python object
+            var cross_stream_conclusions = {% if object.cross_stream_conclusions %} {{object.cross_stream_conclusions|safe}} {% else %} {} {% endif%};
+
+            // dataPivot.DataPivot.displayEditView(data_url, cross_stream_conclusions)
           }
         );
       }

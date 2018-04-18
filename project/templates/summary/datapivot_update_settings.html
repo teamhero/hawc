@@ -55,19 +55,23 @@
   {% else %}
     <script src="//cdnjs.cloudflare.com/ajax/libs/spectrum/1.3.0/js/spectrum.min.js" type="text/javascript"></script>
   {% endif %}
+
   <script type="text/javascript">
-  window.app.dataPivotStartup(function(dataPivot){
-      var data_url = '{{object.get_data_url|safe}}',
-          settings = {{object.settings|safe}},
-          options = {
-              container: '#data_pivot',
-              dataDiv: '#dp_data',
-              settingsDiv: '#dp_settings',
-              displayDiv: '#dp_display',
-              submissionDiv: '#dp_settings_form',
-              settingsField: '#id_settings',
-          };
-      dataPivot.DataPivot.displayEditView(data_url, settings, options)
-  });
+    window.app.dataPivotStartup(
+      function(dataPivot) {
+        var data_url = '{{object.get_data_url|safe}}';
+        var settings = {{object.settings|safe}};
+        var options = {
+          container: '#data_pivot'
+          ,dataDiv: '#dp_data'
+          ,settingsDiv: '#dp_settings'
+          ,displayDiv: '#dp_display'
+          ,submissionDiv: '#dp_settings_form'
+          ,settingsField: '#id_settings'
+        };
+
+        dataPivot.DataPivot.displayEditView(data_url, settings, options)
+      }
+    );
   </script>
 {% endblock extrajs %}
