@@ -724,9 +724,24 @@ class EvidenceProfileForm(forms.ModelForm):
         assessment = kwargs.pop('parent', None)
         super().__init__(*args, **kwargs)
 
+        CrossStreamInferencesFormSet = forms.formsets.formset_factory(CrossStreamInferencesForm, )
+        self.formset = CrossStreamInferencesFormSet(data=[])
+
         if (assessment):
             # A parent Assessment object was found, copy a reference to it into this object's instance
             self.instance.assessment = assessment
+
+        # Get the initial values for the fields related to cross-stream conclusions
+        initial_confidence_judgement_rating = ""
+        initial_confidence_judgement_explanation = ""
+        if (self.instance.cross_stream_conclusions != ""):
+            # This Evidence Profile object has a non-empty cross_stream_conclusions field, set initial values from it
+            try:
+                conclusionsJSON = json.loads(self.instance.cross_stream_conclusions)
+                initial_confidence_judgement_rating = conclusionsJSON["confidence_judgement"]["rating"]
+                initial_confidence_judgement_explanation = conclusionsJSON["confidence_judgement"]["explanation"]
+            except:
+                pass
 
         # Create an ordered dictionary of new fields that will be added to the form
         new_fields = OrderedDict()
@@ -737,6 +752,7 @@ class EvidenceProfileForm(forms.ModelForm):
                     ,forms.IntegerField(
                         required = False
                         ,label = "Rating (0 - 5)"
+                        ,initial = initial_confidence_judgement_rating
                         ,min_value = 0
                         ,max_value = 5
                         ,help_text = "Overall rating for confidence in this studies presented in this evidence profile"
@@ -752,6 +768,7 @@ class EvidenceProfileForm(forms.ModelForm):
                     ,forms.CharField(
                         required = False
                         ,label = "Explanation"
+                        ,initial = initial_confidence_judgement_explanation
                         ,help_text = "Explain why you selected the overall rating you did"
                         ,widget = forms.Textarea(
                             attrs = {
@@ -826,3 +843,27 @@ class EvidenceProfileForm(forms.ModelForm):
         }
 
         return cleaned_data
+
+
+# This class is the form used for the Evidence Profile's "Cross-Stream Inferences" formset
+class CrossStreamInferencesForm(forms.Form):
+    title = forms.CharField(
+        widget = forms.TextInput()
+    )
+
+    explanation = forms.CharField(
+        widget = forms.Textarea(
+            attrs = {
+                "rows": 6
+            }
+        )
+    )
+
+
+# This class is the form set object for the Evidence Profile's Cross-Stream Inferences
+class BaseCrossStreamInferencesFormset(forms.formsets.BaseFormSet):
+    def clean(self):
+        print("Cleaning BaseCrossStreamInferencesFormset")
+
+
+CrossStreamInferencesFormset = forms.formset_factory(CrossStreamInferencesForm, formset=BaseCrossStreamInferencesFormset, extra=1)

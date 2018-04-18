@@ -6,6 +6,7 @@ import utils from 'utils';
 import animalStartup from 'animal/split';
 import assessmentStartup from 'assessment/split';
 import dataPivotStartup from 'dataPivot/split';
+import evidenceProfileStartup from 'evidenceProfile/split';
 import epiStartup from 'epi/split';
 import epimetaStartup from 'epimeta/split';
 import invitroStartup from 'invitro/split';
@@ -31,6 +32,7 @@ window.app = {
     animalStartup,
     assessmentStartup,
     dataPivotStartup,
+    evidenceProfileStartup,
     epiStartup,
     epimetaStartup,
     invitroStartup,

@@ -394,6 +394,7 @@ class EvidenceProfileNew(BaseCreate):
     # Define the type of object being created and the form object that will be used
     model = models.EvidenceProfile
     form_class = forms.EvidenceProfileForm
+    formset_factory = forms.CrossStreamInferencesFormset
 
     # This method returns the URL that the requestor will be re-directed to after this request is handled
     def get_success_url(self):
@@ -445,6 +446,7 @@ class EvidenceProfileUpdateSettings(GetEvidenceProfileObjectMixin, BaseUpdate):
     success_message = 'Evidence Profile updated.'
     model = models.EvidenceProfile
     form_class = forms.EvidenceProfileForm
+    formset_factory = forms.CrossStreamInferencesFormset
     template_name = 'summary/evidenceprofile_form.html'
 
 
@@ -452,3 +454,17 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
     model = models.EvidenceProfile
     template_name = "summary/evidenceprofile_detail.html"
 
+
+class EvidenceProfileData(GetEvidenceProfileObjectMixin, BaseDetail):
+    model = models.EvidenceProfile
+
+    def get_export_format(self):
+        format_ = self.request.GET.get("format", "excel")
+        if format_ not in ["tsv", "excel"]:
+            raise Http404()
+        return format_
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        format_ = self.get_export_format()
+        return self.object.get_dataset(format_)

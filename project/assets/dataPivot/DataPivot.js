@@ -274,7 +274,7 @@ class DataPivot {
     _get_header_options(show_blank){
         var opts = [];
         if (show_blank) opts.push('<option value="{0}">{0}</option>'.printf(NULL_CASE));
-        return opts.concat(this.data_headers.map(function(v){
+            return opts.concat(this.data_headers.map(function(v){
             return '<option value="{0}">{0}</option>'.printf(v);
         }));
     }
