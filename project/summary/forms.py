@@ -863,8 +863,6 @@ class EvidenceProfileForm(forms.ModelForm):
                         else:
                             inferences[index] = {"title":"", "explanation":self.submitted_data[key]}
 
-        print(inferences)
-
         # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
         cleaned_data["cross_stream_conclusions"] = {

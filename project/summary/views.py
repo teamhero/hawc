@@ -397,37 +397,8 @@ class EvidenceProfileNew(BaseCreate):
 
     # This method returns the URL that the requestor will be re-directed to after this request is handled
     def get_success_url(self):
-        """
-        # Not sure why this is called, other than the fact that it is called in other get_success_url() functions I have seen; the resulting
-        # object returned is not used or even retained; it is a good candidate for removal
-        super().get_success_url()
-        """
-
         # Get the value for this Evidence Profile's visualization URL and return it
-        return self.object.get_visualization_update_url()
-
-    # This method gets the keyword arguments (kwargs) from a form
-    def get_form_kwargs(self):
-        # Call the superclass's get_form_kwargs() to get the basic set of keyword arguments
-        kwargs = super().get_form_kwargs()
-
-        if self.request.GET.get('reset_row_overrides'):
-            # This request has an HTTP GET parameter named 'reset_row_overrides', set the kwargs['initial']['settings'] (making sure it is
-            # a JSON object with the desired format)
-            kwargs['initial']['settings'] = models.EvidenceProfile.reset_row_overrides(kwargs['initial']['settings'])
-
-        return kwargs
-
-    # This function sets the basic "context data" for this view
-    def get_context_data(self, **kwargs):
-        # Call the superclass's get_cotext_data() method and set the resulting object's "file_loader" attribute to FALSE
-        context = super().get_context_data(**kwargs)
-        context['file_loader'] = False
-
-        # Set a "smart_tag_form" attribute for this view
-        context['smart_tag_form'] = forms.SmartTagForm(assessment_id=self.assessment.id)
-
-        return context
+        return self.object.get_update_url()
 
     # This method handles a valid submitted form
     def form_valid(self, form):
@@ -441,11 +412,23 @@ class EvidenceProfileNew(BaseCreate):
         return super().form_valid(form)
 
 
-class EvidenceProfileUpdateSettings(GetEvidenceProfileObjectMixin, BaseUpdate):
+class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
     success_message = 'Evidence Profile updated.'
     model = models.EvidenceProfile
     form_class = forms.EvidenceProfileForm
     template_name = 'summary/evidenceprofile_form.html'
+
+    # This method returns the URL that the requestor will be re-directed to after this request is handled
+    def get_success_url(self):
+        # Get the value for this Evidence Profile's visualization URL and return it
+        return self.object.get_absolute_url()
+
+    # This method handles a valid submitted form
+    def form_valid(self, form):
+        # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
+        # form fields
+        form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
+        return super().form_valid(form)
 
 
 class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
