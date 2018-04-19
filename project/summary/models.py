@@ -752,14 +752,6 @@ class EvidenceProfile(models.Model):
     def get_assessment(self):
         return self.assessment
 
-    # This method returns the download URL for this object
-    def get_download_url(self):
-        return reverse('summary:evidenceprofile_data', kwargs={'pk': self.assessment_id, 'slug': self.slug})
-
-    # This method returns the data URL for this object
-    def get_data_url(self):
-        return self.get_download_url() + "?format=tsv"
-
 
 # This object is the second-level object for an EvidenceProfile object (multiple EvidenceProfileStream objects
 # within an EvidenceProfile)

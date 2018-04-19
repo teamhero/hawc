@@ -52,12 +52,9 @@
         // Start up and initialize the Evidence Profile JavaScript object
         window.app.evidenceProfileStartup(
           function(evidenceProfile) {
-            console.log(evidenceProfile);
-
-            // Get the Cross-Stream Conclusions from the Python object
-            var cross_stream_conclusions = {% if object.cross_stream_conclusions %} {{object.cross_stream_conclusions|safe}} {% else %} {} {% endif%};
-
-            // dataPivot.DataPivot.displayEditView(data_url, cross_stream_conclusions)
+            // Get the Cross-Stream Conclusions from the Python object and use it/them to build the Cross-Stream Inferences form fields
+            evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormFields(cross_stream_conclusions={% if object.cross_stream_conclusions %} {{object.cross_stream_conclusions|safe}} {% else %} {} {% endif%}
+            );
           }
         );
       }
