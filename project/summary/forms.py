@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import json
+import re
 
 from django.db.models import QuerySet
 from crispy_forms import layout as cfl
@@ -738,6 +739,8 @@ class SmartTagForm(forms.Form):
 
 # This class is the form used for adding/editing an Evidence Profile object
 class EvidenceProfileForm(forms.ModelForm):
+    submitted_data = None
+
     class Meta:
         # Set the base model and form fields for this form
         model = models.EvidenceProfile
@@ -745,12 +748,12 @@ class EvidenceProfileForm(forms.ModelForm):
 
     # This is the initialization method for this form object
     def __init__(self, *args, **kwargs):
+        # Before doing anything else, get an un=modified copy of the incoming submitted data for use later
+        self.submitted_data = kwargs.get("data", None)
+
         # Attempt to get a reference to this object's parent Assessment object, and then run the superclass's initialization method
         assessment = kwargs.pop('parent', None)
         super().__init__(*args, **kwargs)
-
-        CrossStreamInferencesFormSet = forms.formsets.formset_factory(CrossStreamInferencesForm, )
-        self.formset = CrossStreamInferencesFormSet(data=[])
 
         if (assessment):
             # A parent Assessment object was found, copy a reference to it into this object's instance
@@ -857,10 +860,40 @@ class EvidenceProfileForm(forms.ModelForm):
         # First, use the super-class's clean() method as a starting point
         cleaned_data = super().clean()
 
+        # Next, iterate through the form fields looking for those that are part of cross-stream inferences
+        inferences = []
+        titlePattern = re.compile("^inference_title_\d+$")
+        explanationPattern = re.compile("^inference_explanation_\d+$")
+        replacePattern = re.compile("\D")
+        for key in self.submitted_data:
+            # Check and see if this form field's name matches either a cross-stream inference's title or explanation
+            isTitle = True if (titlePattern.match(key)) else False
+            isExplanation = True if ((isTitle == False) and (explanationPattern.match(key))) else False
+
+            if ((isTitle) or (isExplanation)):
+                index = int(replacePattern.sub("", key)) - 1
+
+                if (index >= 0):
+                    while (len(inferences) <= index):
+                        inferences.append(None)
+
+                    if (isTitle):
+                        if (inferences[index]):
+                            inferences[index]["title"] = self.submitted_data[key]
+                        else:
+                            inferences[index] = {"title":self.submitted_data[key], "explanation":""}
+                    else:
+                        if (inferences[index]):
+                            inferences[index]["explanation"] = self.submitted_data[key]
+                        else:
+                            inferences[index] = {"title":"", "explanation":self.submitted_data[key]}
+
+        print(inferences)
+
         # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
         cleaned_data["cross_stream_conclusions"] = {
-            "inferences": []
+            "inferences": inferences
             ,"confidence_judgement": {
                "rating": cleaned_data.get("confidence_judgement_rating")
                ,"explanation": cleaned_data.get("confidence_judgement_explanation")
@@ -868,27 +901,3 @@ class EvidenceProfileForm(forms.ModelForm):
         }
 
         return cleaned_data
-
-
-# This class is the form used for the Evidence Profile's "Cross-Stream Inferences" formset
-class CrossStreamInferencesForm(forms.Form):
-    title = forms.CharField(
-        widget = forms.TextInput()
-    )
-
-    explanation = forms.CharField(
-        widget = forms.Textarea(
-            attrs = {
-                "rows": 6
-            }
-        )
-    )
-
-
-# This class is the form set object for the Evidence Profile's Cross-Stream Inferences
-class BaseCrossStreamInferencesFormset(forms.formsets.BaseFormSet):
-    def clean(self):
-        print("Cleaning BaseCrossStreamInferencesFormset")
-
-
-CrossStreamInferencesFormset = forms.formset_factory(CrossStreamInferencesForm, formset=BaseCrossStreamInferencesFormset, extra=1)
