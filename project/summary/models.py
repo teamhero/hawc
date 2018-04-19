@@ -742,7 +742,7 @@ class EvidenceProfile(models.Model):
         return reverse('summary:evidenceprofile_detail', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 
     # This method returns the "update" URL for this EvidenceProfile
-    def get_visualization_update_url(self):
+    def get_update_url(self):
         return reverse('summary:evidenceprofile_update', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 
     # This method returns the object's parent Assessment
@@ -785,7 +785,7 @@ class EvidenceProfileStream(models.Model):
         return reverse('summary:evidenceprofile_detail', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 
     # This method returns the "update" URL for this EvidenceProfileStream's parent EvidenceProfile
-    def get_visualization_update_url(self):
+    def get_update_url(self):
         return reverse('summary:evidenceprofile_update', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 
     # This method returns the object's parent EvidenceProfile
@@ -834,7 +834,7 @@ class EvidenceProfileScenario(models.Model):
         return reverse('summary:evidenceprofile_detail', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 
     # This method returns the "update" URL for this EvidenceProfileScenario's grand-parent EvidenceProfile
-    def get_visualization_update_url(self):
+    def get_update_url(self):
         return reverse('summary:evidenceprofile_update', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 
     def get_evidenceprofilestream(self):
