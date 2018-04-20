@@ -161,8 +161,39 @@ class Donut extends D3Plot {
                 .attr('class', 'centeredLabel domain_arc')
                 .attr('transform', (d) => `translate(${domain_arc.centroid(d)})`)
                 .attr('text-anchor', 'middle')
-                .text(function(d) { return d.data.domain; });
-
+                .text(function(d) {
+					if (d.data.domain.length > 24) {
+						var textMiddle = Math.floor(d.data.domain.length / 2);
+						var spaceBefore = d.data.domain.lastIndexOf(' ', textMiddle);
+						var spaceAfter = d.data.domain.indexOf(' ', textMiddle + 1);
+						if (spaceBefore == -1 || (spaceAfter != -1 && textMiddle - spaceBefore >= spaceAfter - textMiddle)) 
+							textMiddle = spaceAfter;
+						else
+							textMiddle = spaceBefore;
+						return d.data.domain.substr(0, textMiddle);
+					}
+					else return d.data.domain; });
+					
+        this.domain_domain2_labels = this.domain_label_group.selectAll('text1')
+                .data(this.pie_layout(this.domain_donut_data))
+            .enter()
+                .append('text')
+                .attr('class', 'centeredLabel domain_arc')
+                .attr('transform', (d) => `translate(${domain_arc.centroid(d)})`)
+                .attr('text-anchor', 'middle')
+                .text(function(d) {
+					if (d.data.domain.length > 24) {
+						var textMiddle = Math.floor(d.data.domain.length / 2);
+						var spaceBefore = d.data.domain.lastIndexOf(' ', textMiddle);
+						var spaceAfter = d.data.domain.indexOf(' ', textMiddle + 1);
+						if (spaceBefore == -1 || (spaceAfter != -1 && textMiddle - spaceBefore >= spaceAfter - textMiddle)) 
+							textMiddle = spaceAfter;
+						else
+							textMiddle = spaceBefore;
+						return d.data.domain.substr(textMiddle + 1);
+					}
+					else return ''; });
+				
         this.domain_score_labels = this.domain_label_group.selectAll('text2')
                 .data(this.pie_layout(this.domain_donut_data))
             .enter()
@@ -259,6 +290,11 @@ class Donut extends D3Plot {
             .transition()
             .duration('500')
 	.attr('transform', (d) => `translate(${(domain_arc.centroid(d))}) translate(0,${(d.data.idxOrder)>=(this.study.riskofbias.length)/2?10:-10})`);
+	
+        this.domain_domain2_labels
+            .transition()
+            .duration('500')
+	.attr('transform', (d) => `translate(${(domain_arc.centroid(d))}) translate(0,${(d.data.idxOrder)>=(this.study.riskofbias.length)/2?10:-10}) translate(0,12)`);
 
         this.domain_score_labels
             .transition()
