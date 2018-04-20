@@ -192,6 +192,8 @@ class MetaResultFilterForm(forms.Form):
         ('protocol__name', 'protocol'),
         ('health_outcome', 'health outcome'),
         ('exposure', 'exposure'),
+		('lower_ci', 'confidence interval'),
+        ('estimate', 'estimate'),
     )
 
     studies = selectable.AutoCompleteSelectMultipleField(

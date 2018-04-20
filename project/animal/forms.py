@@ -599,6 +599,9 @@ class EndpointFilterForm(forms.Form):
         ('-LOEL', 'LOEL'),
         ('effect_subtype', 'effect subtype'),
         ('animal_group__experiment__chemical', 'chemical'),
+        ('animal_group__experiment__name', 'experiment'),
+        ('animal_group__name', 'animal group'),
+        ('response_units', 'units'),
     )
 
     studies = selectable.AutoCompleteSelectMultipleField(
