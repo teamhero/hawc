@@ -786,7 +786,6 @@ class EvidenceProfileForm(forms.ModelForm):
         # Iterate through the new set of fields and add them to self.fields
         for key, value in new_fields.items():
             self.fields[key] = value
-        
 
         # Set the desired helper classes, etc. for this form
         self.helper = self.setHelper()
@@ -815,7 +814,7 @@ class EvidenceProfileForm(forms.ModelForm):
             # This is a new evidence profile that is being created, sete inputs accordingly
             inputs = {
                 "legend_text": "Create new evidence profile",
-                "help_text":   "Create a custom visualization for this assessment.",
+                "help_text":   "Create an evidence profile for this assessment.",
                 "cancel_url": self.instance.get_list_url(self.instance.assessment.id)
             }
 
@@ -865,12 +864,14 @@ class EvidenceProfileForm(forms.ModelForm):
 
         # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
+        confidence_judgement = {
+            "rating": cleaned_data.get("confidence_judgement_rating")
+            ,"explanation": cleaned_data.get("confidence_judgement_explanation")
+        }
+
         cleaned_data["cross_stream_conclusions"] = {
             "inferences": inferences
-            ,"confidence_judgement": {
-               "rating": cleaned_data.get("confidence_judgement_rating")
-               ,"explanation": cleaned_data.get("confidence_judgement_explanation")
-            }
+            ,"confidence_judgement": confidence_judgement
         }
 
         return cleaned_data

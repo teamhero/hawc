@@ -11,52 +11,74 @@ import {
 
 class EvidenceProfile {
     constructor() {
+        // There is nothing in this constructor, it is just a placeholder for a set of static functions
     }
 
-    // This function builds the form fields for the cross-stream inferences portion of the Evidence Profile form
-    static buildCrossStreamInferencesFormFields(cross_stream_conclusions) {
-        var $lastField = $("#div_id_confidence_judgement_explanation");
-        if ($lastField.length > 0) {
-            // This page has the desired form field object, add the desired form fields to it
+    // This function adds an <hr /> tag either above or below the form field named in the fieldName argument
+    static addHRTag(fieldName, position) {
+        if ((typeof(fieldName) == "string") && (fieldName != "") && (typeof(position) == "string") && (position != "")) {
+            // Both incoming arguments are non-empty strings, continue
 
-            // First, create the new <div> element that will hold the cross-stream inferences
-            var newDiv = '<div id="div_id_inferences" class="control-label" style="font-size:0.9em; overflow-x:scroll;">';
-            newDiv = newDiv + ' <strong class="control-label">Inferences Across Streams</strong>';
-            newDiv = newDiv + ' <button id="add_inference_row" class="btn btn-primary pull-right" type="button">New Row</button>'
-            newDiv = newDiv + ' <table id="table_id_inferences" style="width:700px;">';
+            var $fieldDiv = $("#div_id_" + fieldName);
+            if ($fieldDiv.length > 0) {
+                // The specified form field's <div> container was found, add the <hr /> tag
 
-            newDiv = newDiv + '     <thead>';
-            newDiv = newDiv + '         <tr>';
-            newDiv = newDiv + '             <th style="border:0; font-size:0.9em; width:29%;">Title</th>';
-            newDiv = newDiv + '             <th style="border:0; font-size:0.9em; width:48%;">Explanation</th>';
-            newDiv = newDiv + '             <th style="border:0; font-size:0.9em; width:23%;"></th>';
-            newDiv = newDiv + '         </tr>';
-            newDiv = newDiv + '     </thead>';
-
-            newDiv = newDiv + '     <tbody>';
-
-            newDiv = newDiv + '     </tbody>';
-
-            newDiv = newDiv + ' </table>';
-            newDiv = newDiv + '</div>';
-
-            // Now add the newly-build <div> element to the end of the form
-            $lastField.after(newDiv);
-
-
-            if ((typeof(cross_stream_conclusions) == "object") && (typeof(cross_stream_conclusions.inferences) == "object") && (cross_stream_conclusions.inferences.length > 0)) {
-                // The existing EvidenceProfile object has a set of cross-stream inferences, iterate over the array and add each one to the table
-                for (var i=0; i<cross_stream_conclusions.inferences.length; i++) {
-                    EvidenceProfile.createCrossStreamInferencesRow("table_id_inferences", cross_stream_conclusions.inferences[i].title, cross_stream_conclusions.inferences[i].explanation);
+                if (position.toLowerCase() != "before") {
+                    // By default, place the <hr /> after the specified field
+                    $fieldDiv.after('<hr style="margin-top:32px; height:1px;" />');
+                }
+                else {
+                    $fieldDiv.before('<hr />');
                 }
             }
+        }
+    }
 
-            // Now set the click() functionality for the button to add an inference
-            $("#add_inference_row").click(
-                function() {
-                    EvidenceProfile.createCrossStreamInferencesRow("table_id_inferences");
+    // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
+    static buildCrossStreamInferencesFormset(form_id, cross_stream_conclusions) {
+        if ((typeof(form_id) == "string") && (form_id != "")) {
+            // The incoming form_id argument is a non-empty string, try to build the formset
+
+            // Try to retireve the form element intended to hold the form's actions (i.e. "Save" and "Cancel" buttons)
+            var $formActions = $("#" + form_id + " .form-actions");
+            if ($formActions.length > 0) {
+                // This page has the desired form and form element, build the formset to add to the form
+
+                // First, create the new <div> element that will hold the cross-stream inferences
+                var newDiv = '<hr />';
+                newDiv = newDiv + '<div id="div_id_inferences" class="control-label" style="font-size:0.9em; overflow-x:scroll;">';
+                newDiv = newDiv + ' <strong class="control-label">Inferences Across Streams</strong>';
+                newDiv = newDiv + ' <button id="add_inference_row" class="btn btn-primary pull-right" type="button">New Row</button>'
+                newDiv = newDiv + ' <table id="table_id_inferences" style="width:700px;">';
+                newDiv = newDiv + '     <thead>';
+                newDiv = newDiv + '         <tr>';
+                newDiv = newDiv + '             <th style="border:0; font-size:0.9em; width:29%;">Title</th>';
+                newDiv = newDiv + '             <th style="border:0; font-size:0.9em; width:48%;">Explanation</th>';
+                newDiv = newDiv + '             <th style="border:0; font-size:0.9em; width:23%;"></th>';
+                newDiv = newDiv + '         </tr>';
+                newDiv = newDiv + '     </thead>';
+                newDiv = newDiv + '     <tbody>';
+                newDiv = newDiv + '     </tbody>';
+                newDiv = newDiv + ' </table>';
+                newDiv = newDiv + '</div>';
+
+                // Now add the newly-build <div> element to the end of the form (just before the form's actions element)
+                $formActions.before(newDiv);
+
+                // Now set the click() functionality for the button to add a new inference
+                $("#add_inference_row").click(
+                    function() {
+                        EvidenceProfile.createCrossStreamInferencesRow("table_id_inferences");
+                    }
+                );
+
+                if ((typeof(cross_stream_conclusions) == "object") && (typeof(cross_stream_conclusions.inferences) == "object") && (cross_stream_conclusions.inferences.length > 0)) {
+                    // The existing EvidenceProfile object has a set of cross-stream inferences, iterate over the array and add each one to the table
+                    for (var i=0; i<cross_stream_conclusions.inferences.length; i++) {
+                        EvidenceProfile.createCrossStreamInferencesRow("table_id_inferences", cross_stream_conclusions.inferences[i].title, cross_stream_conclusions.inferences[i].explanation);
+                    }
                 }
-            );
+            }
         }
     }
 
