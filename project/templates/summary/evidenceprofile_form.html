@@ -52,8 +52,13 @@
         // Start up and initialize the Evidence Profile JavaScript object
         window.app.evidenceProfileStartup(
           function(evidenceProfile) {
-            // Get the Cross-Stream Conclusions from the Python object and use it/them to build the Cross-Stream Inferences form fields
-            evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormFields(cross_stream_conclusions={% if object.cross_stream_conclusions %} {{object.cross_stream_conclusions|safe}} {% else %} {} {% endif%}
+            // Add an <hr /> tag just below the "caption" field in the form
+            evidenceProfile.EvidenceProfile.addHRTag("caption", "after");
+
+            // Get the Cross-Stream Conclusions from the Python object and use them to build the Cross-Stream Inferences formset
+            evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormset(
+              "evidenceProfileForm",
+              cross_stream_conclusions={% if object.cross_stream_conclusions %} {{object.cross_stream_conclusions|safe}} {% else %} {} {% endif%}
             );
           }
         );
