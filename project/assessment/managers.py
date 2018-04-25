@@ -120,3 +120,8 @@ class TimeSpentEditingManager(BaseManager):
 class ConfidenceFactorManager(BaseManager):
     def assessment_qs(self, assessment_id):
         return self.all()
+
+
+class ConfidenceJudgementManager(BaseManager):
+    def assessment_qs(self, assessment_id):
+        return self.all()

@@ -479,6 +479,8 @@ class TimeSpentEditing(models.Model):
             cache.delete(cache_name)
 
 
+# This object is for rows within a look-up table that is used to hold selectable criteria for what increases or decreases confidence
+# for a group of studies
 class ConfidenceFactor(models.Model):
     objects = managers.ConfidenceFactorManager()
 
@@ -494,6 +496,25 @@ class ConfidenceFactor(models.Model):
     class Meta:
         verbose_name_plural = "confidence factors"
         ordering = ("name", )
+
+    def __str__(self):
+        return self.name
+
+
+# This object is for rows within a look-up table that is used to hold selectable options for the overall confidence judgement
+# for a group of studies
+class ConfidenceJudgement(models.Model):
+    objects = managers.ConfidenceJudgementManager()
+
+    value = models.IntegerField()
+    name = models.CharField(max_length=45, help_text="Enter confidence judgement name", unique=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "confidence judgements"
+        ordering = ("value", )
 
     def __str__(self):
         return self.name

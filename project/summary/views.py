@@ -1,6 +1,7 @@
 import os
 import json
 
+from django.core import serializers
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
@@ -11,6 +12,7 @@ from assessment.models import Assessment
 from riskofbias.models import RiskOfBiasMetric
 from utils.helper import HAWCDjangoJSONEncoder
 from utils.views import (BaseList, BaseCreate, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin)
+from assessment.models import ConfidenceFactor, ConfidenceJudgement
 
 from . import forms, models
 
@@ -424,6 +426,19 @@ class EvidenceProfileNew(BaseCreate):
         # Get the value for this Evidence Profile's visualization URL and return it
         return self.object.get_update_url()
 
+    def get_context_data(self, **kwargs):
+        # Get the basic context attributes from the superclass's get_context_data() method
+        context = super().get_context_data(**kwargs)
+
+        # Set the desired additional context attributes to their initialized, empty values
+        context["stream_types"] = models.get_serialized_stream_types()
+        context["confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.all())
+        context["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
+        context["streams"] = serializers.serialize("json", models.EvidenceProfileStream.objects.none())
+        context["cross_stream_conclusions"] = {}
+
+        return context
+
     # This method handles a valid submitted form
     def form_valid(self, form):
         # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
@@ -446,6 +461,18 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
     def get_success_url(self):
         # Get the value for this Evidence Profile's visualization URL and return it
         return self.object.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        # Get the basic context attributes from the superclass's get_context_data() method
+        context = super().get_context_data(**kwargs)
+
+        # Set the desired additional context attributes based on the values of the existing Evidence Profile
+        context["confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.all())
+        context["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
+        context["cross_stream_conclusions"] = self.object.cross_stream_conclusions
+        context["streams"] = serializers.serialize("json", self.object.streams.all())
+
+        return context
 
     # This method handles a valid submitted form
     def form_valid(self, form):
