@@ -4,6 +4,7 @@ import json
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
@@ -850,6 +851,26 @@ class EvidenceProfileScenario(models.Model):
     # This method returns the object's great-grand-parent Assessment
     def get_assessment(self):
         return self.evidenceprofilestream.evidenceprofile.assessment
+
+
+# This function returns a serialized JSON-friendly version of the different stream_type options available
+def get_serialized_stream_types():
+    returnValue = []
+
+    print(STUDY_TYPE_CHOICES)
+    print(type(STUDY_TYPE_CHOICES))
+    print(returnValue)
+    print(type(returnValue))
+
+    for choice in STUDY_TYPE_CHOICES:
+        returnValue = returnValue + [
+            {
+                "value": choice[0],
+                "name": choice[1]
+            }
+        ]
+
+    return returnValue
 
 
 reversion.register(SummaryText)

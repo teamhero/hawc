@@ -99,6 +99,15 @@ class ConfidenceFactorAdmin(admin.ModelAdmin):
     )
 
 
+class ConfidenceJudgementAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'value',
+        'name',
+        'created'
+    )
+
+
 admin.site.register(models.Assessment, AssessmentAdmin)
 admin.site.register(models.DoseUnits, DoseUnitsAdmin)
 admin.site.register(models.Species, SpeciesAdmin)
@@ -106,3 +115,4 @@ admin.site.register(models.Strain, StrainAdmin)
 admin.site.register(models.EffectTag, EffectTagAdmin)
 admin.site.register(models.TimeSpentEditing, TimeSpentEditingAdmin)
 admin.site.register(models.ConfidenceFactor, ConfidenceFactorAdmin)
+admin.site.register(models.ConfidenceJudgement, ConfidenceJudgementAdmin)

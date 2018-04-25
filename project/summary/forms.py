@@ -758,7 +758,7 @@ class EvidenceProfileForm(forms.ModelForm):
                         ,initial = initial_confidence_judgement_rating
                         ,min_value = 0
                         ,max_value = 5
-                        ,help_text = "Overall rating for confidence in this studies presented in this evidence profile"
+                        ,help_text = "Overall rating for confidence in this studies presented in this evidence profile (across all evidence streams)"
                         ,widget = forms.NumberInput(
                             attrs = {
                                 "style": "width:48px;"

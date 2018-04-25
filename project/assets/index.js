@@ -26,7 +26,6 @@ import robScoreCleanupStartup from 'robScoreCleanup';
 import textCleanupStartup from 'textCleanup';
 import nestedTagEditorStartup from 'nestedTagEditor';
 
-
 window.app = {
     utils,
     animalStartup,
