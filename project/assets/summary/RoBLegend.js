@@ -3,7 +3,7 @@ import d3 from 'd3';
 
 import HAWCUtils from 'utils/HAWCUtils';
 
-import RiskOfBiasScore from 'riskofbias/RiskOfBiasScore';
+import RiskOfBiasScore from 'riskofbias/RiskOfBiasScoreLegend';
 
 
 class RoBLegend  {
