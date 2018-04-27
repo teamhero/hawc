@@ -58,10 +58,24 @@
             var increaseConfidenceFactors = evidenceProfile.Library.setConfidenceFactors({{increase_confidence_factors|safe}});
             var decreaseConfidenceFactors = evidenceProfile.Library.setConfidenceFactors({{decrease_confidence_factors|safe}});
 
-            var configuration = {};
+            // Configure the EvidenceProfile object
+            evidenceProfile.EvidenceProfile.configure(
+              {
+                "formId": "evidenceProfileForm"
+                ,"formActionsClass": "form-actions"
+              }
+            );
 
-            evidenceProfile.EvidenceProfile.configure(configuration);
-            console.log(evidenceProfile.EvidenceProfile.getConfiguration());
+            // Get the EvidenceProfile object provided by Python (it is the first element in the serialized QuerySet)
+            var object = {{evidenceProfile|safe}};
+            if (object.length > 0) {
+              object = object[0];
+            }
+            else {
+              object = {};
+            }
+
+            console.log({{evidenceProfile|safe}});
 
             /*
             // Get the child Evidence Profile Streams from the Python object and use them to build the Streams formset
