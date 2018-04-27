@@ -1,0 +1,18 @@
+{% extends "portal.html" %}
+
+{% block title %}
+  {{assessment}} | Add HERO Project | HAWC 
+{% endblock title %}
+
+{% block breadcrumbs %}
+  {% include "hawc/breadcrumbs.html" with crumbs=object.get_crumbs crud=crud %}
+{% endblock %}
+
+{% block content %}
+<h1>{{object}}</h1>
+
+{{assessment_id}}<br/>
+{{myvar}}
+
+{% endblock %}
+

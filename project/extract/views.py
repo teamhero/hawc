@@ -1,10 +1,8 @@
-from django.shortcuts import get_object_or_404
 from django.views.generic.edit import FormView
 from django.views.generic import View, ListView, TemplateView, FormView
 from django.template import Context, loader
-from django.http import HttpRequest
-from django.shortcuts import HttpResponse
-from django.shortcuts import render
+from django.http import HttpRequest, HttpResponseRedirect
+from django.shortcuts import HttpResponse, get_object_or_404, render
 from django.core import serializers
 from django.conf.urls import url, include
 from xml.dom import minidom
@@ -12,13 +10,19 @@ from xml.dom.minidom import parse
 import xml.parsers.expat
 import lxml.etree as ET
 import urllib.request
-import sys
 import requests
 import json
 import os.path
+import re
+from assessment.models import Attachment, Assessment
+from utils.models import get_crumbs
 from . import models
+from .forms import HeroForm
+
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.join(os.pardir, os.pardir)))
+TEMP_PATH = os.path.join(PROJECT_PATH, 'project\\templates')
 
 # Create your views here.
 
@@ -34,8 +38,6 @@ class TagTree(TemplateView):
         transform = ET.XSLT(xslt)
         newdom = transform(dom)
         context = super().get_context_data(**kwargs)
-        #print(ET.tostring(dom,pretty_print=True))
-        #context['myVar'] = ET.tostring(newdom, pretty_print=True)
         context['myVar'] = newdom
         return context
 
@@ -45,27 +47,33 @@ class Home(TemplateView):
     def get(*args, **kwargs):
         return HttpResponse("HERO Extracted Code will go here.")
 
-class HeroProject(TemplateView):
-    template_name = 'extract/hero.html'
+class HeroAdd(TemplateView):
+    template_name = 'extract/heroadd.html'
     heroURL = "http://localhost/hero/index.cfm/api/1.0/referencetagger/getprojecttagtree"
     apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3N1ZXJfcGVyc29uX2lkIjoyMjY3LCJpc3N1ZXJfb3JnYW5pemF0aW9uX2lkIjoyNzI5LCJpc3N1ZV9kYXRlIjoiRGVjZW1iZXIsIDIwIDIwMTcgMTU6Mzk6MTUiLCJpc3N1ZWVfb3JnYW5pemF0aW9uX2lkIjoxMDUsImlzc3VlZV9wZXJzb25faWQiOjE1MDh9.qeq4QmAE5SDw5c82UPm51ucjfE3DyOz9X_Wlv91aXtQ"
+    model = models.Attachment
+    parent_model = Assessment
 
-    # def __init__(self, *args):
-    #     response = requests.post(
-    #         self.heroURL
-    #         ,data = '{"project_id": 1437}'
-    #         ,headers = {
-    #             "Authorization": "Bearer " + self.apiToken
-    #             ,"Content-Type": "application/json"
-    #         }
-    #     )
-        #print(json.dumps(json.loads(response.text), indent=4))
+    def __init__(self, **kwargs):
+        response = requests.post(
+            self.heroURL
+            ,headers = {
+                "Authorization": "Bearer " + self.apiToken
+            }
+        )
+
+    def get_object(self, **kwargs):
+        return get_object_or_404(Assessment, pk=self.kwargs.get('pk'))
+
+    def get_crumbs(self):
+        return get_crumbs(self)
 
     def get_context_data(self, *args, **kwargs):
 
         context = super().get_context_data(**kwargs)
         project_id = self.kwargs.get('pk')
-        context['project_id'] = self.kwargs.get('pk')
+        context['assessment_id'] = self.kwargs.get('pk')
+        context['object'] = self.get_object()
         response = requests.post(
             self.heroURL
             ,data = '{"project_id":' + project_id + '}'
@@ -81,8 +89,10 @@ class Hero(TemplateView):
     template_name = 'extract/hero.html'
     heroURL = "http://localhost/hero/index.cfm/api/1.0/referencetagger/getprojects"
     apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3N1ZXJfcGVyc29uX2lkIjoyMjY3LCJpc3N1ZXJfb3JnYW5pemF0aW9uX2lkIjoyNzI5LCJpc3N1ZV9kYXRlIjoiQXByaWwsIDEyIDIwMTggMTc6MDg6MTgiLCJpc3N1ZWVfb3JnYW5pemF0aW9uX2lkIjoxMDg2LCJpc3N1ZWVfcGVyc29uX2lkIjoxODcyfQ.U3Njg7P5b3W0jx8BSec9-t1dPmgMKKVVVGLlP5hF3HE"
-
-    def __init__(self):
+    model = models.Attachment
+    parent_model = Assessment
+    formAction = "add"
+    def __init__(self, **kwargs):
         response = requests.post(
             self.heroURL
             ,headers = {
@@ -90,9 +100,29 @@ class Hero(TemplateView):
             }
         )
 
-        print(json.dumps(json.loads(response.text), indent=4))
+    def get_object(self, **kwargs):
+        return get_object_or_404(Assessment, pk=self.kwargs.get('pk'))
 
-    def get_context_data(self, **kwargs):
+    def get_crumbs(self):
+        return get_crumbs(self)
+
+    # def get_heroproject(self):
+    #     # if this is a POST request we need to process the form data
+    #     if self.request.method == 'POST':
+    #         # create a form instance and populate it with data from the request:
+    #         form = NameForm(self.request.POST)
+    #         # check whether it's valid:
+    #         if form.is_valid():
+    #                 # process the data in form.cleaned_data as required
+    #                 # ...
+    #                 # redirect to a new URL:
+    #                 return HttpResponseRedirect('/add/')
+    #     # if a GET (or any other method) we'll create a blank form
+    #     else:
+    #         form = HeroForm()
+    #     return render(self.request, os.path.join(TEMP_PATH, "extract\hero.html"), {'form': form})
+
+    def get_context_data(self, *args, **kwargs):
         response = requests.post(
             self.heroURL
             ,headers = {
@@ -100,7 +130,35 @@ class Hero(TemplateView):
             }
         )
         context = super().get_context_data(**kwargs)
-        context['myVar'] = json.dumps(json.loads(response.text), indent=4)
+        context['assessment_id'] = self.kwargs.get('pk')
+        context['object'] = self.get_object()
+        #context['myVar'] = json.dumps(json.loads(response.text), indent=4)
+        context['data'] = json.loads(response.text)
+
+        thisData = json.loads(response.text)
+        context['closer'] = thisData["methodResult"]
+
+        thisSet = thisData["methodResult"]["categories"][0]["projects"]
+        thisSet.append(thisData["methodResult"]["categories"][1]["projects"])
+        thisSet.append(thisData["methodResult"]["categories"][2]["projects"])
+        thisSet.append(thisData["methodResult"]["categories"][3]["projects"])
+        thisSet.append(thisData["methodResult"]["categories"][4]["projects"])
+        regex = r"'"
+        subst = "\""
+        regexStart = r"[{"
+        subStart = "{"
+        regexEnd = r"],"
+        substEnd = ""
+        result = re.sub(regex, subst, str(thisSet), 0, re.MULTILINE)
+        result0 = re.sub("\\[", "", str(result), 0, re.MULTILINE)
+        resultb = re.sub("\\]", "", str(result0), 0, re.MULTILINE)
+        result1 = re.sub('"-', '\'\'-', str(resultb), 0, re.MULTILINE)
+        result2 = re.sub('"s ', '\'s ', str(result1), 0, re.MULTILINE)
+        result3 = re.sub('\\\\xa0', '', str(result2), 0, re.MULTILINE)
+        result4 = "[" + result3 + "]"
+        
+        context['maybe'] = json.loads(result4)
+        context['formAction'] = self.formAction
         return context
 
 if (__name__ == "__main__"):

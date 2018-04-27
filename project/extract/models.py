@@ -6,6 +6,7 @@ from django.db import models
 from utils.models import get_crumbs
 from utils.helper import HAWCDjangoJSONEncoder
 from myuser.models import HAWCUser
+from assessment.models import Assessment, Attachment
 
 # Create your models here.
 

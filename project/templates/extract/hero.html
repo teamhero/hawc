@@ -1,11 +1,61 @@
 {% extends "portal.html" %}
 
 {% block title %}
-   Import API Test | HAWC
+  {{assessment}} | Add HERO Project | HAWC 
+{% endblock title %}
+
+{% block breadcrumbs %}
+  {% include "hawc/breadcrumbs.html" with crumbs=object.get_crumbs crud=crud %}
 {% endblock %}
 
 {% block content %}
-{{ project_id }}
-<hr/>
-{{ myVar }}
+<h1>{{object}}</h1>
+
+
+
+-------------
+<form action="{{ formAction }}/" method="get">
+	{% csrf_token %}
+	<p>Select a HERO project to import into <strong>{{object}}</strong>:</p>
+	<label for="heroproject">Hero Projects</label>
+	<select name="heroproject" id="heroproject">
+	     {% for result in maybe %}
+	     <option value="{{ result.project_id }}">{{ result.project }}</option>
+	     {% endfor %}
+	</select>
+	<!-- <button type="button" name="sortButton" id="sortButton" style="display: none;">Sort Options</button> -->
+	<div class="form-actions">
+		<button type="submit" class="btn btn-primary">Add Project</button>
+	</div>
+</form>
+
 {% endblock %}
+
+{% block extrajs %}
+<!-- This script block is to alphabetically sort the HERO project field if so desired -->
+<script type="text/javascript">
+    function init() {
+         document.getElementById('sortButton').click();
+    }
+    window.onload = init;
+</script>
+<script>
+	$('button').click(function() {
+	    var options = $('select.heroproject option');
+	    var arr = options.map(function(_, o) {
+	        return {
+	            t: $(o).text(),
+	            v: o.value
+	        };
+	    }).get();
+	    arr.sort(function(o1, o2) {
+	        return o1.t > o2.t ? 1 : o1.t < o2.t ? -1 : 0;
+	    });
+	    options.each(function(i, o) {
+	        console.log(i);
+	        o.value = arr[i].v;
+	        $(o).text(arr[i].t);
+	    });
+	});
+</script> 
+{% endblock extrajs %}

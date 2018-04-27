@@ -16,6 +16,7 @@ from django.views.generic import View, ListView, TemplateView, FormView
 from django.views.generic.edit import CreateView
 from django.shortcuts import HttpResponse, get_object_or_404
 
+from extract.views import Hero
 from utils.views import (MessageMixin, LoginRequiredMixin, BaseCreate,
                          CloseIfSuccessMixin, BaseDetail, BaseUpdate,
                          BaseDelete, BaseList, TeamMemberOrHigherMixin,
@@ -515,3 +516,31 @@ class CleanStudyRoB(ProjectManagerOrHigherMixin, BaseDetail):
 
     def get_assessment(self, request, *args, **kwargs):
         return get_object_or_404(self.model, pk=kwargs['pk'])
+
+class Hero(TemplateView):
+    template_name = 'extract/hero.html'
+    heroURL = "http://localhost/hero/index.cfm/api/1.0/referencetagger/getprojects"
+    apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3N1ZXJfcGVyc29uX2lkIjoyMjY3LCJpc3N1ZXJfb3JnYW5pemF0aW9uX2lkIjoyNzI5LCJpc3N1ZV9kYXRlIjoiQXByaWwsIDEyIDIwMTggMTc6MDg6MTgiLCJpc3N1ZWVfb3JnYW5pemF0aW9uX2lkIjoxMDg2LCJpc3N1ZWVfcGVyc29uX2lkIjoxODcyfQ.U3Njg7P5b3W0jx8BSec9-t1dPmgMKKVVVGLlP5hF3HE"
+    model = models.Assessment
+
+    def __init__(self):
+        response = requests.post(
+            self.heroURL
+            ,headers = {
+                "Authorization": "Bearer " + self.apiToken
+            }
+        )
+
+        print(json.dumps(json.loads(response.text), indent=4))
+
+    def get_context_data(self, **kwargs):
+        response = requests.post(
+            self.heroURL
+            ,headers = {
+                "Authorization": "Bearer " + self.apiToken
+            }
+        )
+        context = super().get_context_data(**kwargs)
+        context['attachments'] = models.Attachment.objects.get_attachments(self.object, not context['obj_perms']['edit'])
+        context['myVar'] = json.dumps(json.loads(response.text), indent=4)
+        return context

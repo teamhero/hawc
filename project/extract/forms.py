@@ -4,7 +4,7 @@ from django.forms import ModelForm
 from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.db.models import Q
 
-from . import models, lookups
+from . import models
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,3 +16,5 @@ class ExtractProject(ModelForm):
         model = models.Project
         exclude = ('project_id', )
 
+class HeroForm(forms.Form):
+    heroproject = forms.CharField(label='Hero Projects', max_length=100)

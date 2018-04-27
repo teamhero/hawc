@@ -7,12 +7,14 @@ router = DefaultRouter()
 
 urlpatterns = [
 
-    url(r'^hero/$',
+    url(r'^hero/(?P<pk>\d+)/$',
         views.Hero.as_view(), name='hero'),
+    url(r'^hero/(?P<pk>\d+)/add/$',
+        views.HeroAdd.as_view(), name='hero_add'),
     url(r'^tagtree/$',
         views.TagTree.as_view(), name='tagtree'),
     url(r'^project/(?P<pk>\d+)/$',
-        views.HeroProject.as_view(),
+        views.HeroAdd.as_view(),
         name='hero_project'),
     
 ]
