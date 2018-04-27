@@ -408,10 +408,11 @@ class EvidenceProfileNew(BaseCreate):
 
         # Set the desired additional context attributes to their initialized, empty values
         context["stream_types"] = models.get_serialized_stream_types()
-        context["confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.all())
+        context["increase_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True))
+        context["decrease_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True))
         context["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
+        context["evidenceProfile"] = serializers.serialize("json", [models.EvidenceProfile(), ])
         context["streams"] = serializers.serialize("json", models.EvidenceProfileStream.objects.none())
-        context["cross_stream_conclusions"] = {}
 
         return context
 
@@ -443,9 +444,10 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
         context = super().get_context_data(**kwargs)
 
         # Set the desired additional context attributes based on the values of the existing Evidence Profile
-        context["confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.all())
+        context["increase_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True))
+        context["decrease_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True))
         context["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
-        context["cross_stream_conclusions"] = self.object.cross_stream_conclusions
+        context["evidenceProfile"] = serializers.serialize("json", [self.object, ])
         context["streams"] = serializers.serialize("json", self.object.streams.all())
 
         return context
