@@ -85,6 +85,26 @@ class HeroAdd(TemplateView):
         context['myVar'] = json.dumps(json.loads(response.text), indent=4)
         return context
 
+    def post(self, request, *args, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project_id = request.heroproject
+        context['assessment_id'] = self.kwargs.get('pk')
+        context['object'] = self.get_object()
+        response = requests.post(
+            self.heroURL
+            ,data = '{"project_id":' + project_id + '}'
+            ,headers = {
+                "Authorization": "Bearer " + self.apiToken
+                ,"Content-Type": "application/json"
+            }
+        )
+        #context['thisRequest'] = request.heroproject
+        context['thisRequest'] = self.kwargs.get('heroproject')
+        context['myVar'] = json.dumps(json.loads(response.text), indent=4)
+        return context
+        #return render(request, self.template_name)
+
+
 class Hero(TemplateView):
     template_name = 'extract/hero.html'
     heroURL = "http://localhost/hero/index.cfm/api/1.0/referencetagger/getprojects"
