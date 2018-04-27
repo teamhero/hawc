@@ -854,11 +854,6 @@ class EvidenceProfileScenario(models.Model):
 def get_serialized_stream_types():
     returnValue = []
 
-    print(STUDY_TYPE_CHOICES)
-    print(type(STUDY_TYPE_CHOICES))
-    print(returnValue)
-    print(type(returnValue))
-
     for choice in STUDY_TYPE_CHOICES:
         returnValue = returnValue + [
             {

@@ -27,16 +27,6 @@
   {{ smart_tag_form.media }}
 
   <script type="text/javascript">
-    // Add commonly used variables from Python objects
-    var confidenceFactors = {{confidence_factors|safe}};
-    var confidenceJudgements = {{confidence_judgements|safe}};
-    var streamTypes = {{stream_types|safe}};
-
-    var streamTypeValues = [];
-    for (var i=0; i<streamTypes.length; i++) {
-      streamTypeValues[streamTypeValues.length] = streamTypes[i].value;
-    }
-
     // Run the assessmentStartup() method for this app
     window.app.assessmentStartup(
       function(assessment) {
@@ -62,6 +52,18 @@
         // Start up and initialize the Evidence Profile JavaScript object
         window.app.evidenceProfileStartup(
           function(evidenceProfile) {
+            // Create desired JavaScript objects from available Python objects
+            var streamTypes = evidenceProfile.Library.setStreamTypes({{stream_types|safe}});
+            var confidenceJudgements = evidenceProfile.Library.setConfidenceJudgements({{confidence_judgements|safe}});
+            var increaseConfidenceFactors = evidenceProfile.Library.setConfidenceFactors({{increase_confidence_factors|safe}});
+            var decreaseConfidenceFactors = evidenceProfile.Library.setConfidenceFactors({{decrease_confidence_factors|safe}});
+
+            var configuration = {};
+
+            evidenceProfile.EvidenceProfile.configure(configuration);
+            console.log(evidenceProfile.EvidenceProfile.getConfiguration());
+
+            /*
             // Get the child Evidence Profile Streams from the Python object and use them to build the Streams formset
             evidenceProfile.EvidenceProfile.buildStreamFormset("evidenceProfileForm", {{streams|safe}});
 
@@ -71,7 +73,6 @@
             // Add an <hr /> tag just below the "caption" field in the form
             evidenceProfile.EvidenceProfile.addHRTag("caption", "after");
 
-            /*
             // Add an <hr /> tag just below the "confidence_judgement_explanation" field in the form
             evidenceProfile.EvidenceProfile.addHRTag("confidence_judgement_explanation", "after");
             */
