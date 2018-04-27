@@ -68,41 +68,24 @@ class HeroAdd(TemplateView):
     def get_crumbs(self):
         return get_crumbs(self)
 
-    def get_context_data(self, *args, **kwargs):
-
-        context = super().get_context_data(**kwargs)
-        project_id = self.kwargs.get('pk')
-        context['assessment_id'] = self.kwargs.get('pk')
-        context['object'] = self.get_object()
-        response = requests.post(
-            self.heroURL
-            ,data = '{"project_id":' + project_id + '}'
-            ,headers = {
-                "Authorization": "Bearer " + self.apiToken
-                ,"Content-Type": "application/json"
-            }
-        )
-        context['myVar'] = json.dumps(json.loads(response.text), indent=4)
-        return context
-
     def post(self, request, *args, **kwargs):
         context = super().get_context_data(**kwargs)
-        project_id = request.heroproject
+        request.project_id = request.POST.get('heroproject')
+        print(request.POST.get('heroproject'))
         context['assessment_id'] = self.kwargs.get('pk')
         context['object'] = self.get_object()
         response = requests.post(
             self.heroURL
-            ,data = '{"project_id":' + project_id + '}'
+            ,data = '{"project_id":' + request.project_id + '}'
             ,headers = {
                 "Authorization": "Bearer " + self.apiToken
                 ,"Content-Type": "application/json"
             }
         )
-        #context['thisRequest'] = request.heroproject
-        context['thisRequest'] = self.kwargs.get('heroproject')
+        context['thisRequest'] = self.request.POST.get('heroproject')
         context['myVar'] = json.dumps(json.loads(response.text), indent=4)
-        return context
-        #return render(request, self.template_name)
+        #return context
+        return render(request, self.template_name)
 
 
 class Hero(TemplateView):
