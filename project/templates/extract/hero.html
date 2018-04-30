@@ -11,9 +11,6 @@
 {% block content %}
 <h1>{{object}}</h1>
 
-
-
--------------
 <form action="{{ formAction }}/" method="post">
 	{% csrf_token %}
 	<p>Select a HERO project to import into <strong>{{object}}</strong>:</p>

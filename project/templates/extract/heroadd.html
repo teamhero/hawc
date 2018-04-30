@@ -11,8 +11,11 @@
 {% block content %}
 <h1>{{object}}</h1>
 
-{{thisRequest}}<br/>
-{{myvar}}
+The project <strong>{{ myVar2.project}}</strong> has the following tags:<br/>
 
+<hr/>{{myvar2}}
+<hr/> {% for result in myVar2.children %}
+{{result.usage}}<br/>
+{% endfor %}
 {% endblock %}
 
