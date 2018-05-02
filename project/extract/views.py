@@ -96,24 +96,6 @@ class HeroAdd(TemplateView):
         context = {'project_id': project_id, 'object': thisObject, 'assessment_id': assessment_id, 'myVar': myVar, 'myVar2': myVar2,}
         return render(request, self.template_name, context)
 
-    # def get_context_data(self, *args, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     thisProject = self.post('heroproject')
-    #     print(thisProject)
-    #     #project_id = request.POST.get('heroproject')
-    #     context['assessment_id'] = self.kwargs.get('pk')
-    #     context['object'] = self.get_object()
-    #     response = requests.post(
-    #         self.heroURL
-    #         ,data = '{"project_id":' +context['assessment_id'] + '}'
-    #         ,headers = {
-    #             "Authorization": "Bearer " + self.apiToken
-    #             ,"Content-Type": "application/json"
-    #         }
-    #     )
-    #     context['myVar'] = json.loads(response.text)
-    #     return context
-
 class Hero(TemplateView):
     template_name = 'extract/hero.html'
     heroURL = "http://localhost/hero/index.cfm/api/1.0/referencetagger/getprojects"
@@ -134,22 +116,6 @@ class Hero(TemplateView):
 
     def get_crumbs(self):
         return get_crumbs(self)
-
-    # def get_heroproject(self):
-    #     # if this is a POST request we need to process the form data
-    #     if self.request.method == 'POST':
-    #         # create a form instance and populate it with data from the request:
-    #         form = NameForm(self.request.POST)
-    #         # check whether it's valid:
-    #         if form.is_valid():
-    #                 # process the data in form.cleaned_data as required
-    #                 # ...
-    #                 # redirect to a new URL:
-    #                 return HttpResponseRedirect('/add/')
-    #     # if a GET (or any other method) we'll create a blank form
-    #     else:
-    #         form = HeroForm()
-    #     return render(self.request, os.path.join(TEMP_PATH, "extract\hero.html"), {'form': form})
 
     def get_context_data(self, *args, **kwargs):
         response = requests.post(
