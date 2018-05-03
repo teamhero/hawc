@@ -52,44 +52,40 @@
         // Start up and initialize the Evidence Profile JavaScript object
         window.app.evidenceProfileStartup(
           function(evidenceProfile) {
+            // Configure the EvidenceProfile object
+            evidenceProfile.EvidenceProfile.configure(
+              {
+                "formId": "evidenceProfileForm",
+                "formActionsClass": "form-actions",
+                "inferencesDivId": "div_id_inferences",
+                "inferencesTableId": "table_id_inferences",
+                "addInferenceRowId": "add_inference_row",
+                "inferenceRowIdPrefix": "row_id_inference",
+                "buttonSetBaseId": "btn_inference",
+                "inferenceRowRegEx": {
+                  "match": "^row_id_inference_\\d+$",
+                  "replace": "^row_id_inference_(\\d+)$"
+                }
+              }
+            );
+
             // Create desired JavaScript objects from available Python objects
             var streamTypes = evidenceProfile.Library.setStreamTypes({{stream_types|safe}});
             var confidenceJudgements = evidenceProfile.Library.setConfidenceJudgements({{confidence_judgements|safe}});
             var increaseConfidenceFactors = evidenceProfile.Library.setConfidenceFactors({{increase_confidence_factors|safe}});
             var decreaseConfidenceFactors = evidenceProfile.Library.setConfidenceFactors({{decrease_confidence_factors|safe}});
-
-            // Configure the EvidenceProfile object
-            evidenceProfile.EvidenceProfile.configure(
-              {
-                "formId": "evidenceProfileForm"
-                ,"formActionsClass": "form-actions"
-              }
-            );
-
-            // Get the EvidenceProfile object provided by Python (it is the first element in the serialized QuerySet)
-            var object = {{evidenceProfile|safe}};
-            if (object.length > 0) {
-              object = object[0];
-            }
-            else {
-              object = {};
-            }
-
-            console.log({{evidenceProfile|safe}});
+            var evidenceProfileObject = evidenceProfile.EvidenceProfile.checkEvidenceProfile({{evidenceProfile|safe}});
 
             /*
             // Get the child Evidence Profile Streams from the Python object and use them to build the Streams formset
             evidenceProfile.EvidenceProfile.buildStreamFormset("evidenceProfileForm", {{streams|safe}});
+            */
 
             // Get the Cross-Stream Conclusions from the Python object and use them to build the Cross-Stream Inferences formset
-            evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormset("evidenceProfileForm", {{cross_stream_conclusions|safe}});
+            evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormset(evidenceProfileObject);
 
             // Add an <hr /> tag just below the "caption" field in the form
-            evidenceProfile.EvidenceProfile.addHRTag("caption", "after");
-
-            // Add an <hr /> tag just below the "confidence_judgement_explanation" field in the form
-            evidenceProfile.EvidenceProfile.addHRTag("confidence_judgement_explanation", "after");
-            */
+            evidenceProfile.Library.addHRTag("caption", "after");
           }
         );
       }
