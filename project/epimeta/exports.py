@@ -1,4 +1,5 @@
 from study.models import Study
+from riskofbias.models import RiskOfBiasScore
 from utils.helper import FlatFileExporter
 
 from . import models
@@ -70,13 +71,24 @@ class MetaResultFlatDataPivot(FlatFileExporter):
             'lower CI',
             'upper CI',
             'CI units',
-            'heterogeneity'
+            'heterogeneity',
+            'Final ROB'			
         ]
 
     def _get_data_rows(self):
         rows = []
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
+            study_id = ser['protocol']['study']['id']
+            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
+            if fROB == -1:
+                finalROB = 'N/A'
+            else:
+                fROB = (fROB+10)%11
+                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
+                    if cnt == fROB:
+                        finalROB = text
+
             row = [
                 ser['protocol']['study']['id'],
                 ser['protocol']['study']['short_citation'],
@@ -103,6 +115,8 @@ class MetaResultFlatDataPivot(FlatFileExporter):
                 ser['ci_units'],
                 ser['heterogeneity'],
             ]
+            row.append(finalROB)
+
             rows.append(row)
 
         return rows
