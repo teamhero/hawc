@@ -859,18 +859,66 @@ class EvidenceProfileForm(forms.ModelForm):
         # First, use the super-class's clean() method as a starting point
         cleaned_data = super().clean()
 
+        # Initialize a dict to hold objects made up of related sets of form data, along with information about their form field naming conventions
+        # This object will be used as a temporary store to be built up while iterating over the incoming form key/value pairs; and then ordering of
+        # the objects will be done after they have all been built
+        unordered_objects = {
+            "cross_stream_inferences": {
+                "objects": {},
+                "desired_order": [],
+                "ordering_field": "order",
+                "re_match": r"^inference_(order|title|explanation)_\d+$",
+                "re_replace_index": r"\D",
+                "re_replace_index_with": r"",
+                "re_replace_key": r"^inference_(order|title|explanation)_\d+$",
+                "re_replace_key_with": r"\1"
+            }
+        }
+
+        # Iterate over the submitted form fields
+        for form_key in self.submitted_data:
+
+            # Iterate over the sets of unordered objects
+            for uo_key in unordered_objects:
+                if (re.search(unordered_objects[uo_key]["re_match"], form_key)):
+                    # This form field name matched the naming convention corresponding to one of the sets of objects
+
+                    object_key = re.sub(unordered_objects[uo_key]["re_replace_index"], unordered_objects[uo_key]["re_replace_index_with"], form_key)
+                    internal_key = re.sub(unordered_objects[uo_key]["re_replace_key"], unordered_objects[uo_key]["re_replace_key_with"], form_key)
+
+                    if (not (object_key in unordered_objects[uo_key]["objects"])):
+                        # The object of which this form field is a part has not yet been added to the set of unordered objects, initialize it now
+                        unordered_objects[uo_key]["objects"][object_key] = {}
+
+                    # Add the field to its object as an attribute
+                    unordered_objects[uo_key]["objects"][object_key][internal_key] = self.submitted_data[form_key]
+
+                    if (internal_key == unordered_objects[uo_key]["ordering_field"]):
+                        # This field is the object's "ordering" field, use it to put an entry in the "desired_order" list
+
+                    print("-- -- -- -- -- -- -- -- -- -- -- --")
+                    print(form_key)
+                    print(self.submitted_data[form_key])
+                    print(object_key)
+                    print(internal_key)
+
+        print(unordered_objects)
+
+        """
         # Next, iterate through the form fields looking for those that are part of cross-stream inferences
         inferences = []
-        titlePattern = re.compile("^inference_title_\d+$")
-        explanationPattern = re.compile("^inference_explanation_\d+$")
+        orderingFieldPattern = re.compile("^inference_order_\d+$")
+        titleFieldPattern = re.compile("^inference_order_\d+$")
+        explanationFieldPattern = re.compile("^inference_order_\d+$")
         replacePattern = re.compile("\D")
         for key in self.submitted_data:
-            # Check and see if this form field's name matches either a cross-stream inference's title or explanation
-            isTitle = True if (titlePattern.match(key)) else False
-            isExplanation = True if ((isTitle == False) and (explanationPattern.match(key))) else False
+            # Check and see if this form field's name matches either a cross-stream inference's ordering field
 
-            if ((isTitle) or (isExplanation)):
+            if (orderingFieldPattern.match(key)):
                 index = int(replacePattern.sub("", key)) - 1
+                print(key)
+                print(self.submitted_data[key])
+                print(index)
 
                 if (index >= 0):
                     while (len(inferences) <= index):
@@ -886,6 +934,9 @@ class EvidenceProfileForm(forms.ModelForm):
                             inferences[index]["explanation"] = self.submitted_data[key]
                         else:
                             inferences[index] = {"title":"", "explanation":self.submitted_data[key]}
+
+        print(inferences)
+        """
 
         # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
