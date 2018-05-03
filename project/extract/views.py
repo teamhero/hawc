@@ -16,6 +16,7 @@ import os.path
 import re
 from assessment.models import Attachment, Assessment
 from utils.models import get_crumbs
+from lit.models import Reference, Search
 from . import models
 from .forms import HeroForm
 
@@ -53,7 +54,7 @@ class HeroAdd(TemplateView):
     apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3N1ZXJfcGVyc29uX2lkIjoyMjY3LCJpc3N1ZXJfb3JnYW5pemF0aW9uX2lkIjoyNzI5LCJpc3N1ZV9kYXRlIjoiRGVjZW1iZXIsIDIwIDIwMTcgMTU6Mzk6MTUiLCJpc3N1ZWVfb3JnYW5pemF0aW9uX2lkIjoxMDUsImlzc3VlZV9wZXJzb25faWQiOjE1MDh9.qeq4QmAE5SDw5c82UPm51ucjfE3DyOz9X_Wlv91aXtQ"
     model = models.Attachment
     parent_model = Assessment
-
+    model = models.Search
     def __init__(self, **kwargs):
         response = requests.post(
             self.heroURL
