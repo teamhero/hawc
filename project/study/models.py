@@ -321,7 +321,7 @@ class Study(Reference):
         try:
             return self.riskofbiases.get(final=True, active=True)
         except ObjectDoesNotExist:
-            return None
+            return self.riskofbiases.objects.none()
         except MultipleObjectsReturned:
             raise ValidationError(
                 'Multiple active final Study Evaluation reviews for "{}", '

@@ -1,4 +1,5 @@
 from study.models import Study
+from riskofbias.models import RiskOfBiasScore
 from utils.helper import FlatFileExporter
 
 from . import models
@@ -115,12 +116,22 @@ class OutcomeDataPivot(FlatFileExporter):
             'percent control mean',
             'percent control low',
             'percent control high',
-        ]
+            'Final ROB'
+       ]
 
     def _get_data_rows(self):
         rows = []
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
+            study_id = ser['study_population']['study']['id']
+            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
+            if fROB == -1:
+                finalROB = 'N/A'
+            else:
+                fROB = (fROB+10)%11
+                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
+                    if cnt == fROB:
+                        finalROB = text
             row = [
                 ser['study_population']['study']['id'],
                 ser['study_population']['study']['short_citation'],
@@ -213,5 +224,7 @@ class OutcomeDataPivot(FlatFileExporter):
                         rg['percentControlLow'],
                         rg['percentControlHigh'],
                     ])
+                    row_copy2.append(finalROB)
+ 
                     rows.append(row_copy2)
         return rows
