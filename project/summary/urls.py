@@ -97,5 +97,5 @@ urlpatterns = [
 
     url(r'evidenceprofile/assessment/(?P<pk>\d+)/new/', views.EvidenceProfileNew.as_view(), name='evidenceprofile_new'),
     url(r'^evidenceprofile/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/$', views.EvidenceProfileDetail.as_view(), name='evidenceprofile_detail'),
-    url(r'^evidenceprofile/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/update/$', views.EvidenceProfileUpdate.as_view(), name='evidenceprofile_update'),
+    #url(r'^evidenceprofile/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/update/$', views.EvidenceProfileUpdate.as_view(), name='evidenceprofile_update'),
 ]
