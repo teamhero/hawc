@@ -1,5 +1,6 @@
 import json
 
+from django.forms.models import modelformset_factory
 from django.core import serializers
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseNotAllowed
@@ -9,7 +10,7 @@ from django.views.generic import TemplateView, FormView
 from assessment.models import Assessment
 from riskofbias.models import RiskOfBiasMetric
 from utils.helper import HAWCDjangoJSONEncoder
-from utils.views import (BaseList, BaseCreate, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin)
+from utils.views import BaseList, BaseCreate, BaseCreateWithFormset, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin
 from assessment.models import ConfidenceFactor, ConfidenceJudgement
 
 from . import forms, models
@@ -385,6 +386,63 @@ class GetEvidenceProfileObjectMixin(object):
         return super().get_object(object=obj)
 
 
+class EvidenceProfileNew(BaseCreateWithFormset):
+    # Set some basic attributes for this view
+    success_message = 'Evidence Profile created.'
+    parent_model = Assessment
+    parent_template_name = 'assessment'
+    model = models.EvidenceProfile
+    template_name = 'summary/evidenceprofile_form.html'
+    form_class = forms.EvidenceProfileForm
+    formset_factory = forms.EvidenceProfileStreamFormSet
+
+    # This method creates an initial Evidence Profile Stream formset factory and uses it to create an empty base formset
+    def build_initial_formset_factory(self):
+        formset = modelformset_factory(
+            models.EvidenceProfileStream,
+            form=forms.EvidenceProfileStreamForm,
+            formset=forms.EvidenceProfileStreamFormSet,
+        )
+
+        return formset(queryset=models.EvidenceProfileStream.objects.none())
+
+    # This method returns the URL that the requestor will be re-directed to after this request is handled
+    def get_success_url(self):
+        # Get the value for this Evidence Profile's visualization URL and return it
+        return self.object.get_update_url()
+
+    """
+    # Define the type of object being created and the form object that will be used
+
+    def get_context_data(self, **kwargs):
+        # Get the basic context attributes from the superclass's get_context_data() method
+        context = super().get_context_data(**kwargs)
+
+        # Set the desired additional context attributes to their initialized, empty values
+        context["stream_types"] = models.get_serialized_stream_types()
+        context["increase_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True))
+        context["decrease_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True))
+        context["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
+        context["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"])
+        context["streams"] = serializers.serialize("json", models.EvidenceProfileStream.objects.none())
+
+        return context
+
+    # This method handles a valid submitted form
+    def form_valid(self, form):
+        # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
+        # form fields
+        print(form.cleaned_data.get("cross_stream_conclusions"))
+        form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
+
+        # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
+        form.instance.hawcuser = self.request.user
+
+        # return super().form_valid(form)
+    """
+
+
+"""
 # This class is used for creating a new Evidence Profile object
 class EvidenceProfileNew(BaseCreate):
     # Set some basic attributes for this view
@@ -461,6 +519,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
         print(form.cleaned_data.get("cross_stream_conclusions"))
         form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
         # return super().form_valid(form)
+"""
 
 
 class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):

@@ -5,6 +5,7 @@ import re
 from django.db.models import QuerySet
 from crispy_forms import layout as cfl
 from django import forms
+from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.core.urlresolvers import reverse
 from selectable import forms as selectable
 
@@ -870,6 +871,7 @@ class EvidenceProfileForm(forms.ModelForm):
 
                     if (internal_key == unordered_objects[uo_key]["ordering_field"]):
                         # This field is the object's "ordering" field, use it to put an entry in the "desired_order" list
+                        pass
 
                     print("-- -- -- -- -- -- -- -- -- -- -- --")
                     print(form_key)
@@ -926,3 +928,31 @@ class EvidenceProfileForm(forms.ModelForm):
         }
 
         return cleaned_data
+
+
+# This class is the form used for adding/editing an Evidence Profile object
+class EvidenceProfileStreamForm(forms.ModelForm):
+    submitted_data = None
+
+    class Meta:
+        # Set the base model and form fields for this form
+        model = models.EvidenceProfileStream
+        fields = ("stream_type", "stream_title", )
+
+
+class BaseEvidenceProfileStreamFormSet(BaseModelFormSet):
+    def __init__(self, **defaults):
+        super().__init__(**defaults)
+        print(self.forms)
+        """
+        if len(self.forms) > 0:
+            self.forms[0].fields['significance_level'].widget.attrs['class'] += " hidden"
+        """
+
+
+EvidenceProfileStreamFormSet = modelformset_factory(
+    models.EvidenceProfileStream,
+    form=EvidenceProfileStreamForm,
+    formset=BaseEvidenceProfileStreamFormSet,
+    extra=1
+)
