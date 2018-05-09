@@ -44,8 +44,14 @@ class RiskOfBiasDomainSerializer(serializers.ModelSerializer):
         model = models.RiskOfBiasDomain
         fields = '__all__'
 
+class RiskOfBiasMetricAnswersSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.RiskOfBiasMetricAnswers
+        fields = '__all__'
 
 class RiskOfBiasMetricSerializer(serializers.ModelSerializer):
+    answers = RiskOfBiasMetricAnswersSerializer(many=True, read_only=True)
     domain = RiskOfBiasDomainSerializer(read_only=True)
 
     class Meta:
@@ -53,32 +59,12 @@ class RiskOfBiasMetricSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RiskOfBiasMetricAnswersSerializer(serializers.ModelSerializer):
-    metric = RiskOfBiasMetricSerializer(read_only=True)
-
-    class Meta:
-        model = models.RiskOfBiasMetricAnswers
-        fields = '__all__'
-
-
 class RiskOfBiasScoreSerializer(serializers.ModelSerializer):
     metric = RiskOfBiasMetricSerializer(read_only=True)
-    answers = RiskOfBiasMetricAnswersSerializer(many=True, read_only=True)
-
-    """def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        ret['score_description'] = instance.get_score_display()
-        ret['score_symbol'] = instance.score_symbol
-        ret['score_shade'] = instance.score_shade
-        ret['url_edit'] = instance.riskofbias.get_edit_url()
-        ret['study_name'] = instance.riskofbias.study.short_citation
-        ret['study_id'] = instance.riskofbias.study.id
-        ret['study_types'] = instance.riskofbias.study.get_study_type()
-        return ret"""
 
     class Meta:
         model = models.RiskOfBiasScore
-        fields = ('id', 'score', 'notes', 'metric', 'answers',)
+        fields = ('id', 'score', 'notes', 'metric',)
 
 
 class RiskOfBiasSerializer(serializers.ModelSerializer):
