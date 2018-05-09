@@ -12,10 +12,25 @@
 <h1>{{object}}</h1>
 
 The project <strong>{{ myVar2.project}}</strong> has the following tags:<br/>
-
+<hr/>{{tags}}
 <hr/>{{myvar2}}
 <hr/> {% for result in myVar2.children %}
 {{result.usage}}<br/>
 {% endfor %}
+
+
+	<div class="span6">
+      <h3>HERO tags</h3>
+      <div id="tags"></div>
+    </div>
+
 {% endblock %}
 
+{% block extrajs %}
+  <script type="text/javascript">
+    window.app.litStartup(function(lit){
+      window.tagtree = new lit.TagTree({{tags|safe}});
+      $('#tags').html(window.tagtree.get_nested_list({"show_refs_count": false}))
+    });
+  </script>
+{% endblock extrajs %}

@@ -52,9 +52,9 @@ class HeroAdd(TemplateView):
     template_name = 'extract/heroadd.html'
     heroURL = "http://localhost/hero/index.cfm/api/1.0/referencetagger/getprojecttagtree"
     apiToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3N1ZXJfcGVyc29uX2lkIjoyMjY3LCJpc3N1ZXJfb3JnYW5pemF0aW9uX2lkIjoyNzI5LCJpc3N1ZV9kYXRlIjoiRGVjZW1iZXIsIDIwIDIwMTcgMTU6Mzk6MTUiLCJpc3N1ZWVfb3JnYW5pemF0aW9uX2lkIjoxMDUsImlzc3VlZV9wZXJzb25faWQiOjE1MDh9.qeq4QmAE5SDw5c82UPm51ucjfE3DyOz9X_Wlv91aXtQ"
-    model = models.Attachment
+    #model = models.Attachment
     parent_model = Assessment
-    model = models.Search
+    model = Search
     def __init__(self, **kwargs):
         response = requests.post(
             self.heroURL
@@ -82,18 +82,12 @@ class HeroAdd(TemplateView):
             }
         )
         print(request.POST.get('heroproject'))
-        print(self.kwargs.get('pk'))
         print(response.text)
+        print(self.kwargs.get('pk'))
         myVar = response.text
         tempVar = json.loads(myVar)
         myVar2 = tempVar["methodResult"]["tagTree"]
-        #thisSet = thisData["methodResult"]["categories"][0]["projects"]
-        # regex = r"'"
-        # subst = "\""
-        # result = re.sub(regex, subst, str(myVar2), 0, re.MULTILINE)
-        # print(result)
-        #tempVar1 = json.loads(result)
-        #myVar3 =result["tagTree"]
+        print(myVar2)
         context = {'project_id': project_id, 'object': thisObject, 'assessment_id': assessment_id, 'myVar': myVar, 'myVar2': myVar2,}
         return render(request, self.template_name, context)
 
