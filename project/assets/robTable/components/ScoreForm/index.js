@@ -5,8 +5,6 @@ import ScoreIcon from 'robTable/components/ScoreIcon';
 import Select from 'shared/components/Select';
 import './ScoreForm.css';
 
-//const API = 'http://localhost:8000/rob/api/answers/';
-
 class ScoreForm extends Component {
 
     constructor(props){
@@ -31,17 +29,30 @@ class ScoreForm extends Component {
             },
             score: null,
             notes: props.score.notes,
+            choices: props.score.metric.answers.choice,
+            symbols: props.score.metric.answers.symbol,
+            shades: props.score.metric.answers.shade,
             answers: [],
         };
         this.handleEditorInput = this.handleEditorInput.bind(this);
         this.selectScore = this.selectScore.bind(this);
     }
 
-    componentDidMount() {
-        fetch('/rob/api/answers/')
-          .then(response => response.json())
-          .then(data => this.setState({ answers: data.answers }));
-    }
+    /*componentDidMount() {
+        var that = this;
+        fetch('http://localhost:8000/study/api/study/100000385', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        }).then(function(response) {
+            return response.json();
+        }).then(function(json) {
+            console.log(json);
+            that.setState({answers: json });
+        });
+    }*/
 
     componentWillMount(){
         this.selectScore(this.props.score.score);
@@ -92,16 +103,17 @@ class ScoreForm extends Component {
     render() {
         let { name } = this.props.score.metric,
             { scoreChoices, score, notes, selectedSymbol, selectedShade } = this.state;
-        let { answers } = this.props.state.answers;
-        let optionItems = answers.map((answer) =>
-                <option key={answer.answer_score}>{answer.choice}</option>
-            );
+        /*let  answers  = this.state.metricAnswers.map((answer) => {
+            return (
+                <option key={answer.answer_score}>{answer.choice}</option> 
+            )
+        });
         if (name === answers.metric) {
             return (
                 <div className='score-form'>
                     <div>
                         <select>
-                            {optionItems}
+                            {answers}
                         </select>
                         <br/><br/>
                         <ScoreIcon shade={answers.shade}
@@ -115,7 +127,19 @@ class ScoreForm extends Component {
                             className='score-editor' />
                 </div>
             );
-        }
+        }*/
+        /*if (this.state.answers !== undefined && this.state.answers.length > 0) {
+            return (
+                <div className='score-form'>
+                    <div>
+                        <select>
+                            [this.state.answers]
+                        </select>
+                        <br/><br/>
+                    </div>
+                </div>
+            );
+        }*/
         return (
             <div className='score-form'>
                 <div>

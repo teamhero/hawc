@@ -16,42 +16,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -75,42 +75,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -128,42 +128,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -181,42 +181,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -240,42 +240,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -299,42 +299,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -358,42 +358,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -411,42 +411,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -464,42 +464,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -523,42 +523,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -576,42 +576,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -629,42 +629,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -688,42 +688,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -747,42 +747,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -806,42 +806,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -865,42 +865,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -924,42 +924,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -983,42 +983,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
@@ -1036,42 +1036,42 @@
             {
               "choice": "Not reported",
               "symbol": "NR",
-              "score": 10,
+              "answer_score": 10,
               "shade": "#FFCC00",
               "order": 1
             },
             {
               "choice": "Critically deficient",
               "symbol": "--",
-              "score": 1,
+              "answer_score": 1,
               "shade": "#CC3333",
               "order": 2
             },
             {
               "choice": "Poor",
               "symbol": "-",
-              "score": 2,
+              "answer_score": 2,
               "shade": "#FFCC00",
               "order": 3
             },
             {
               "choice": "Adequate",
               "symbol": "+",
-              "score": 3,
+              "answer_score": 3,
               "shade": "#6FFF00",
               "order": 4
             },
             {
               "choice": "Good",
               "symbol": "++",
-              "score": 4,
+              "answer_score": 4,
               "shade": "#00CC00",
               "order": 5
             },
             {
               "choice": "Not applicable",
               "symbol": "-",
-              "score": 0,
+              "answer_score": 0,
               "shade": "#FFCC00",
               "order": 6
             }
