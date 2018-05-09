@@ -9,50 +9,57 @@ class ScoreForm extends Component {
 
     constructor(props){
         super(props);
-        this.state = {
-            scoreSymbols: {0: 'N/A', 1: '--', 2: '-', 3: '+', 4: '++', 10: 'NR'},
-            scoreShades: {
-                0: '#E8E8E8',
-                1: '#CC3333',
-                2: '#FFCC00',
-                3: '#6FFF00',
-                4: '#00CC00',
-                10: '#FFCC00',
-            },
-            scoreChoices: {
-                0: 'Not applicable',
-                1: 'Critically deficient',
-                2: 'Poor',
-                3: 'Adequate',
-                4: 'Good',
-                10: 'Not reported',
-            },
-            score: null,
-            notes: props.score.notes,
-            choices: props.score.metric.answers.choice,
-            symbols: props.score.metric.answers.symbol,
-            shades: props.score.metric.answers.shade,
-            answers: [],
-        };
+        if (props.score.metric.answers.length > 0) {
+            var choices = {};
+            var symbols = {};
+            var shades = {};
+
+            for (var i=0; i < props.score.metric.answers.length; i++) {
+                var choice = props.score.metric.answers[i].choice;
+                var symbol = props.score.metric.answers[i].symbol;
+                var shade = props.score.metric.answers[i].shade;
+                var answerScore = props.score.metric.answers[i].answer_score;
+            
+                choices[answerScore] = choice;
+                symbols[answerScore] = symbol;
+                shades[answerScore] = shade;
+            }
+
+            this.state = {
+                scoreChoices: choices ,
+                scoreSymbols: symbols,
+                scoreShades: shades,
+                score: null,
+                notes: props.score.notes,
+            }
+        }
+        else {
+            this.state = {
+                scoreSymbols: {0: 'N/A', 1: '--', 2: '-', 3: '+', 4: '++', 10: 'NR'},
+                scoreShades: {
+                    0: '#E8E8E8',
+                    1: '#CC3333',
+                    2: '#FFCC00',
+                    3: '#6FFF00',
+                    4: '#00CC00',
+                    10: '#FFCC00',
+                },
+                scoreChoices: {
+                    0: 'Not applicable',
+                    1: 'Critically deficient',
+                    2: 'Poor',
+                    3: 'Adequate',
+                    4: 'Good',
+                    10: 'Not reported',
+                },
+                score: null,
+                notes: props.score.notes,
+            };
+        }
+        
         this.handleEditorInput = this.handleEditorInput.bind(this);
         this.selectScore = this.selectScore.bind(this);
     }
-
-    /*componentDidMount() {
-        var that = this;
-        fetch('http://localhost:8000/study/api/study/100000385', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            }
-        }).then(function(response) {
-            return response.json();
-        }).then(function(json) {
-            console.log(json);
-            that.setState({answers: json });
-        });
-    }*/
 
     componentWillMount(){
         this.selectScore(this.props.score.score);
@@ -103,43 +110,6 @@ class ScoreForm extends Component {
     render() {
         let { name } = this.props.score.metric,
             { scoreChoices, score, notes, selectedSymbol, selectedShade } = this.state;
-        /*let  answers  = this.state.metricAnswers.map((answer) => {
-            return (
-                <option key={answer.answer_score}>{answer.choice}</option> 
-            )
-        });
-        if (name === answers.metric) {
-            return (
-                <div className='score-form'>
-                    <div>
-                        <select>
-                            {answers}
-                        </select>
-                        <br/><br/>
-                        <ScoreIcon shade={answers.shade}
-                                symbol={answers.symbol}/>
-                    </div>
-                    <ReactQuill id={name}
-                            value={notes}
-                            onChange={this.handleEditorInput}
-                            toolbar={false}
-                            theme='snow'
-                            className='score-editor' />
-                </div>
-            );
-        }*/
-        /*if (this.state.answers !== undefined && this.state.answers.length > 0) {
-            return (
-                <div className='score-form'>
-                    <div>
-                        <select>
-                            [this.state.answers]
-                        </select>
-                        <br/><br/>
-                    </div>
-                </div>
-            );
-        }*/
         return (
             <div className='score-form'>
                 <div>
@@ -168,6 +138,7 @@ ScoreForm.propTypes = {
         notes: PropTypes.string.isRequired,
         metric: PropTypes.shape({
             name: PropTypes.string.isRequired,
+            answers: PropTypes.array,
         }).isRequired,
     }).isRequired,
     updateNotesLeft: PropTypes.func.isRequired,
