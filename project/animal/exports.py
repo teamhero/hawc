@@ -351,8 +351,8 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
             'expected adversity direction',
 
             'low_dose',
-            'NOEL',
-            'LOEL',
+            'NOAEL',
+            'LOAEL',
             'FEL',
             'high_dose',
             'BMD',
