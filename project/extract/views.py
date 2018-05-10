@@ -16,7 +16,7 @@ import os.path
 import re
 from assessment.models import Attachment, Assessment
 from utils.models import get_crumbs
-from lit.models import Reference, Search
+from lit.models import Reference, Search, ReferenceFilterTag
 from . import models
 from .forms import HeroForm
 
@@ -81,14 +81,89 @@ class HeroAdd(TemplateView):
                 ,"Content-Type": "application/json"
             }
         )
-        print(request.POST.get('heroproject'))
-        print(response.text)
+        #print(request.POST.get('heroproject'))
         print(self.kwargs.get('pk'))
         myVar = response.text
         tempVar = json.loads(myVar)
         myVar2 = tempVar["methodResult"]["tagTree"]
-        print(myVar2)
-        context = {'project_id': project_id, 'object': thisObject, 'assessment_id': assessment_id, 'myVar': myVar, 'myVar2': myVar2,}
+        tempString = ''
+        count1 = 0
+        if len(myVar2["children"]) > 0:
+            tempString = tempString + ', {"data": {"name": "HERO Tags", "slug": "hero-tags"}, "id": ' + project_id + ', "children": ['
+            for key in myVar2["children"]:
+                print(key["usage"])
+                usage1 = str(key["usage"])
+                usageID1 = str(key["usage_id"])
+                level1 = str(key["level"] + 1)
+                slug1 =  re.sub(" ", "-", usage1, 0, re.MULTILINE).lower()
+                tempString = tempString + '{"data": {"name": "' + usage1 + '", "slug": "' + slug1 + '"}, "id": ' + usageID1
+                if len(key["children"]) > 0:
+                    tempString = tempString + ', "children": ['
+                    for key2 in key["children"]:
+                        print(key2["usage"])
+                        usage2 = str(key2["usage"])
+                        usageID2 = str(key2["usage_id"])
+                        level2 = str(key2["level"] + 1)
+                        slug2 =  re.sub(" ", "-", usage2, 0, re.MULTILINE).lower()
+                        tempString = tempString + '{"data": {"name": "' + usage2 + '", "slug": "' + slug2 + '"}, "id": ' + usageID2
+                        if len(key2["children"]) > 0:
+                            tempString = tempString + ', "children": ['
+                            for key3 in key2["children"]:
+                                print(key3["usage"])
+                                usage3 = str(key3["usage"])
+                                usageID3 = str(key3["usage_id"])
+                                level3 = str(key3["level"] + 1)
+                                slug3 =  re.sub(" ", "-", usage3, 0, re.MULTILINE).lower()
+                                tempString = tempString + '{"data": {"name": "' + usage3 + '", "slug": "' + slug3 + '"}, "id": ' + usageID3
+                                if len(key3["children"]) > 0:
+                                    tempString = tempString + ', "children": ['
+                                    for key4 in key3["children"]:
+                                        print(key4["usage"])
+                                        usage4 = str(key4["usage"])
+                                        usageID4 = str(key4["usage_id"])
+                                        level4 = str(key4["level"] + 1)
+                                        slug4 =  re.sub(" ", "-", usage4, 0, re.MULTILINE).lower()
+                                        tempString = tempString + '{"data": {"name": "' + usage4 + '", "slug": "' + slug4 + '"}, "id": ' + usageID4 + '}'
+                                    tempString = tempString + ']'
+                                # else:
+                                #     tempString = tempString + ', '
+                            tempString = tempString + '}]}, '
+                        # else:
+                        #     tempString = tempString + ', '
+                    tempString = tempString + '}]}, '
+                # else:
+                #     tempString = tempString + ', '
+            tempString = tempString + '}]'
+
+
+        #     count1 = count1 + 1
+        #     if count1 == 1:
+        #         tempString = tempString + ', {"data": {"name": "HERO Tags", "slug": "hero-tags"}, "id": ' + project_id + ', "children": [{"data": '
+        #     slug1 =  re.sub(" ", "-", usage1, 0, re.MULTILINE).lower()
+        #     tempString = tempString + '{"name": "' + usage1 + '", "slug": "' + slug1 + '"}, "id": ' + usageID1 + '}'
+                # for key2 in myVar2[key][count1]:
+                #     count2 = 0
+                #     if key2 == "children":
+                #         usage2 = str(myVar2[key][count1][key2][count2]["usage"])
+                #         usageID2 = str(myVar2[key][count1][key2][count2]["usage_id"])
+                #         count2 = count2 + 1
+                #         if count1 == 2:
+                #             tempString = tempString + ', "children": [{"data": '
+                #         slug2 =  re.sub(" ", "-", usage2, 0, re.MULTILINE).lower()
+                #         tempString = tempString + '{"name": "' + usage2 + '", "slug": "' + slug2 + '"}, "id": ' + usageID2 + '}'
+        #tempString = tempString + ']'
+
+        print(tempString)
+
+        #The variable 'tags' Grabs the default Tag Tree
+        tags = ReferenceFilterTag.get_all_tags(self.kwargs.get('pk'))
+
+        #Here we add the HERO tags into the generated HAWC tags with the variable 'newTags'
+        newCount = len(tags) - 3
+        newTags = (tags[:newCount] + tempString + '}]}]')
+
+        #Here we send everything we need to the view
+        context = {'project_id': project_id, 'object': thisObject, 'assessment_id': self.kwargs.get('pk'), 'myVar': myVar, 'myVar2': myVar2, 'tags': newTags, 'tempString': tags,}
         return render(request, self.template_name, context)
 
 class Hero(TemplateView):

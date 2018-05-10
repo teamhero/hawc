@@ -50,6 +50,7 @@ class LitOverview(BaseList):
             qryset = models.Reference.objects.get_references_ready_for_import(self.assessment)
             context['need_import_count'] = qryset.count()
         context['tags'] = models.ReferenceFilterTag.get_all_tags(self.assessment.id)
+        #print(json.dumps(json.loads(context['tags']),indent=4))
         return context
 
 

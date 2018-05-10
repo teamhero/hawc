@@ -12,17 +12,35 @@
 <h1>{{object}}</h1>
 
 The project <strong>{{ myVar2.project}}</strong> has the following tags:<br/>
-<hr/>{{tags}}
-<hr/>{{myvar2}}
-<hr/> {% for result in myVar2.children %}
-{{result.usage}}<br/>
+
+<!-- <hr/><h3>Imported JSON from HERO:</h3>
+{{myVar2}}
+ -->
+
+<hr/><h3>Expected HERO Tag Tree to be added:</h3>
+{% for result in myVar2.children %}
+- {{result.usage}}<br/>
+	{% for result2 in result.children %}
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{result2.usage}}<br/>
+		{% for result3 in result2.children %}
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{result3.usage}}<br/>
+			{% for result4 in result3.children %}
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{result4.usage}}<br/>
+			{% endfor %}
+		{% endfor %}
+	{% endfor %}
 {% endfor %}
 
+<hr/><h3>HAWC Generated JSON:</h3>
+{{tempString}}
 
-	<div class="span6">
-      <h3>HERO tags</h3>
-      <div id="tags"></div>
-    </div>
+<hr/><h3>With HERO Tags Added:</h3>
+{{tags}}
+
+<div class="span6">
+  <h3>Resulting Tag Tree:</h3>
+  <div id="tags"></div>
+</div>
 
 {% endblock %}
 

@@ -24,67 +24,57 @@ class Project(models.Model):
     projectAbbr = models.CharField(max_length=200)
     casrn = models.CharField(max_length=200)
 
+# For HERO Tags
+# class ReferenceHEROTag(NonUniqueTagBase, AssessmentRootMixin, MP_Node):
+#     cache_template_taglist = 'reference-taglist-assessment-{0}'
+#     cache_template_tagtree = 'reference-tagtree-assessment-{0}'
 
-# From Lit Model
-class ReferenceFilterTag(NonUniqueTagBase, AssessmentRootMixin, MP_Node):
-    cache_template_taglist = 'reference-taglist-assessment-{0}'
-    cache_template_tagtree = 'reference-tagtree-assessment-{0}'
+#     @classmethod
+#     def get_tag_in_assessment(cls, assessment_pk, tag_id):
+#         tag = cls.objects.get(id=tag_id)
+#         assert tag.get_root().name == cls.get_assessment_root_name(assessment_pk)
+#         return tag
 
-    @classmethod
-    def get_tag_in_assessment(cls, assessment_pk, tag_id):
-        tag = cls.objects.get(id=tag_id)
-        assert tag.get_root().name == cls.get_assessment_root_name(assessment_pk)
-        return tag
+#     @classmethod
+#     def build_default(cls, assessment):
+#         """
+#         Constructor to define default literature-tags.
+#         """
+#         root = cls.add_root(name=cls.get_assessment_root_name(assessment.pk))
+#         hero = root.add_child(name="HERO Tags")
 
-    @classmethod
-    def build_default(cls, assessment):
-        """
-        Constructor to define default literature-tags.
-        """
-        root = cls.add_root(name=cls.get_assessment_root_name(assessment.pk))
+#     @classmethod
+#     def copy_tags(cls, copy_to_assessment, copy_from_assessment):
+#         # delete existing tags for this assessment
+#         old_root = cls.get_assessment_root(copy_to_assessment.pk)
+#         old_root.delete()
 
-        inc = root.add_child(name="Inclusion")
-        inc.add_child(name='Human Study')
-        inc.add_child(name='Animal Study')
-        inc.add_child(name='Mechanistic Study')
+#         # copy tags from alternative assessment, renaming root-tag
+#         root = cls.get_assessment_root(copy_from_assessment.pk)
+#         tags = cls.dump_bulk(root)
+#         tags[0]['data']['name'] = cls.get_assessment_root_name(copy_to_assessment.pk)
+#         tags[0]['data']['slug'] = cls.get_assessment_root_name(copy_to_assessment.pk)
 
-        exc = root.add_child(name="Exclusion")
-        exc.add_child(name='Tier I')
-        exc.add_child(name='Tier II')
-        exc.add_child(name='Tier III')
+#         # insert as new taglist
+#         cls.load_bulk(tags, parent=None, keep_ids=False)
+#         cls.clear_cache(copy_to_assessment.pk)
 
-    @classmethod
-    def copy_tags(cls, copy_to_assessment, copy_from_assessment):
-        # delete existing tags for this assessment
-        old_root = cls.get_assessment_root(copy_to_assessment.pk)
-        old_root.delete()
+#     @classmethod
+#     def get_flattened_taglist(cls, tagslist, include_parent=True):
+#         # expects tags dictionary dump_bulk format
+#         lst = []
 
-        # copy tags from alternative assessment, renaming root-tag
-        root = cls.get_assessment_root(copy_from_assessment.pk)
-        tags = cls.dump_bulk(root)
-        tags[0]['data']['name'] = cls.get_assessment_root_name(copy_to_assessment.pk)
-        tags[0]['data']['slug'] = cls.get_assessment_root_name(copy_to_assessment.pk)
+#         def appendChildren(obj, parents):
+#             parents = parents + '|' if parents != "" else parents
+#             txt = parents + obj['data']['name']
+#             lst.append(txt)
+#             for child in obj.get('children', []):
+#                 appendChildren(child, txt)
 
-        # insert as new taglist
-        cls.load_bulk(tags, parent=None, keep_ids=False)
-        cls.clear_cache(copy_to_assessment.pk)
+#         if include_parent:
+#             appendChildren(tagslist[0], "")
+#         else:
+#             for child in tagslist[0]["children"]:
+#                 appendChildren(child, "")
 
-    @classmethod
-    def get_flattened_taglist(cls, tagslist, include_parent=True):
-        # expects tags dictionary dump_bulk format
-        lst = []
-
-        def appendChildren(obj, parents):
-            parents = parents + '|' if parents != "" else parents
-            txt = parents + obj['data']['name']
-            lst.append(txt)
-            for child in obj.get('children', []):
-                appendChildren(child, txt)
-
-        if include_parent:
-            appendChildren(tagslist[0], "")
-        else:
-            for child in tagslist[0]["children"]:
-                appendChildren(child, "")
-
-        return lst
+#         return lst
