@@ -30,7 +30,7 @@ class Study(Reference):
         (4, '---'),
         (0, 'Authors report they have no COI'),
         (1, 'Authors disclosed COI'),
-        (2, 'Unknown'),
+        (2, 'Unclear'),
         (3, 'Not reported'))
 
     TEXT_CLEANUP_FIELDS = (
