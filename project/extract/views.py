@@ -69,6 +69,9 @@ class HeroAdd(TemplateView):
     def get_crumbs(self):
         return get_crumbs(self)
 
+    def replace_right(source, target, replacement, replacements=None):
+        return replacement.join(source.rsplit(target, replacements))        
+
     def post(self, request, *args, **kwargs):
         assessment_id = self.kwargs.get('pk')
         project_id = request.POST.get('heroproject')
@@ -88,82 +91,90 @@ class HeroAdd(TemplateView):
         myVar2 = tempVar["methodResult"]["tagTree"]
         tempString = ''
         count1 = 0
+        curLevel = 0
         if len(myVar2["children"]) > 0:
             tempString = tempString + ', {"data": {"name": "HERO Tags", "slug": "hero-tags"}, "id": ' + project_id + ', "children": ['
             for key in myVar2["children"]:
-                print(key["usage"])
+                curLevel = 1
+                #print(key["usage"])
                 usage1 = str(key["usage"])
                 usageID1 = str(key["usage_id"])
                 level1 = str(key["level"] + 1)
                 slug1 =  re.sub(" ", "-", usage1, 0, re.MULTILINE).lower()
-                tempString = tempString + '{"data": {"name": "' + usage1 + '", "slug": "' + slug1 + '"}, "id": ' + usageID1
+                tempString = tempString + '{"data": {"name": "' + usage1 + '", "slug": "' + slug1 + '"}, "id": ' + usageID1 + '}'
                 if len(key["children"]) > 0:
+                    newCount1 = len(tempString) - 1
+                    tempString = tempString[:newCount1]
                     tempString = tempString + ', "children": ['
                     for key2 in key["children"]:
+                        curLevel = 2
                         print(key2["usage"])
                         usage2 = str(key2["usage"])
                         usageID2 = str(key2["usage_id"])
                         level2 = str(key2["level"] + 1)
                         slug2 =  re.sub(" ", "-", usage2, 0, re.MULTILINE).lower()
-                        tempString = tempString + '{"data": {"name": "' + usage2 + '", "slug": "' + slug2 + '"}, "id": ' + usageID2
+                        tempString = tempString + '{"data": {"name": "' + usage2 + '", "slug": "' + slug2 + '"}, "id": ' + usageID2 + '}'
                         if len(key2["children"]) > 0:
+                            newCount2 = len(tempString) - 1
+                            tempString = tempString[:newCount2]
                             tempString = tempString + ', "children": ['
                             for key3 in key2["children"]:
+                                curLevel = 3
                                 print(key3["usage"])
                                 usage3 = str(key3["usage"])
                                 usageID3 = str(key3["usage_id"])
                                 level3 = str(key3["level"] + 1)
                                 slug3 =  re.sub(" ", "-", usage3, 0, re.MULTILINE).lower()
-                                tempString = tempString + '{"data": {"name": "' + usage3 + '", "slug": "' + slug3 + '"}, "id": ' + usageID3
+                                tempString = tempString + '{"data": {"name": "' + usage3 + '", "slug": "' + slug3 + '"}, "id": ' + usageID3 + '}'
                                 if len(key3["children"]) > 0:
+                                    newCount3 = len(tempString) - 1
+                                    tempString = tempString[:newCount3]
                                     tempString = tempString + ', "children": ['
                                     for key4 in key3["children"]:
+                                        curLevel = 4
                                         print(key4["usage"])
                                         usage4 = str(key4["usage"])
                                         usageID4 = str(key4["usage_id"])
                                         level4 = str(key4["level"] + 1)
                                         slug4 =  re.sub(" ", "-", usage4, 0, re.MULTILINE).lower()
                                         tempString = tempString + '{"data": {"name": "' + usage4 + '", "slug": "' + slug4 + '"}, "id": ' + usageID4 + '}'
-                                    tempString = tempString + ']'
-                                # else:
-                                #     tempString = tempString + ', '
+                                        newCount = len(tempString) - 3
+                                        tempString = tempString[:newCount]
+                                        tempString = tempString + '}]}, '
+                                else:
+                                    tempString = tempString + ', '
+                            newCount = len(tempString) - 3
+                            tempString = tempString[:newCount]
                             tempString = tempString + '}]}, '
-                        # else:
-                        #     tempString = tempString + ', '
+                        else:
+                            tempString = tempString + ', '
+                    
+                    newCount = len(tempString) - 3
+                    tempString = tempString[:newCount]
                     tempString = tempString + '}]}, '
-                # else:
-                #     tempString = tempString + ', '
-            tempString = tempString + '}]'
+                else:
+                    tempString = tempString + ', '
+            tempString = tempString + '}]}, '
 
+        # Back out to the top of the JSON (curLevel is how many levels back up we need to climb)
 
-        #     count1 = count1 + 1
-        #     if count1 == 1:
-        #         tempString = tempString + ', {"data": {"name": "HERO Tags", "slug": "hero-tags"}, "id": ' + project_id + ', "children": [{"data": '
-        #     slug1 =  re.sub(" ", "-", usage1, 0, re.MULTILINE).lower()
-        #     tempString = tempString + '{"name": "' + usage1 + '", "slug": "' + slug1 + '"}, "id": ' + usageID1 + '}'
-                # for key2 in myVar2[key][count1]:
-                #     count2 = 0
-                #     if key2 == "children":
-                #         usage2 = str(myVar2[key][count1][key2][count2]["usage"])
-                #         usageID2 = str(myVar2[key][count1][key2][count2]["usage_id"])
-                #         count2 = count2 + 1
-                #         if count1 == 2:
-                #             tempString = tempString + ', "children": [{"data": '
-                #         slug2 =  re.sub(" ", "-", usage2, 0, re.MULTILINE).lower()
-                #         tempString = tempString + '{"name": "' + usage2 + '", "slug": "' + slug2 + '"}, "id": ' + usageID2 + '}'
-        #tempString = tempString + ']'
+        #backOut = len(tempString) - (((curLevel - 1) * 5) + 3)
+        backOut = len(tempString) - 8
+        tempString2 = tempString[:backOut] + '}]'
 
-        print(tempString)
+        # print(tempString2)
+        print(curLevel)
 
-        #The variable 'tags' Grabs the default Tag Tree
+        # The variable 'tags' Grabs the default Tag Tree
         tags = ReferenceFilterTag.get_all_tags(self.kwargs.get('pk'))
 
-        #Here we add the HERO tags into the generated HAWC tags with the variable 'newTags'
+        # Here we add the HERO tags into the generated HAWC tags with the variable 'newTags'
         newCount = len(tags) - 3
-        newTags = (tags[:newCount] + tempString + '}]}]')
+        newTags = (tags[:newCount] + tempString2 + '}]}]')
 
-        #Here we send everything we need to the view
-        context = {'project_id': project_id, 'object': thisObject, 'assessment_id': self.kwargs.get('pk'), 'myVar': myVar, 'myVar2': myVar2, 'tags': newTags, 'tempString': tags,}
+        # Here we send everything we need to the view (Swap lines for testing)
+        #context = {'project_id': project_id, 'object': thisObject, 'assessment_id': self.kwargs.get('pk'), 'myVar': myVar, 'myVar2': myVar2, 'tags': newTags, 'tempString': tags, 'tempStringA': tempString2, 'tempStringB': tempString, 'curLevel': curLevel,}
+        context = {'project_id': project_id, 'object': thisObject, 'assessment_id': self.kwargs.get('pk'), 'myVar2': myVar2, 'tags': newTags, 'curLevel': curLevel,}
         return render(request, self.template_name, context)
 
 class Hero(TemplateView):

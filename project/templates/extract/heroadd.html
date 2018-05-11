@@ -11,13 +11,17 @@
 {% block content %}
 <h1>{{object}}</h1>
 
-The project <strong>{{ myVar2.project}}</strong> has the following tags:<br/>
+{% if curLevel > 0 %}
 
+The project <strong>{{ myVar2.project }}</strong> has the following tags:<br/>
+
+<!-- For Testing: Show the Imported JSON from HERO -->
 <!-- <hr/><h3>Imported JSON from HERO:</h3>
-{{myVar2}}
- -->
+{{myVar2}} -->
 
-<hr/><h3>Expected HERO Tag Tree to be added:</h3>
+
+<!-- For Testing: Show The HERO Tag Tree for this project -->
+<!-- <hr/><h3>Expected HERO Tag Tree to be added:</h3>
 {% for result in myVar2.children %}
 - {{result.usage}}<br/>
 	{% for result2 in result.children %}
@@ -29,19 +33,25 @@ The project <strong>{{ myVar2.project}}</strong> has the following tags:<br/>
 			{% endfor %}
 		{% endfor %}
 	{% endfor %}
-{% endfor %}
+{% endfor %} -->
 
-<hr/><h3>HAWC Generated JSON:</h3>
-{{tempString}}
+<!-- For Testing: Show the HAWC Generated JSON for the exisiting tag tree -->
+<!-- <hr/><h3>HAWC Generated JSON:</h3>
+{{tempString}} -->
 
-<hr/><h3>With HERO Tags Added:</h3>
-{{tags}}
+<!-- For Testing: Show the JSON with HERO tags embedded -->
+<!-- <hr/><h3>With HERO Tags Added:</h3>
+{{tags}} -->
 
 <div class="span6">
-  <h3>Resulting Tag Tree:</h3>
+  <h3>HERO Tags:</h3>
   <div id="tags"></div>
 </div>
+{% else %}
 
+There are no tags associated with this HERO project.<br/>
+
+{% endif %}
 {% endblock %}
 
 {% block extrajs %}
