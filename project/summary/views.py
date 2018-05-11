@@ -385,51 +385,6 @@ class GetEvidenceProfileObjectMixin(object):
         return super().get_object(object=obj)
 
 
-"""
-class EvidenceProfileNew(BaseCreate):
-    # Set some basic attributes for this view
-    success_message = 'Evidence Profile created.'
-    parent_model = Assessment
-    parent_template_name = 'assessment'
-    model = models.EvidenceProfile
-    template_name = 'summary/evidenceprofile_form.html'
-    form_class = forms.EvidenceProfileForm
-
-    # This method returns the URL that the requestor will be re-directed to after this request is handled
-    def get_success_url(self):
-        # Get the value for this Evidence Profile's visualization URL and return it
-        return self.object.get_update_url()
-
-    # Define the type of object being created and the form object that will be used
-
-    def get_context_data(self, **kwargs):
-        # Get the basic context attributes from the superclass's get_context_data() method
-        context = super().get_context_data(**kwargs)
-
-        # Set the desired additional context attributes to their initialized, empty values
-        context["stream_types"] = models.get_serialized_stream_types()
-        context["increase_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True))
-        context["decrease_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True))
-        context["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
-        context["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"])
-        context["streams"] = serializers.serialize("json", models.EvidenceProfileStream.objects.none())
-
-        return context
-
-    # This method handles a valid submitted form
-    def form_valid(self, form):
-        # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
-        # form fields
-        print(form.cleaned_data.get("cross_stream_conclusions"))
-        form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
-
-        # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
-        form.instance.hawcuser = self.request.user
-
-        # return super().form_valid(form)
-"""
-
-
 # This class is used for creating a new Evidence Profile object
 class EvidenceProfileNew(BaseCreate):
     # Set some basic attributes for this view
@@ -452,12 +407,7 @@ class EvidenceProfileNew(BaseCreate):
         context = super().get_context_data(**kwargs)
 
         # Set the desired additional context attributes to their initialized, empty values
-        context["stream_types"] = models.get_serialized_stream_types()
-        context["increase_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True))
-        context["decrease_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True))
-        context["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
-        context["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"])
-        context["streams"] = serializers.serialize("json", models.EvidenceProfileStream.objects.none())
+        context.update(getEvidenceProfileContextData(self.object))
 
         return context
 
@@ -465,16 +415,14 @@ class EvidenceProfileNew(BaseCreate):
     def form_valid(self, form):
         # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
         # form fields
-        print(form.cleaned_data.get("cross_stream_conclusions"))
         form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
 
         # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
         form.instance.hawcuser = self.request.user
 
-        # return super().form_valid(form)
+        return super().form_valid(form)
 
 
-"""
 class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
     success_message = 'Evidence Profile updated.'
     model = models.EvidenceProfile
@@ -491,12 +439,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
         context = super().get_context_data(**kwargs)
 
         # Set the desired additional context attributes based on the values of the existing Evidence Profile
-        context["stream_types"] = models.get_serialized_stream_types()
-        context["increase_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True))
-        context["decrease_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True))
-        context["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
-        context["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [self.object, ]))[0]["fields"])
-        context["streams"] = serializers.serialize("json", self.object.streams.all())
+        context.update(getEvidenceProfileContextData(self.object))
 
         return context
 
@@ -504,12 +447,31 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
     def form_valid(self, form):
         # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
         # form fields
-        print(form.cleaned_data.get("cross_stream_conclusions"))
         form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
-        # return super().form_valid(form)
-"""
+        return super().form_valid(form)
 
 
 class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
     model = models.EvidenceProfile
     template_name = "summary/evidenceprofile_detail.html"
+
+
+# This function returns the set of serialized objects that are commonly used as context data for Evidence Profile objects
+def getEvidenceProfileContextData(object):
+    returnValue = {}
+
+    returnValue["stream_types"] = models.get_serialized_stream_types()
+    returnValue["increase_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True))
+    returnValue["decrease_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True))
+    returnValue["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
+
+    if (object):
+        # The incoming object is not empty, get serialized versions of its desired sub-objects
+        returnValue["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [object, ]))[0]["fields"])
+        returnValue["streams"] = serializers.serialize("json", object.streams.all())
+    else:
+        # The inconing object is empty (creating a new object), return base models for the desired sub-objects
+        returnValue["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"])
+        returnValue["streams"] = serializers.serialize("json", models.EvidenceProfileStream.objects.none())
+
+    return returnValue

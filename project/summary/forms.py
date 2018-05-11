@@ -856,76 +856,44 @@ class EvidenceProfileForm(forms.ModelForm):
                 if (re.search(unordered_objects[uo_key]["re_match"], form_key)):
                     # This form field name matched the naming convention corresponding to one of the sets of objects
 
-                    object_key = re.sub(unordered_objects[uo_key]["re_replace_index"], unordered_objects[uo_key]["re_replace_index_with"], form_key)
-                    internal_key = re.sub(unordered_objects[uo_key]["re_replace_key"], unordered_objects[uo_key]["re_replace_key_with"], form_key)
-
-                    """
-                    if (not (object_key in unordered_objects[uo_key]["objects"])):
-                        # The object of which this form field is a part has not yet been added to the set of unordered objects, initialize it now
-                        unordered_objects[uo_key]["objects"][object_key] = {}
-
-                    # Add the field to its object as an attribute
-                    unordered_objects[uo_key]["objects"][object_key][internal_key] = self.submitted_data[form_key]
-
-                    if (internal_key == unordered_objects[uo_key]["ordering_field"]):
-                        # This field is the object's "ordering" field, use it to put an entry in the "desired_order" list
+                    # Get the index (i.e. ordered position) of the formset object from its field name, defaulting to 0 if it is not
+                    object_index = 0
+                    try:
+                        object_index = int(re.sub(unordered_objects[uo_key]["re_replace_index"], unordered_objects[uo_key]["re_replace_index_with"], form_key))
+                    except:
                         pass
 
-                    print("-- -- -- -- -- -- -- -- -- -- -- --")
-                    print(form_key)
-                    print(self.submitted_data[form_key])
-                    print(object_key)
-                    print(internal_key)
-                    """
+                    # Get the formset object's attribute name of the intended destination for the submitted form field; this is
+                    # extracted from the field's name
+                    object_attribute = re.sub(unordered_objects[uo_key]["re_replace_key"], unordered_objects[uo_key]["re_replace_key_with"], form_key)
 
-        print(unordered_objects)
-        print("-- -- -- -- -- -- -- -- -- --")
-        print(self.submitted_data)
+                    if (object_index > 0):
+                        # Make sure that the destination array is long enough to accommodate this formset object in its desired position
+                        # This is done because there is no guarantee that the fields will arrive in the desired order, so empty
+                        # placeholders must be added if needed
+                        while (object_index > len(unordered_objects[uo_key]["desired_order"])):
+                            unordered_objects[uo_key]["desired_order"].append(None)
 
-        """
-        # Next, iterate through the form fields looking for those that are part of cross-stream inferences
-        inferences = []
-        orderingFieldPattern = re.compile("^inference_order_\d+$")
-        titleFieldPattern = re.compile("^inference_order_\d+$")
-        explanationFieldPattern = re.compile("^inference_order_\d+$")
-        replacePattern = re.compile("\D")
-        for key in self.submitted_data:
-            # Check and see if this form field's name matches either a cross-stream inference's ordering field
+                        if (not unordered_objects[uo_key]["desired_order"][object_index - 1]):
+                            # This element has just been created, set it to be an empty object instead of None
+                            unordered_objects[uo_key]["desired_order"][object_index - 1] = {}
 
-            if (orderingFieldPattern.match(key)):
-                index = int(replacePattern.sub("", key)) - 1
-                print(key)
-                print(self.submitted_data[key])
-                print(index)
+                        unordered_objects[uo_key]["desired_order"][object_index - 1][object_attribute] = self.submitted_data[form_key]
 
-                if (index >= 0):
-                    while (len(inferences) <= index):
-                        inferences.append(None)
-
-                    if (isTitle):
-                        if (inferences[index]):
-                            inferences[index]["title"] = self.submitted_data[key]
-                        else:
-                            inferences[index] = {"title":self.submitted_data[key], "explanation":""}
-                    else:
-                        if (inferences[index]):
-                            inferences[index]["explanation"] = self.submitted_data[key]
-                        else:
-                            inferences[index] = {"title":"", "explanation":self.submitted_data[key]}
-
-        print(inferences)
-        """
+        # Iterate over each unordered object type's ordered array and get rid of any None values
+        for uo_key in unordered_objects:
+            unordered_objects[uo_key]["desired_order"][:] = [inference for inference in unordered_objects[uo_key]["desired_order"] if (inference)]
 
         # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
         confidence_judgement = {
-            "rating": cleaned_data.get("confidence_judgement_rating")
-            ,"explanation": cleaned_data.get("confidence_judgement_explanation")
+            "rating": cleaned_data.get("confidence_judgement_rating"),
+            "explanation": cleaned_data.get("confidence_judgement_explanation"),
         }
 
         cleaned_data["cross_stream_conclusions"] = {
-            "inferences": inferences
-            ,"confidence_judgement": confidence_judgement
+            "inferences": unordered_objects["cross_stream_inferences"]["desired_order"],
+            "confidence_judgement": confidence_judgement,
         }
 
         return cleaned_data
