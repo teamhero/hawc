@@ -17,19 +17,6 @@ function receiveStudy(study){
     };
 }
 
-/*function requestAnswers() {
-    return {
-        type: types.REQUEST,
-    };
-}
-
-fuction receiveAnswers() {
-    return {
-        type: type.RECEIVE,
-        answers,
-    }
-}*/
-
 function setError(error){
     return {
         type: types.SET_ERROR,
