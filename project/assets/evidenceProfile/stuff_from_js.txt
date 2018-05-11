@@ -170,29 +170,6 @@
         console.log("In buildOUtcomesFormset()");
     }
 
-    // This function sets the numbering and shading for the table holding the Cross-Stream Inferences
-    static updateCrossStreamInferencesTable() {
-        // Iterate through each row within the table's body and set the names for each form field contined within the row (there is
-        // a portion of the name that indicates ordering, that is what gets changed)
-
-        $("#table_id_inferences tbody").find("tr").each(
-            function(i, row) {
-                var $row = $(row);
-
-                $row.find("input,textarea").each(
-                    // Iterate over each form field found within the row and set the last portion of its name to the desired
-                    // order value
-                    function(j, field) {
-                        $(field).attr("name", $(field).attr("name").replace(/\d+$/, (i + 1)));
-                    }
-                );
-
-                // Set the row's color to either white (odd-numbered) or gray (even-numbered)
-                $row.css("background-color", "#" + (((i % 2) == 1) ? "F1F1F1" : "FFFFFF"));
-            }
-        );
-    }
-
 
 
 
@@ -203,39 +180,16 @@
         // Start up and initialize the Evidence Profile JavaScript object
         window.app.evidenceProfileStartup(
           function(evidenceProfile) {
-            // Configure the EvidenceProfile object
-            evidenceProfile.EvidenceProfile.configure(
-              {
-                "formId": "evidenceProfileForm",
-                "formActionsClass": "form-actions",
-                "inferencesDivId": "div_id_inferences",
-                "inferencesTableId": "table_id_inferences",
-                "addInferenceRowId": "add_inference_row",
-                "inferenceRowIdPrefix": "row_id_inference",
-                "buttonSetBaseId": "btn_inference",
-                "inferenceRowRegEx": {
-                  "match": "^row_id_inference_\\d+$",
-                  "replace": "^row_id_inference_(\\d+)$"
-                }
-              }
-            );
 
             // Create desired JavaScript objects from available Python objects
             var streamTypes = evidenceProfile.Library.setStreamTypes({{stream_types|safe}});
             var confidenceJudgements = evidenceProfile.Library.setConfidenceJudgements({{confidence_judgements|safe}});
             var increaseConfidenceFactors = evidenceProfile.Library.setConfidenceFactors({{increase_confidence_factors|safe}});
             var decreaseConfidenceFactors = evidenceProfile.Library.setConfidenceFactors({{decrease_confidence_factors|safe}});
-            var evidenceProfileObject = evidenceProfile.EvidenceProfile.checkEvidenceProfile({{evidenceProfile|safe}});
 
             /*
             // Get the child Evidence Profile Streams from the Python object and use them to build the Streams formset
             evidenceProfile.EvidenceProfile.buildStreamFormset("evidenceProfileForm", {{streams|safe}});
             */
-
-            // Get the Cross-Stream Conclusions from the Python object and use them to build the Cross-Stream Inferences formset
-            evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormset(evidenceProfileObject);
-
-            // Add an <hr /> tag just below the "caption" field in the form
-            evidenceProfile.Library.addHRTag("caption", "after");
           }
         );

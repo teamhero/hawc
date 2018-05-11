@@ -5,7 +5,6 @@ import re
 from django.db.models import QuerySet
 from crispy_forms import layout as cfl
 from django import forms
-from django.forms.models import BaseModelFormSet, modelformset_factory
 from django.core.urlresolvers import reverse
 from selectable import forms as selectable
 
@@ -840,13 +839,11 @@ class EvidenceProfileForm(forms.ModelForm):
         # the objects will be done after they have all been built
         unordered_objects = {
             "cross_stream_inferences": {
-                "objects": {},
                 "desired_order": [],
-                "ordering_field": "order",
-                "re_match": r"^inference_(order|title|explanation)_\d+$",
+                "re_match": r"^inference_(title|description)_\d+$",
                 "re_replace_index": r"\D",
                 "re_replace_index_with": r"",
-                "re_replace_key": r"^inference_(order|title|explanation)_\d+$",
+                "re_replace_key": r"^inference_(title|description)_\d+$",
                 "re_replace_key_with": r"\1"
             }
         }
@@ -862,6 +859,7 @@ class EvidenceProfileForm(forms.ModelForm):
                     object_key = re.sub(unordered_objects[uo_key]["re_replace_index"], unordered_objects[uo_key]["re_replace_index_with"], form_key)
                     internal_key = re.sub(unordered_objects[uo_key]["re_replace_key"], unordered_objects[uo_key]["re_replace_key_with"], form_key)
 
+                    """
                     if (not (object_key in unordered_objects[uo_key]["objects"])):
                         # The object of which this form field is a part has not yet been added to the set of unordered objects, initialize it now
                         unordered_objects[uo_key]["objects"][object_key] = {}
@@ -878,8 +876,11 @@ class EvidenceProfileForm(forms.ModelForm):
                     print(self.submitted_data[form_key])
                     print(object_key)
                     print(internal_key)
+                    """
 
         print(unordered_objects)
+        print("-- -- -- -- -- -- -- -- -- --")
+        print(self.submitted_data)
 
         """
         # Next, iterate through the form fields looking for those that are part of cross-stream inferences
@@ -928,31 +929,3 @@ class EvidenceProfileForm(forms.ModelForm):
         }
 
         return cleaned_data
-
-
-# This class is the form used for adding/editing an Evidence Profile object
-class EvidenceProfileStreamForm(forms.ModelForm):
-    submitted_data = None
-
-    class Meta:
-        # Set the base model and form fields for this form
-        model = models.EvidenceProfileStream
-        fields = ("stream_type", "stream_title", )
-
-
-class BaseEvidenceProfileStreamFormSet(BaseModelFormSet):
-    def __init__(self, **defaults):
-        super().__init__(**defaults)
-        print(self.forms)
-        """
-        if len(self.forms) > 0:
-            self.forms[0].fields['significance_level'].widget.attrs['class'] += " hidden"
-        """
-
-
-EvidenceProfileStreamFormSet = modelformset_factory(
-    models.EvidenceProfileStream,
-    form=EvidenceProfileStreamForm,
-    formset=BaseEvidenceProfileStreamFormSet,
-    extra=1
-)
