@@ -1,7 +1,6 @@
 import os
 import json
 
-from django.forms.models import modelformset_factory
 from django.core import serializers
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseNotAllowed
@@ -12,7 +11,7 @@ import pandas as pd
 from assessment.models import Assessment
 from riskofbias.models import RiskOfBiasMetric
 from utils.helper import HAWCDjangoJSONEncoder
-from utils.views import BaseList, BaseCreate, BaseCreateWithFormset, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin
+from utils.views import BaseList, BaseCreate, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin
 from assessment.models import ConfidenceFactor, ConfidenceJudgement
 
 from . import forms, models
@@ -410,7 +409,8 @@ class GetEvidenceProfileObjectMixin(object):
         return super().get_object(object=obj)
 
 
-class EvidenceProfileNew(BaseCreateWithFormset):
+"""
+class EvidenceProfileNew(BaseCreate):
     # Set some basic attributes for this view
     success_message = 'Evidence Profile created.'
     parent_model = Assessment
@@ -418,24 +418,12 @@ class EvidenceProfileNew(BaseCreateWithFormset):
     model = models.EvidenceProfile
     template_name = 'summary/evidenceprofile_form.html'
     form_class = forms.EvidenceProfileForm
-    formset_factory = forms.EvidenceProfileStreamFormSet
-
-    # This method creates an initial Evidence Profile Stream formset factory and uses it to create an empty base formset
-    def build_initial_formset_factory(self):
-        formset = modelformset_factory(
-            models.EvidenceProfileStream,
-            form=forms.EvidenceProfileStreamForm,
-            formset=forms.EvidenceProfileStreamFormSet,
-        )
-
-        return formset(queryset=models.EvidenceProfileStream.objects.none())
 
     # This method returns the URL that the requestor will be re-directed to after this request is handled
     def get_success_url(self):
         # Get the value for this Evidence Profile's visualization URL and return it
         return self.object.get_update_url()
 
-    """
     # Define the type of object being created and the form object that will be used
 
     def get_context_data(self, **kwargs):
@@ -463,10 +451,9 @@ class EvidenceProfileNew(BaseCreateWithFormset):
         form.instance.hawcuser = self.request.user
 
         # return super().form_valid(form)
-    """
-
-
 """
+
+
 # This class is used for creating a new Evidence Profile object
 class EvidenceProfileNew(BaseCreate):
     # Set some basic attributes for this view
@@ -511,6 +498,7 @@ class EvidenceProfileNew(BaseCreate):
         # return super().form_valid(form)
 
 
+"""
 class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
     success_message = 'Evidence Profile updated.'
     model = models.EvidenceProfile
