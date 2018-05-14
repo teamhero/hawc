@@ -5,32 +5,58 @@ import ScoreIcon from 'robTable/components/ScoreIcon';
 import Select from 'shared/components/Select';
 import './ScoreForm.css';
 
-
 class ScoreForm extends Component {
 
     constructor(props){
         super(props);
-        this.state = {
-            scoreSymbols: {0: 'N/A', 1: '--', 2: '-', 3: '+', 4: '++', 10: 'NR'},
-            scoreShades: {
-                0: '#E8E8E8',
-                1: '#CC3333',
-                2: '#FFCC00',
-                3: '#6FFF00',
-                4: '#00CC00',
-                10: '#FFCC00',
-            },
-            scoreChoices: {
-                0: 'Not applicable',
-                1: 'Critically deficient',
-                2: 'Poor',
-                3: 'Adequate',
-                4: 'Good',
-                10: 'Not reported',
-            },
-            score: null,
-            notes: props.score.notes,
-        };
+        if (props.score.metric.answers.length > 0) {
+            var choices = {};
+            var symbols = {};
+            var shades = {};
+
+            for (var i=0; i < props.score.metric.answers.length; i++) {
+                var choice = props.score.metric.answers[i].choice;
+                var symbol = props.score.metric.answers[i].symbol;
+                var shade = props.score.metric.answers[i].shade;
+                var answerScore = props.score.metric.answers[i].answer_score;
+            
+                choices[answerScore] = choice;
+                symbols[answerScore] = symbol;
+                shades[answerScore] = shade;
+            }
+
+            this.state = {
+                scoreChoices: choices ,
+                scoreSymbols: symbols,
+                scoreShades: shades,
+                score: null,
+                notes: props.score.notes,
+            }
+        }
+        else {
+            this.state = {
+                scoreSymbols: {0: 'N/A', 1: '--', 2: '-', 3: '+', 4: '++', 10: 'NR'},
+                scoreShades: {
+                    0: '#E8E8E8',
+                    1: '#CC3333',
+                    2: '#FFCC00',
+                    3: '#6FFF00',
+                    4: '#00CC00',
+                    10: '#FFCC00',
+                },
+                scoreChoices: {
+                    0: 'Not applicable',
+                    1: 'Critically deficient',
+                    2: 'Poor',
+                    3: 'Adequate',
+                    4: 'Good',
+                    10: 'Not reported',
+                },
+                score: null,
+                notes: props.score.notes,
+            };
+        }
+        
         this.handleEditorInput = this.handleEditorInput.bind(this);
         this.selectScore = this.selectScore.bind(this);
     }
@@ -112,6 +138,7 @@ ScoreForm.propTypes = {
         notes: PropTypes.string.isRequired,
         metric: PropTypes.shape({
             name: PropTypes.string.isRequired,
+            answers: PropTypes.array,
         }).isRequired,
     }).isRequired,
     updateNotesLeft: PropTypes.func.isRequired,

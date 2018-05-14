@@ -11,12 +11,16 @@ from . import models
 @receiver(pre_delete, sender=models.RiskOfBiasDomain)
 @receiver(post_save, sender=models.RiskOfBiasMetric)
 @receiver(pre_delete, sender=models.RiskOfBiasMetric)
+@receiver(post_save, sender=models.RiskOfBiasMetricAnswers)
+@receiver(pre_delete, sender=models.RiskOfBiasMetricAnswers)
 def invalidate_caches_rob_metrics(sender, instance, **kwargs):
     Study = apps.get_model('study', 'Study')
     if sender is models.RiskOfBiasDomain:
         assessment_id = instance.assessment_id
     elif sender is models.RiskOfBiasMetric:
         assessment_id = instance.domain.assessment_id
+    elif sender is models.RiskOfBiasMetricAnswers:
+        assessment_id = instance.metric.domain.assessment_id
 
     ids = Study.objects\
         .filter(assessment_id=assessment_id)\
@@ -57,7 +61,7 @@ def create_rob_scores(sender, instance, created, **kwargs):
                      '-> %s RiskOfBiasScore(s) created.' %
                      (assessment_id, instance.id, len(objs)))
         models.RiskOfBiasScore.objects.bulk_create(objs)
-
+    
 
 @receiver(post_save, sender=models.RiskOfBiasMetric)
 def update_study_type_metrics(sender, instance, created, **kwargs):

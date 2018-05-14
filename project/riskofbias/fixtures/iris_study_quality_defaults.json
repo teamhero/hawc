@@ -14,46 +14,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -73,46 +73,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         },
@@ -126,46 +126,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         },
@@ -179,46 +179,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -238,46 +238,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -297,46 +297,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -356,46 +356,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         },
@@ -409,46 +409,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         },
@@ -462,46 +462,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -521,46 +521,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         },
@@ -574,46 +574,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         },
@@ -627,46 +627,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -686,46 +686,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -745,46 +745,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -804,46 +804,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -863,46 +863,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -922,46 +922,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }
@@ -981,46 +981,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         },
@@ -1034,46 +1034,46 @@
           "use_short_name": false,
           "answers": [
             {
-              "answer_choice": "Not reported",
-              "answer_symbol": "NR",
+              "choice": "Not reported",
+              "symbol": "NR",
               "answer_score": 10,
-              "answer_shade": "#FFCC00",
-              "answer_order": 1
+              "shade": "#FFCC00",
+              "order": 1
             },
             {
-              "answer_choice": "Critically deficient",
-              "answer_symbol": "--",
+              "choice": "Critically deficient",
+              "symbol": "--",
               "answer_score": 1,
-              "answer_shade": "#CC3333",
-              "answer_order": 2
+              "shade": "#CC3333",
+              "order": 2
             },
             {
-              "answer_choice": "Poor",
-              "answer_symbol": "-",
+              "choice": "Poor",
+              "symbol": "-",
               "answer_score": 2,
-              "answer_shade": "#FFCC00",
-              "answer_order": 3
+              "shade": "#FFCC00",
+              "order": 3
             },
             {
-              "answer_choice": "Adequate",
-              "answer_symbol": "+",
+              "choice": "Adequate",
+              "symbol": "+",
               "answer_score": 3,
-              "answer_shade": "#6FFF00",
-              "answer_order": 4
+              "shade": "#6FFF00",
+              "order": 4
             },
             {
-              "answer_choice": "Good",
-              "answer_symbol": "++",
+              "choice": "Good",
+              "symbol": "++",
               "answer_score": 4,
-              "answer_shade": "#00CC00",
-              "answer_order": 5
+              "shade": "#00CC00",
+              "order": 5
             },
             {
-              "answer_choice": "Not applicable",
-              "answer_symbol": "-",
+              "choice": "Not applicable",
+              "symbol": "-",
               "answer_score": 0,
-              "answer_shade": "#FFCC00",
-              "answer_order": 6
+              "shade": "#FFCC00",
+              "order": 6
             }
           ]
         }

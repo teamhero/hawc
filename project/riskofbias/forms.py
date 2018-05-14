@@ -83,7 +83,7 @@ class RoBMetricForm(forms.ModelForm):
 class RoBMetricAnswersForm(forms.ModelForm):
     class Meta:
         model = models.RiskOfBiasMetricAnswers
-        exclude = ('metric', )
+        exclude = ('score','metric', )
 
     def __init__(self, *args, **kwargs):
         metric = kwargs.pop('parent', None)
@@ -108,6 +108,16 @@ class RoBMetricAnswersForm(forms.ModelForm):
         helper['name'].wrap(cfl.Field, css_class='span12')
         helper['description'].wrap(cfl.Field, css_class='html5text span12')
         return helper
+
+        def clean(self):
+            cleaned_data = super().clean()
+            if 'choice' and 'symbol' and 'score' and 'order' in self.changed_data and self._meta.model.objects\
+                    .filter(metric=self.instance.metric,
+                            choice=cleaned_data['choice'],
+                            symbol=cleaned_data['symbol'],
+                            score=cleaned_data['score'],
+                            order=cleaned_data['order']).count() > 0:
+                raise forms.ValidationError('Answer already exists for metric.')
 
 
 class RoBScoreForm(forms.ModelForm):
