@@ -8,10 +8,11 @@ import {
     NULL_CASE,
 } from './shared';
 
-import Library from './Library';
-import EvidenceProfileStream from './EvidenceProfileStream';
+import Library from "./Library";
+import EvidenceProfileStream from "./EvidenceProfileStream";
 
-import { renderCrossStreamInferencesFormset } from './components/CrossStreamInferences';
+import {renderCrossStreamInferencesFormset} from "./components/CrossStreamInferences";
+import {renderEvidenceProfileStreamsFormset} from "./components/EvidenceProfileStreams";
 
 // This class is intended to hold an Evidence Profile object -- essentially all of the data needed to generate an Evidence Profile report,
 // or a form for creating and managing an Evidence Profile
@@ -20,12 +21,34 @@ class EvidenceProfile {
         // This constructor is empty, all work happens through static methods
     }
 
-    static configure(configuration, object) {
-        if ((typeof(configuration) === "object") && (typeof(object) === "object")) {
+    static configure(configuration, object, streams, scenarios) {
+        if (typeof(configuration) === "object") {
             // The configuration argument is an object, save it for later use
             EvidenceProfile.configuration = configuration;
-            EvidenceProfile.object = object;
+
+            if (typeof(object) === "object") {
+                // The object argument is an object, save it or later use and look for incoming child objects
+                EvidenceProfile.object = object;
+
+                if (typeof(streams) === "object") {
+                    // The streams argument is an object, save it as a child object
+
+                    EvidenceProfile.childObjects = {
+                        streams: streams,
+                    };
+
+                    if (typeof(scenarios) === "object") {
+                        // The scenarios argument is an object, save it as a child object
+                        EvidenceProfile.childObjects["scenarios"] = scenarios;
+                    }
+                }
+            }
         }
+    }
+
+    // This function builds the formset for the "Evidence Profile Streams" portion of the Evidence Profile form
+    static buildEvidenceProfileStreamsFormset() {
+        renderEvidenceProfileStreamsFormset(EvidenceProfile.childObjects.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams);
     }
 
     // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
@@ -76,6 +99,25 @@ class EvidenceProfile {
                 // returnValue.cross_stream_conclusions.inferences either does not exist or is not of the desired format, create/replace it
                 // with an object of the desired format
                 returnValue.cross_stream_conclusions["inferences"] = [];
+            }
+        }
+
+        return returnValue;
+    }
+
+
+    // This method attempts to check the incoming streams array of objects to make sure that they match the desired format
+    static checkStreams(streams) {
+        var returnValue = [];
+
+        if (typeof(streams) === "object") {
+            // streams is an object, assume it is an array and iterate over its elements to check each one
+            for (let i=0; i<streams.length; i++) {
+                if (typeof(streams[i]) == "object") {
+                    // This stream is an object
+
+                    returnValue.push(new EvidenceProfileStream(streams[i]));
+                }
             }
         }
 

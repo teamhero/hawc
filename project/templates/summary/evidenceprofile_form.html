@@ -58,6 +58,7 @@
               {
                 form: {
                   id: "evidenceProfileForm",
+                  captionDiv: "div_id_caption",
                   actionsClass: "form-actions",
                 },
                 crossStreamInferences: {
@@ -69,12 +70,26 @@
                   buttonSetPrefix: "btn_inference",
                   buttonSetRegEx: new RegExp("^btn_inference_(moveup|movedown|remove)_(\\d+)$", "gi"),
                 },
+                streams: {
+                  divId: "div_id_streams",
+                  tableId: "table_id_streams",
+                  addButtonId: "add_stream_row",
+                  streamDivIdPrefix: "div_id_stream",
+                  fieldIdPrefix: "stream",
+                  buttonSetPrefix: "btn_stream",
+                  buttonSetRegEx: new RegExp("^btn_stream_(moveup|movedown|remove)_(\\d+)$", "gi"),
+                  streamTypes: evidenceProfile.Library.setStreamTypes({{stream_types|safe}}),
+                }
               },
-              evidenceProfile.EvidenceProfile.checkEvidenceProfile({{evidenceProfile|safe}})
+              evidenceProfile.EvidenceProfile.checkEvidenceProfile({{evidenceProfile|safe}}),
+              evidenceProfile.EvidenceProfile.checkStreams({{streams|safe}})
             );
 
             // Add an <hr /> tag just below the "caption" field in the form
             evidenceProfile.Library.addHRTag("caption", "after");
+
+            // Create the Evidence Profile Streams formset and add it to the Evidence Profile form
+            evidenceProfile.EvidenceProfile.buildEvidenceProfileStreamsFormset();
 
             // Create the Cross-Stream Inferences formset and add it to the Evidence Profile form
             evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormset();

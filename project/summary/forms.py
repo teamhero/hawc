@@ -882,7 +882,7 @@ class EvidenceProfileForm(forms.ModelForm):
 
         # Iterate over each unordered object type's ordered array and get rid of any None values
         for uo_key in unordered_objects:
-            unordered_objects[uo_key]["desired_order"][:] = [inference for inference in unordered_objects[uo_key]["desired_order"] if (inference)]
+            unordered_objects[uo_key]["desired_order"][:] = [theObject for theObject in unordered_objects[uo_key]["desired_order"] if (theObject)]
 
         # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
