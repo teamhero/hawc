@@ -763,6 +763,7 @@ class EvidenceProfileStream(models.Model):
     evidenceprofile = models.ForeignKey(EvidenceProfile, related_name='streams')
 
     # Declare the basic attributes for this object
+    order = models.PositiveSmallIntegerField()
     stream_type = models.PositiveSmallIntegerField(choices=STUDY_TYPE_CHOICES, default=BIOASSAY)
     stream_title = models.CharField(max_length=128, help_text="Enter the title of this profile streaam (spaces and special-characters allowed).")
     confidence_judgement = models.TextField(default="{}")
@@ -810,6 +811,7 @@ class EvidenceProfileScenario(models.Model):
     evidenceprofilestream = models.ForeignKey(EvidenceProfileStream, related_name='scenarios')
 
     # Declare the basic attributes for this object
+    order = models.PositiveSmallIntegerField()
     outcome = models.CharField(max_length=128, help_text="This must be one of the available \"outcome\" values listed in the parent envidence profile stream")
     scenario_name = models.CharField(max_length=128, help_text="(optional) If a stream only has one scenario, there is no reason to give it a name", blank=True)
     studies = models.TextField(default="{}")

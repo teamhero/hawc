@@ -492,10 +492,28 @@ def getEvidenceProfileContextData(object):
     if (object):
         # The incoming object is not empty, get serialized versions of its desired sub-objects
         returnValue["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [object, ]))[0]["fields"])
-        returnValue["streams"] = serializers.serialize("json", object.streams.all())
+        returnValue["streams"] = json.loads(serializers.serialize("json", object.streams.all().order_by("order")))
     else:
         # The inconing object is empty (creating a new object), return base models for the desired sub-objects
         returnValue["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"])
-        returnValue["streams"] = serializers.serialize("json", models.EvidenceProfileStream.objects.none())
+        returnValue["streams"] = json.loads(serializers.serialize("json", models.EvidenceProfileStream.objects.none()))
+
+    # Extract the "fields" attribute from each of the streams
+    returnValue["streams"][:] = [theObject["fields"] for theObject in returnValue["streams"] if (theObject)]
+
+    # Attempt to de-serialize each stream's confidence_judgement and outcome fields
+    for stream in returnValue["streams"]:
+        try:
+            stream["confidence_judgement"] = json.loads(stream["confidence_judgement"])
+        except:
+            pass
+
+        try:
+            stream["outcomes"] = json.loads(stream["outcomes"])
+        except:
+            pass
+
+    # Re-serialize the streams into a JSON-formatted object (the JavaScript will pick up all of the objects and datatypes as desired)
+    returnValue["streams"] = json.dumps(returnValue["streams"])
 
     return returnValue

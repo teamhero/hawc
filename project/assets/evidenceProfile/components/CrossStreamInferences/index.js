@@ -7,12 +7,18 @@ class CrossStreamInferencesFormset extends Component {
     inferences = [];
 
     constructor(props) {
-        // Frist, call the super-class's constructor
+        // First, call the super-class's constructor
         super(props);
+
+        // Bind the desired class functions to the
         this.handleButtonClick = this.handleButtonClick.bind(this);
         this.updateInference = this.updateInference.bind(this);
 
+        // Get the incoming inferences from the props and save them as an object-level attribute (defaulting to an empty
+        // array if no inferences were passed in)
         this.inferences = (typeof(props.inferences) == "object") ? props.inferences : [];
+
+        // Push an empty inference onto the end of the array
         this.inferences.push(
             {
                 title: "",
@@ -20,7 +26,7 @@ class CrossStreamInferencesFormset extends Component {
             }
         );
 
-        // Set the initial state based on the incoming props
+        // Set the initial row objects based on the incoming inference objects
         this.state = {
             rows: this.buildInferenceRows(),
         };
@@ -71,7 +77,7 @@ class CrossStreamInferencesFormset extends Component {
             <div>
                 <strong className="control-label">Inferences Across Streams</strong>
                 <button id={this.props.config.addButtonId} className="btn btn-primary pull-right" type="button" onClick={this.handleButtonClick}>New Inference</button>
-                <br className="clearBoth" />
+                <br className="inferencesClearBoth" />
                 <table id={this.props.config.tableid} className="inferencesTable">
                     <thead>
                         <tr>
