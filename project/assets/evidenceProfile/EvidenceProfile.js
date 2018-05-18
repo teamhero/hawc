@@ -19,36 +19,70 @@ import {renderEvidenceProfileStreamsFormset} from "./components/EvidenceProfileS
 class EvidenceProfile {
     constructor(configuration) {
         // This constructor is empty, all work happens through static methods
+        // The object represented by this class is intended to be a singleton -- i.e. there will only be one in use on a page at any time
     }
 
-    static configure(configuration, object, streams, scenarios) {
+    static configure(configuration, object) {
+        // This defines the object attributes' names (key) and data types (value)
+        let objectAttributes = {
+            title: "string",
+            slug: "string",
+            settings: "string",
+            caption: "string",
+            cross_stream_conclusions: "object",
+            streams: "array"
+        };
+
+        EvidenceProfile.object = {};
+
         if (typeof(configuration) === "object") {
             // The configuration argument is an object, save it for later use
             EvidenceProfile.configuration = configuration;
 
             if (typeof(object) === "object") {
-                // The object argument is an object, save it or later use and look for incoming child objects
-                EvidenceProfile.object = object;
+                // The object argument is an object, iterate through it to build this object's object attribute
 
-                if (typeof(streams) === "object") {
-                    // The streams argument is an object, save it as a child object
+                for (let attributeName in objectAttributes) {
+                    if ((attributeName in object) && (typeof(object[attributeName]) === objectAttributes[attributeName])) {
+                        // The object argument has the desired attribute name, and the attribute is of the desired type, copy it to this
+                        // object's object attribute
+                        EvidenceProfile.object[attributeName] = object[attributeName];
+                    }
+                    else {
+                        // The object argument does not have the desired attribute name, or it is not of the desired type, set an empty counterpart
+                        // in this object's object attribute
 
-                    EvidenceProfile.childObjects = {
-                        streams: streams,
-                    };
-
-                    if (typeof(scenarios) === "object") {
-                        // The scenarios argument is an object, save it as a child object
-                        EvidenceProfile.childObjects["scenarios"] = scenarios;
+                        switch (objectAttributes[attributeName]) {
+                            case "string":
+                                // The attribute should be a string
+                                EvidenceProfile.object[attributeName] = "";
+                                break;
+                            case "object":
+                                // The attribute should be an object
+                                EvidenceProfile.object[attributeName] = {};
+                                break;
+                            case "array":
+                                // The attribute should be an array
+                                EvidenceProfile.object[attributeName] = [];
+                                break;
+                            default:
+                                // The desired type was not handled (e.g. a number), set the object's attribute to null
+                                EvidenceProfile.object[attributeName] = null;
+                        }
                     }
                 }
             }
+        }
+        else {
+            // The configuration argument is not an object, set this object's configuration and object attributes to null
+            EvidenceProfile.configuration = null;
+            EvidenceProfile.object = null;
         }
     }
 
     // This function builds the formset for the "Evidence Profile Streams" portion of the Evidence Profile form
     static buildEvidenceProfileStreamsFormset() {
-        renderEvidenceProfileStreamsFormset(EvidenceProfile.childObjects.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams);
+        renderEvidenceProfileStreamsFormset(EvidenceProfile.object.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams);
     }
 
     // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
@@ -61,8 +95,17 @@ class EvidenceProfile {
     static checkEvidenceProfile(evidenceProfile) {
         var returnValue = {};
 
-        if (typeof(evidenceProfile) == "object") {
-            // The incoming evidenceProfile argument is an ojbect, use it for the basis of returnValue
+        if (typeof(evidenceProfile) === "object") {
+            // The incoming evidenceProfile argument is an object, use it for the basis of returnValue
+
+            console.log(EvidenceProfile.objectAttributes);
+            console.log(EvidenceProfile);
+
+            for (let attributeName in EvidenceProfile.objectAttributes) {
+                console.log(attributeName);
+            }
+
+            /*
             returnValue = evidenceProfile;
 
             if (typeof(returnValue["cross_stream_conclusions"]) == "string") {
@@ -100,6 +143,7 @@ class EvidenceProfile {
                 // with an object of the desired format
                 returnValue.cross_stream_conclusions["inferences"] = [];
             }
+            */
         }
 
         return returnValue;
@@ -114,8 +158,7 @@ class EvidenceProfile {
             // streams is an object, assume it is an array and iterate over its elements to check each one
             for (let i=0; i<streams.length; i++) {
                 if (typeof(streams[i]) == "object") {
-                    // This stream is an object
-
+                    // This stream is an object, attempt to instantiate it and push it onto the array being returned
                     returnValue.push(new EvidenceProfileStream(streams[i]));
                 }
             }

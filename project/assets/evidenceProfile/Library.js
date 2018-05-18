@@ -41,11 +41,11 @@ class Library {
     		// The incoming confidence_judgements argument is of the expected type, iterate through its elements to build returnValue
     		for (var i=0; i<confidence_judgements.length; i++) {
     			returnValue.judgements[i] = {
-    				"value": confidence_judgements[i].fields.value
-    				,"name": confidence_judgements[i].fields.name
+    				"value": confidence_judgements[i].value
+    				,"name": confidence_judgements[i].name
     			};
 
-    			returnValue.values[i] = confidence_judgements[i].fields.value;
+    			returnValue.values[i] = confidence_judgements[i].value;
     		}
     	}
 
@@ -77,144 +77,24 @@ class Library {
 
     // This function adds an <hr /> tag either above or below the form field named in the fieldName argument
     static addHRTag(fieldName, position) {
-        if ((typeof(fieldName) == "string") && (fieldName != "") && (typeof(position) == "string") && (position != "")) {
+        if ((typeof(fieldName) === "string") && (fieldName !== "") && (typeof(position) === "string") && (position !== "")) {
             // Both incoming arguments are non-empty strings, continue
 
-            // First, look for an element with an ID matching fieldName
-            var $fieldDiv = $("#" + fieldName);
-            if ($fieldDiv.length == 0) {
-                // No matching element was found, look for one with a 'div_id_' in front of it
-                $fieldDiv = $("#div_id_" + fieldName);
+            // First, look for an element whose ID matches fieldName exactly
+            let fieldList = document.querySelectorAll("#" + fieldName);
+            if (fieldList.length === 0) {
+                // No matching element was found, append "div_id_" in front of fieldName and look for that element
+                fieldList = document.querySelectorAll("#div_id_" + fieldName);
             }
 
-            if ($fieldDiv.length > 0) {
-                // The specified form field's <div> container was found, add the <hr /> tag
-
-                if (position.toLowerCase() != "before") {
-                    // By default, place the <hr /> after the specified field
-                    $fieldDiv.after('<hr style="margin-top:32px; height:1px;" />');
-                }
-                else {
-                    $fieldDiv.before('<hr style="margin-top:32px; height:1px;" />');
-                }
-            }
-        }
-    }
-
-    // This function sets the click() functionality for the "Move Up", "Move Down" and "Remove" set of buttons
-    static setButtonSetClickActions(buttonSetBaseId="", rowIdPrefix="", tableId="", index=0) {
-        if (
-            (typeof(buttonSetBaseId) == "string") && (buttonSetBaseId != "")
-            && (typeof(rowIdPrefix) == "string") && (rowIdPrefix != "")
-            && (typeof(tableId) == "string") && (tableId != "")
-            && (typeof(index) == "number")
-        ) {
-            // The buttonSet, rowIdPrefix and tableId arguments are non-emtpy strings and the index argument is numeric, continue
-
-            index = Math.floor(index);
-            if (index > 0) {
-                // The index argument is (now) an integer and is greater than zero, continue
-
-                var $button = $();
-
-                // Try to add the click() functionality for the target "Move Up" button
-                $button = $("#" + buttonSetBaseId + "_moveup_" + index);
-                if ($button.length > 0) {
-                    // The desired "Move Up" button was found, set its click() functionality
-
-                    $button.click(
-                        function(e) {
-                            var id = $(this).attr("id");
-                            if ((typeof(id) != "undefined") && (id != "") && (id.match(new RegExp("^" + buttonSetBaseId + "_moveup_\\d+$", "g")))) {
-                                // The clicked-on element has an id attribute whose value matches the desired naming convention, work with it
-
-                                var $row = $("#" + rowIdPrefix + "_" + id.replace(new RegExp("^" + buttonSetBaseId + "_moveup_(\\d+)$", "g"), "$1"));
-                                if ($row.length > 0) {
-                                    // The desired table row element was retrieved, see if it has an immediate previous sibling
-
-                                    var $previous = $row.prev();
-                                    if ($previous.length > 0) {
-                                        // A previous sibling was found, swap the positions of the two and adjust the values of the ordering variables
-                                        $row.after($previous);
-                                        Library.updateTableRows(tableId);
-                                    }
-                                }
-                            }
-                        }
-                    );
-                }
-
-                // Try to add the click() functionality for the target "Move Down" button
-                $button = $("#" + buttonSetBaseId + "_movedown_" + index);
-                if ($button.length > 0) {
-                    // The button was found, set its click() functionality
-
-                    $button.click(
-                        function(e) {
-                            var id = $(this).attr("id");
-                            if ((typeof(id) != "undefined") && (id != "") && (id.match(new RegExp("^" + buttonSetBaseId + "_movedown_\\d+$", "g")))) {
-                                // The clicked-on element has an id attribute whose value matches the desired naming convention, work with it
-
-                                var $row = $("#" + rowIdPrefix + "_" + id.replace(new RegExp("^" + buttonSetBaseId + "_movedown_(\\d+)$", "g"), "$1"));
-                                if ($row.length > 0) {
-                                    // The desired table row element was retrieved, see if it has an immediate next sibling
-
-                                    var $next = $row.next();
-                                    if ($next.length > 0) {
-                                        // A next sibling was found, swap the positions of the two and adjust the table shading
-                                        $next.after($row);
-                                        Library.updateTableRows(tableId);
-                                    }
-                                }
-                            }
-                        }
-                    );
-                }
-
-                // Try to add the click() functionality for the target "Move Remove" button
-                $button = $("#" + buttonSetBaseId + "_remove_" + index);
-                if ($button.length > 0) {
-                    // The button was found, set its click() functionality
-
-                    $button.click(
-                        function(e) {
-                            var id = $(this).attr("id");
-                            if ((typeof(id) != "undefined") && (id != "") && (id.match(new RegExp("^" + buttonSetBaseId + "_remove_\\d+$", "g")))) {
-                                // The clicked-on element has an id attribute whose value matches the desired naming convention, work with it
-
-                                var $row = $("#" + rowIdPrefix + "_" + id.replace(new RegExp("^" + buttonSetBaseId + "_remove_(\\d+)$", "g"), "$1"));
-                                if ($row.length > 0) {
-                                    // The desired table row element was retrieved, remove it and adjust the table shading
-                                    $row.remove();
-                                    Library.updateTableRows(tableId);
-                                }
-                            }
-                        }
-                    );
-                }
-            }
-        }
-    }
-
-    // This function sets the shading and row order variables for the table specified in the incoming argument
-    static updateTableRows(tableId="") {
-        // Iterate through each row within the table's body and set each stream's order
-
-        $("#" + tableId + " tbody").find("tr").each(
-            function(i, row) {
-                var $row = $(row);
-
-                // Find the form field in the row that contains the stream's desired order (it has a class named "orderingField")
-                $row.find(".orderingField").each(
-                    function(j, field) {
-                        $(field).val(i + 1);
-                    }
+            if (fieldList.length > 0) {
+                // The desired element was found, add the <hr /> tag where desired
+                fieldList[0].insertAdjacentHTML(
+                    (position.toLowerCase() !== "before") ? "afterend" : "beforebegin",
+                    '<hr style="margin-top:32px; border-width:1px;" />'
                 );
-
-                // Set the row's color to either white (odd-numbered) or gray (even-numbered)
-                $row.css("background-color", "#" + (((i % 2) == 1) ? "F1F1F1" : "FFFFFF"));
             }
-        );
+        }
     }
 }
 
