@@ -2,6 +2,7 @@ from collections import OrderedDict
 import json
 import re
 
+from django.core import serializers
 from django.db.models import QuerySet
 from crispy_forms import layout as cfl
 from django import forms
@@ -10,7 +11,7 @@ import pandas as pd
 from selectable import forms as selectable
 from xlrd import XLRDError, open_workbook
 
-from assessment.models import EffectTag
+from assessment.models import EffectTag, ConfidenceJudgement
 from study.models import Study
 from animal.models import Endpoint
 from epi.models import Outcome
@@ -760,33 +761,34 @@ class EvidenceProfileForm(forms.ModelForm):
             self.instance.assessment = assessment
 
         # Get the initial values for the fields related to cross-stream conclusions
-        initial_confidence_judgement_rating = ""
+        initial_confidence_judgement_score = ""
         initial_confidence_judgement_explanation = ""
         if (self.instance.cross_stream_conclusions != ""):
             # This Evidence Profile object has a non-empty cross_stream_conclusions field, set initial values from it
             try:
                 conclusionsJSON = json.loads(self.instance.cross_stream_conclusions)
-                initial_confidence_judgement_rating = conclusionsJSON["confidence_judgement"]["rating"]
+                initial_confidence_judgement_score = conclusionsJSON["confidence_judgement"]["score"]
                 initial_confidence_judgement_explanation = conclusionsJSON["confidence_judgement"]["explanation"]
             except:
                 pass
+
+        confidenceJudgementChoices = []
+        for judgement in json.loads(serializers.serialize("json", ConfidenceJudgement.objects.all().order_by("value"))):
+            confidenceJudgementChoices.append((judgement["fields"]["value"], judgement["fields"]["name"]))
 
         # Create an ordered dictionary of new fields that will be added to the form
         new_fields = OrderedDict()
         new_fields.update(
             [
                 (
-                    "confidence_judgement_rating"
-                    ,forms.IntegerField(
+                    "confidence_judgement_score"
+                    ,forms.ChoiceField(
                         required = False
-                        ,label = "Rating (0 - 5)"
-                        ,initial = initial_confidence_judgement_rating
-                        ,min_value = 0
-                        ,max_value = 5
-                        ,help_text = "Overall rating for confidence in this studies presented in this evidence profile (across all evidence streams)"
-                        ,widget = forms.NumberInput(
-                            attrs = {
-                                "style": "width:48px;"
+                        ,label = "Total Judgement Score Across All Streams"
+                        ,choices = confidenceJudgementChoices
+                        ,widget = forms.Select(
+                            attrs={
+                                "style": "width:175px;"
                             }
                         )
                     )
@@ -797,7 +799,7 @@ class EvidenceProfileForm(forms.ModelForm):
                         required = False
                         ,label = "Explanation"
                         ,initial = initial_confidence_judgement_explanation
-                        ,help_text = "Explain why you selected the overall rating you did"
+                        ,help_text = "Explain why you selected the overall judgement score you did"
                         ,widget = forms.Textarea(
                             attrs = {
                                 "rows": 2

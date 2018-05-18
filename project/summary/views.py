@@ -485,35 +485,72 @@ def getEvidenceProfileContextData(object):
     returnValue = {}
 
     returnValue["stream_types"] = models.get_serialized_stream_types()
-    returnValue["increase_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True))
-    returnValue["decrease_confidence_factors"] = serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True))
-    returnValue["confidence_judgements"] = serializers.serialize("json", ConfidenceJudgement.objects.all())
+
+    # Retrieve only the "fields" attribute from each of the factors that increase confidence
+    increase_confidence_factors = json.loads(serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True).order_by("name")))
+    increase_confidence_factors[:] = [increase_confidence_factor["fields"] for increase_confidence_factor in increase_confidence_factors if (increase_confidence_factor)]
+    returnValue["increase_confidence_factors"] = json.dumps(increase_confidence_factors)
+
+    # Retrieve only the "fields" attribute from each of the factors that decrease confidence
+    decrease_confidence_factors = json.loads(serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True).order_by("name")))
+    decrease_confidence_factors[:] = [decrease_confidence_factor["fields"] for decrease_confidence_factor in decrease_confidence_factors if (decrease_confidence_factor)]
+    returnValue["decrease_confidence_factors"] = json.dumps(decrease_confidence_factors)
+
+    # Retrieve only the "fields" attribute from each of the confidence judgement options
+    confidence_judgements = json.loads(serializers.serialize("json", ConfidenceJudgement.objects.all().order_by("value")))
+    confidence_judgements[:] = [confidence_judgement["fields"] for confidence_judgement in confidence_judgements if (confidence_judgement)]
+    returnValue["confidence_judgements"] = json.dumps(confidence_judgements)
+
+    # Initialize the evidenceProfile object to an empty dictionary
+    evidenceProfile = {}
 
     if (object):
-        # The incoming object is not empty, get serialized versions of its desired sub-objects
-        returnValue["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [object, ]))[0]["fields"])
-        returnValue["streams"] = json.loads(serializers.serialize("json", object.streams.all().order_by("order")))
+        # The incoming object is not empty, create a JSON-friendly version of it, and include an additional attribute for the
+        # profile's existing child streams
+        evidenceProfile = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
+        evidenceProfile["streams"] = json.loads(serializers.serialize("json", object.streams.all().order_by("order")))
     else:
-        # The inconing object is empty (creating a new object), return base models for the desired sub-objects
-        returnValue["evidenceProfile"] = json.dumps(json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"])
-        returnValue["streams"] = json.loads(serializers.serialize("json", models.EvidenceProfileStream.objects.none()))
+        # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, and include an additional
+        # attibute for the profile's child streams
+        evidenceProfile = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
+        evidenceProfile["streams"] = json.loads(serializers.serialize("json", models.EvidenceProfileStream.objects.none()))
 
-    # Extract the "fields" attribute from each of the streams
-    returnValue["streams"][:] = [theObject["fields"] for theObject in returnValue["streams"] if (theObject)]
+    # Any existing stream objects loaded from the database will have the actual data fields stored within a "fields" attribute; extract
+    # that data from the fields attribute and retain only that portion of the original stream object
+    evidenceProfile["streams"][:] = [stream["fields"] for stream in evidenceProfile["streams"] if (stream)]
 
-    # Attempt to de-serialize each stream's confidence_judgement and outcome fields
-    for stream in returnValue["streams"]:
+    #Attempt to de-serialize the profile's "cross_stream_conclusions" attribute
+    try:
+        evidenceProfile["cross_stream_conclusions"] = json.loads(evidenceProfile["cross_stream_conclusions"])
+    except:
+        evidenceProfile["cross_stream_conclusions"] = {}
+
+    # Make sure that the profile's cross_stream_conclusions attribute includes a confidence_judgement attribute of its own
+    if ("confidence_judgement" not in evidenceProfile["cross_stream_conclusions"]):
+        evidenceProfile["cross_stream_conclusions"]["confidence_judgement"] = {
+            "score": "",
+            "name": "",
+            "explanation": "",
+        }
+
+    # Make sure that the profile's cross_stream_conclusions attribute includes an inferences attribute of its own
+    if ("inferences" not in evidenceProfile["cross_stream_conclusions"]):
+        evidenceProfile["cross_stream_conclusions"]["inferences"] = []
+
+    # Attempt to de-serialize each stream's "confidence_judgement" and "outcome" attributes
+    for stream in evidenceProfile["streams"]:
         try:
             stream["confidence_judgement"] = json.loads(stream["confidence_judgement"])
         except:
-            pass
+            stream["confidence_judgement"] = {}
 
         try:
             stream["outcomes"] = json.loads(stream["outcomes"])
         except:
-            pass
+            stream["outcomes"] = []
 
-    # Re-serialize the streams into a JSON-formatted object (the JavaScript will pick up all of the objects and datatypes as desired)
-    returnValue["streams"] = json.dumps(returnValue["streams"])
+    # Serialize the evnidenceProfile into a JSON-formatted string version for inclusion in the request context (the JavaScript in the
+    # template will pick up all of the objects and datatypes as desired)
+    returnValue["evidenceProfile"] = json.dumps(evidenceProfile)
 
     return returnValue

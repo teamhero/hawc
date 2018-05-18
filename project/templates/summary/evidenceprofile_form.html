@@ -53,6 +53,7 @@
         // Start up and initialize the Evidence Profile JavaScript object
         window.app.evidenceProfileStartup(
           function(evidenceProfile) {
+
             // Configure the EvidenceProfile object
             evidenceProfile.EvidenceProfile.configure(
               {
@@ -60,15 +61,16 @@
                   id: "evidenceProfileForm",
                   captionDiv: "div_id_caption",
                   actionsClass: "form-actions",
+                  confidenceJudgements: evidenceProfile.Library.setConfidenceJudgements({{confidence_judgements|safe}}),
                 },
                 crossStreamInferences: {
                   divId: "div_id_inferences",
-                  tableId: "table_id_inferences",
+                  tableId: "table_inferences",
                   addButtonId: "add_inference_row",
-                  rowIdPrefix: "row_id_inference",
+                  rowIdPrefix: "row_inference",
                   fieldPrefix: "inference",
                   buttonSetPrefix: "btn_inference",
-                  buttonSetRegEx: new RegExp("^btn_inference_(moveup|movedown|remove)_(\\d+)$", "gi"),
+                  buttonSetRegEx: new RegExp("^btn_inference_(\\d+)_(moveup|movedown|remove)$", "gi"),
                 },
                 streams: {
                   divId: "div_id_streams",
@@ -77,19 +79,20 @@
                   streamDivIdPrefix: "div_id_stream",
                   fieldIdPrefix: "stream",
                   buttonSetPrefix: "btn_stream",
-                  buttonSetRegEx: new RegExp("^btn_stream_(moveup|movedown|remove)_(\\d+)$", "gi"),
+                  buttonSetRegEx: new RegExp("^btn_stream_(\\d+)_(moveup|movedown|remove)$", "gi"),
                   streamTypes: evidenceProfile.Library.setStreamTypes({{stream_types|safe}}),
                 }
               },
-              evidenceProfile.EvidenceProfile.checkEvidenceProfile({{evidenceProfile|safe}}),
-              evidenceProfile.EvidenceProfile.checkStreams({{streams|safe}})
+              {{evidenceProfile|safe}}
             );
 
             // Add an <hr /> tag just below the "caption" field in the form
             evidenceProfile.Library.addHRTag("caption", "after");
 
+            /*
             // Create the Evidence Profile Streams formset and add it to the Evidence Profile form
             evidenceProfile.EvidenceProfile.buildEvidenceProfileStreamsFormset();
+            */
 
             // Create the Cross-Stream Inferences formset and add it to the Evidence Profile form
             evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormset();
