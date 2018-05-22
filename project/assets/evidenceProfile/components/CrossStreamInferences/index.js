@@ -2,9 +2,10 @@ import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import "./index.css";
 
-// This class is used to manage the Cross-Stream Inferences formset portion of the Evidence Profile form
+// This Component class is used to manage the Cross-Stream Inferences formset portion of the Evidence Profile form
 class CrossStreamInferencesFormset extends Component {
     inferences = [];
+    rowReferences = {};
 
     constructor(props) {
         // First, call the super-class's constructor
@@ -18,47 +19,27 @@ class CrossStreamInferencesFormset extends Component {
         this.inferences = (typeof(props.inferences) === "object") ? props.inferences : [];
         let iTo = this.inferences.length;
         for (let i=0; i<iTo; i++) {
-            this.inferences[i]["reference"] = null;
             this.inferences[i]["row"] = null;
         }
 
         // Push an empty inference onto the end of the array
         this.inferences.push(
             {
-                title: "A",
-                description: "AA",
-                reference: null,
-                row: null,
-            }
-        );
-
-        // Push an empty inference onto the end of the array
-        this.inferences.push(
-            {
-                title: "B",
-                description: "BB",
-                reference: null,
-                row: null,
-            }
-        );
-
-        // Push an empty inference onto the end of the array
-        this.inferences.push(
-            {
                 title: "",
                 description: "",
-                reference: null,
                 row: null,
             }
         );
 
+        // Iterate through this.inferences and create a new CrossStreamInferenceRow for that inference and place it into the
+        // inference's "row" attribute
         iTo = this.inferences.length;
         for (let i=0; i<iTo; i++) {
             this.inferences[i].row = <CrossStreamInferenceRow
                 key={i}
                 ref={
                     (input) => {
-                        this.inferences[i].reference = input;
+                        this.rowReferences["row_" + i] = input;
                     }
                 }
                 index={i}
@@ -79,45 +60,6 @@ class CrossStreamInferencesFormset extends Component {
             rows: this.inferences.map(inference => inference.row),
         };
     }
-
-    /*
-    buildInferenceRows() {
-        let returnValue = [];
-
-        let iTo = this.inferences.length;
-        console.log("In buildInferenceRows()");
-        console.log("iTo = " + iTo);
-        for (let i=0; i<iTo; i++) {
-            console.log("i = " + i);
-            console.log("index = " + i);
-            console.log("maxIndex = " + (iTo - 1));
-            console.log("order = " + (i + 1));
-            returnValue.push(
-                <CrossStreamInferenceRow
-                    key={i}
-                    ref={
-                        (input) => {
-                            this.inferences[i].reference = input;
-                        }
-                    }
-                    index={i}
-                    maxIndex={(iTo - 1)}
-                    order={(i + 1)}
-                    title={this.inferences[i].title}
-                    description={this.inferences[i].description}
-                    idPrefix={this.props.config.rowIdPrefix}
-                    fieldPrefix={this.props.config.fieldPrefix}
-                    buttonSetPrefix={this.props.config.buttonSetPrefix}
-                    buttonSetRegEx={this.props.config.buttonSetRegEx}
-                    handleButtonClick={this.handleButtonClick}
-                />
-            );
-        }
-
-        console.log("----------------------------------------");
-        return returnValue;
-    }
-    */
 
     // This method generates the HTML that replaces this object's JSX representation
     render() {
@@ -162,41 +104,27 @@ class CrossStreamInferencesFormset extends Component {
             // The click event's details were passed in, and the clicked-upon element has a non-empty ID attribute, continue checking
 
             if (event.target.id === this.props.config.addButtonId) {
-                // The element clicked upon is the "Add A New Visualization" button, add a new inference to this.inferences and this.state.rows
-                /*
-                console.log("In handleButtonClick() [Add Inference portion]");
-                */
+                // The element clicked upon is the "Add A New Visualization" button, add a new inference to this.inferences
 
+                // Get values that will be used within props for the new inference row
                 let newRowIndex = this.findMaximumIndex() + 1;
                 let inferenceIndex = this.inferences.length;
 
+                // Push a new, empty inference into this.inferences
                 this.inferences.push(
                     {
                         title: "",
                         description: "",
-                        reference: null,
                         row: null
                     }
                 );
 
-                /*
-                let newRows = Object.assign([], this.state.rows);
-                console.log("findMaximumIndex() = " + this.findMaximumIndex());
-                */
-                console.log("newRowIndex = " + newRowIndex);
-                console.log("inferences.length = " + this.inferences.length);
-                console.log("inferenceIndex = " + inferenceIndex);
-                /*
-                console.log("state.rows.length = " + this.state.rows.length);
-                console.log("typeof(this.inferences[" + inferenceIndex + "]) = " + typeof(this.inferences[inferenceIndex]));
-                */
-
-                /*
+                // Create the new CrossStreamInferenceRow component object
                 this.inferences[inferenceIndex].row = <CrossStreamInferenceRow
                     key={newRowIndex}
                     ref={
                         (input) => {
-                            this.inferences[inferenceIndex].reference = input;
+                            this.rowReferences["row_" + newRowIndex] = input;
                         }
                     }
                     index={newRowIndex}
@@ -214,14 +142,9 @@ class CrossStreamInferencesFormset extends Component {
                 // Set this.state.rows to the new inference rows array (inclding the new inference added to the end)
                 this.setState(
                     {
-                        rows: newRows,
+                        rows: this.inferences.map(inference => inference.row),
                     }
                 );
-                */
-
-                /*
-                console.log("----------------------------------------");
-                */
             }
             else if (event.target.id.match(this.props.config.buttonSetRegEx)) {
                 // The element clicked upon is either a "Move Up," "Move Down" or "Remove" button from a row within the formset, attempt
@@ -236,176 +159,93 @@ class CrossStreamInferencesFormset extends Component {
                     if (buttonDetails[0] >= 1) {
                         // The extracted row number from the element's ID is a potentially valid value, continue
 
-                        let rowIndex = this.findRowIndex(buttonDetails[0]);
-                        if (rowIndex > -1) {
+                        let inferenceIndex = this.findInferenceIndex(buttonDetails[0]);
+                        if (inferenceIndex > -1) {
                             // The row was found within this.state.rows, keep working with it
 
-                            if ((buttonDetails[1] === "moveup") && (rowIndex > 0)) {
+                            if ((buttonDetails[1] === "moveup") && (inferenceIndex > 0)) {
                                 // The clicked-upon element is a "Move Up" button in a row that is not at the top of the array, move it
 
-                                console.log("In handleButtonClick() [Move Inference Up portion]");
-                                /*
-                                console.log("countInferences = " + countInferences);
-                                console.log("buttonDetails = " + buttonDetails);
-                                console.log("rowIndex = " + rowIndex);
-                                console.log("typeof(this.inferences[" +  rowIndex + "]) = " + typeof(this.inferences[rowIndex]));
-                                if (typeof(this.inferences[rowIndex]) != "undefined") {
-                                    console.log("(this.inferences[rowIndex].reference === null) = " + (this.inferences[rowIndex].reference === null));
-                                }
-                                */
+                                // Swap the formset row's position with the one above it
+                                let temp = this.inferences[inferenceIndex - 1];
+                                this.inferences[inferenceIndex - 1] = this.inferences[inferenceIndex];
+                                this.inferences[inferenceIndex] = temp;
 
-                                let newRows = Object.assign([], this.state.rows);
-                                temp = newRows[rowIndex];
-                                newRows[rowIndex] = newRows[rowIndex - 1];
-                                newRows[rowIndex - 1] = temp;
-
-                                // Set this.state.rows to the newly re-ordered inference rows array
+                                // Update the state of this component (displays the re-ordered rows in the formset)
                                 this.setState(
                                     {
-                                        rows: newRows,
+                                        rows: this.inferences.map(inference => inference.row),
                                     }
                                 );
 
-                                let temp = this.inferences[rowIndex];
-                                this.inferences[rowIndex] = this.inferences[rowIndex - 1];
-                                this.inferences[rowIndex - 1] = temp;
-                                /*
-                                console.log("this.inferences[" + (rowIndex - 1) + "]");
-                                console.log(this.inferences[rowIndex - 1]);
-                                console.log("this.inferences[" + rowIndex + "]");
-                                console.log(this.inferences[rowIndex])
-                                */
+                                // Get the references for each of the rows that were moved
+                                let row_1 = this.rowReferences["row_" + this.inferences[inferenceIndex - 1].row.props.index];
+                                let row_2 = this.rowReferences["row_" + this.inferences[inferenceIndex].row.props.index];
 
-                                let row_1 = this.inferences[rowIndex - 1].reference;
-                                let row_2 = this.inferences[rowIndex].reference;
-
-                                console.log("row_1:");
-                                console.log(row_1);
-                                console.log(typeof(row_1.orderReference));
-                                console.log("row_2:");
-                                console.log(row_2);
-                                console.log(typeof(row_2.orderReference));
-
+                                // Get the order values from the rows that were moved
                                 let order_1 = row_1.orderReference.state.value;
                                 let order_2 = row_2.orderReference.state.value;
 
+                                // Set row 1's order value to the original order value from row 2
                                 row_1.orderReference.setState(
                                     {
                                         value: order_2,
                                     }
                                 );
 
+                                // Set row 2's order value to the original order value from row 1
                                 row_2.orderReference.setState(
                                     {
                                         value: order_1,
                                     }
                                 );
-
-                                console.log("----------------------------------------");
                             }
-                            else if ((buttonDetails[1] === "movedown") && (rowIndex < (countInferences - 1))) {
+                            else if ((buttonDetails[1] === "movedown") && (inferenceIndex < (countInferences - 1))) {
                                 // The clicked-upon element is a "Move Down" button in a row that is not at the bottom of the array, move it
 
-                                console.log("In handleButtonClick() [Move Inference Down portion]");
-                                /*
-                                console.log("countInferences = " + countInferences);
-                                console.log("buttonDetails = " + buttonDetails);
-                                console.log("rowIndex = " + rowIndex);
-                                console.log("typeof(this.inferences[" +  rowIndex + "]) = " + typeof(this.inferences[rowIndex]));
-                                if (typeof(this.inferences[rowIndex]) != "undefined") {
-                                    console.log("(this.inferences[rowIndex].reference === null) = " + (this.inferences[rowIndex].reference === null));
-                                }
-                                */
+                                // Swap the formset row's position with the one below it
+                                let temp = this.inferences[inferenceIndex];
+                                this.inferences[inferenceIndex] = this.inferences[inferenceIndex + 1];
+                                this.inferences[inferenceIndex + 1] = temp;
 
-                                let newRows = Object.assign([], this.state.rows);
-                                temp = newRows[rowIndex];
-                                newRows[rowIndex] = newRows[rowIndex + 1];
-                                newRows[rowIndex + 1] = temp;
-
-                                // Set this.state.rows to the newly re-ordered inference rows array
+                                // Update the state of this component (displays the re-ordered rows in the formset)
                                 this.setState(
                                     {
-                                        rows: newRows,
+                                        rows: this.inferences.map(inference => inference.row),
                                     }
                                 );
 
-                                let temp = this.inferences[rowIndex];
-                                this.inferences[rowIndex] = this.inferences[rowIndex + 1];
-                                this.inferences[rowIndex + 1] = temp;
-                                /*
-                                console.log("this.inferences[" + rowIndex + "]");
-                                console.log(this.inferences[rowIndex]);
-                                console.log("this.inferences[" + (rowIndex + 1) + "]");
-                                console.log(this.inferences[rowIndex + 1]);
-                                */
+                                // Get the references for each of the rows that were moved
+                                let row_1 = this.rowReferences["row_" + this.inferences[inferenceIndex].row.props.index];
+                                let row_2 = this.rowReferences["row_" + this.inferences[inferenceIndex + 1].row.props.index];
 
-                                let row_1 = this.inferences[rowIndex].reference;
-                                let row_2 = this.inferences[rowIndex + 1].reference;
-                                console.log("row_1:");
-                                console.log(row_1);
-                                console.log(typeof(row_1));
-                                console.log("row_2:");
-                                console.log(row_2);
-                                console.log(typeof(row_2));
-
+                                // Get the order values from the rows that were moved
                                 let order_1 = row_1.orderReference.state.value;
                                 let order_2 = row_2.orderReference.state.value;
 
+                                // Set row 1's order value to the original order value from row 2
                                 row_1.orderReference.setState(
                                     {
                                         value: order_2,
                                     }
                                 );
 
+                                // Set row 2's order value to the original order value from row 1
                                 row_2.orderReference.setState(
                                     {
                                         value: order_1,
                                     }
                                 );
-
-                                console.log("----------------------------------------");
                             }
                             else if (buttonDetails[1] === "remove") {
                                 // Set this.state.rows to the new inference rows array without the removed inference
 
-                                console.log("In handleButtonClick() [Remove Inference portion]");
-                                /*
-                                console.log("countInferences = " + countInferences);
-                                console.log("buttonDetails = " + buttonDetails);
-                                console.log("rowIndex = " + rowIndex);
-                                console.log("typeof(this.inferences[" +  rowIndex + "]) = " + typeof(this.inferences[rowIndex]));
-                                if (typeof(this.inferences[rowIndex]) != "undefined") {
-                                    console.log("(this.inferences[rowIndex].reference === null) = " + (this.inferences[rowIndex].reference === null));
-                                }
-                                */
-
-                                /*
-                                let newRows = Object.assign([], this.state.rows);
-                                newRows.splice(rowIndex, 1);
-                                for (let i=0; i<this.state.rows.length; i++) {
-                                    console.log(i + "/ " + buttonDetails + " / " + typeof(buttonDetails[0]) + " / " + parseInt(this.state.rows[i].key) + " / " + typeof(this.state.rows[i].key) + " / " + (parseInt(this.state.rows[i].key) !== (buttonDetails[0] - 1)));
-                                }
-                                let newRows = this.state.rows.filter(row => (parseInt(row.key) !== (buttonDetails[0] - 1)));
-                                console.log(newRows);
-                                */
-
-                                /*
+                                this.inferences.splice(inferenceIndex, 1);
                                 this.setState(
                                     {
-                                        rows: newRows,
+                                        rows: this.inferences.map(inference => inference.row),
                                     }
                                 );
-                                */
-
-                                this.setState(
-                                    prevState => (
-                                        {
-                                            rows: prevState.rows.filter(row => (parseInt(row.key) !== (buttonDetails[0] - 1)))
-                                        }
-                                    )
-                                );
-
-                                console.log("----------------------------------------");
                             }
                         }
                     }
@@ -414,110 +254,79 @@ class CrossStreamInferencesFormset extends Component {
         }
     }
 
-    findRowIndex(index) {
+    // This mthod attemts to find the array index of the element in this.inferences that contains the CrossStreamInferencRow element
+    // whose index is the passed-in argument value
+    // The this.inference array indices and the CrossStreamInferenceRow elements' index values are initially the same; but as rows get
+    // moved up and down, that changes -- making this method necessary
+    findInferenceIndex(index) {
         let returnValue = -1;
 
-        /*
         if (typeof(index) == "number") {
+            // The index argument is a number
+
             index = Math.floor(index);
             if (index > 0) {
+                // The integer version of index is syntactically valid (i.e. greater than zero), continue
+                // The index argument is actually one greater than the row's index value because it is extracted from a button's ID attribute
+                // and the buttons' attribute values are one-based instead of zero-based
+
                 index = index - 1;
+                let i = 0;
+                let iTo = this.inferences.length;
 
-                let counter = 0;
-                let maxCount = this.state.rows.length;
-                while ((counter < maxCount) && (index !== parseInt(this.state.rows[counter].key))) {
-                    counter++;
+                // Iterate through this.inferences until we either reach the end or find the element that contains the formset row being sought
+                while ((returnValue == -1) && (i < iTo)) {
+                    if (this.inferences[i].row.props.index === index) {
+                        // The desired formset row was found, save i as returnValue
+                        returnValue = i;
+                    }
+
+                    i++;
                 }
-
-                returnValue = counter;
             }
         }
-        */
 
         return returnValue;
     }
 
+    // This method returns the value of the maximum index in the Cross-Stream Inference rows
     findMaximumIndex() {
-        let returnValue = 0;
-
-        console.log(Math.max(this.inferences.map(inference => parseInt(inference.row.key))));
-
-        /*
-        let counter = 0;
-        let maxCount = this.state.rows.length;
-        while (counter < maxCount) {
-            returnValue = Math.max(returnValue, this.state.rows[counter].key);
-            counter++;
-        }
-        */
-
-        return returnValue;
+        return Math.max(...this.inferences.map(inference => inference.row.props.index));
     }
 
+    // After this Component has been updated (i.e. a row added, removed or moved up/down), this method runs to re-color the rows set
+    // and button visibility
     componentDidUpdate() {
-        /*
-        console.log("In componentDidUpdate()");
-
-        this.inferences = this.inferences.filter(inference => (inference.reference !== null));
-        console.log("this.inferences");
-        console.log(this.inferences);
-        */
-
-        /*
-        let indexToRemove = -1;
-        let i = 0;
         let iTo = this.inferences.length;
-        while ((i < iTo) && (indexToRemove === -1)) {
-            console.log("i = " + i);
-            console.log("this.inferences[" + i + "].reference = " + this.inferences[i].reference);
-            if (this.inferences[i].reference === null) {
-                indexToRemove = i;
-            }
-
-            i++;
-        }
-
-        console.log("indexToRemove = " + indexToRemove);
-        */
-
-        /*
-        let iTo = this.inferences.length;
-        let counter = -1;
-        let maxCounter = iTo - 1;
+        let iMax = iTo - 1;
         for (let i=0; i<iTo; i++) {
-            console.log(i);
-            console.log(this.inferences[i].reference);
-            console.log(this.inferences[i].reference.rowReference);
-            if ((this.inferences[i].reference !== null) && (this.inferences[i].reference.rowReference !== null)) {
-                counter++;
-                this.inferences[i].reference.rowReference.style.backgroundColor = ((counter % 2) === 1) ? "#EEEEEE" : "#FFFFFF";
-                this.inferences[i].reference.moveUpReference.style.visibility = (counter === 0) ? "hidden" : "visible";
-                this.inferences[i].reference.moveDownReference.style.visibility = (counter === maxCounter) ? "hidden" : "visible";
-            }
-        }
+            let reference = this.rowReferences["row_" + this.inferences[i].row.props.index];
 
-        if (indexToRemove > -1) {
-            this.inferences.splice(indexToRemove, 1);
-        }
-        */
+            // Alternate the row color on inference rows
+            reference.rowReference.style.backgroundColor = ((i % 2) === 1) ? "#EEEEEE" : "#FFFFFF";
 
-        /*
-        console.log("----------------------------------------");
-        */
+            // Only make the "Move Up" button visible whenever it is not in the first row
+            reference.moveUpReference.style.visibility = (i === 0) ? "hidden" : "visible";
+
+            // Only make the "Move Down" button visible whenever it is not in the last row
+            reference.moveDownReference.style.visibility = (i === iMax) ? "hidden" : "visible";
+        }
     }
 }
 
-// This class is used to manage a Cross-Stream Inference's row in the formset
+
+// This Component class is used to manage a single Cross-Stream Inference's row in the formset
 class CrossStreamInferenceRow extends Component {
     constructor(props) {
         // Frist, call the super-class's constructor
         super(props);
     }
 
-    // This method generates the HTML that replaces this object's JSX representation
+    // This method generates the HTML for the table row that replaces this object's JSX representation
     render() {
-        let fieldPrefix = this.props.fieldPrefix + "_" + (this.props.index + 1);
-        let buttonSetPrefix = this.props.buttonSetPrefix + "_" + (this.props.index + 1);
+        let plusOne = this.props.index + 1;
+        let fieldPrefix = this.props.fieldPrefix + "_" + plusOne;
+        let buttonSetPrefix = this.props.buttonSetPrefix + "_" + plusOne;
 
         return(
             <tr
@@ -526,10 +335,10 @@ class CrossStreamInferenceRow extends Component {
                         this.rowReference = input;
                     }
                 }
-                id={this.props.idPrefix + "_" + (this.props.index + 1)}
+                id={this.props.idPrefix + "_" + plusOne}
                 style={
                     {
-                        backgroundColor: (true === false) ? "#EEEEEE" : "#FFFFFF",
+                        backgroundColor: ((this.props.index % 2) === 1) ? "#EEEEEE" : "#FFFFFF",
                     }
                 }
             >
@@ -576,7 +385,7 @@ class CrossStreamInferenceRow extends Component {
                         type="button"
                         style={
                             {
-                                visibility: ((true == true) ? "visible" : "hidden")
+                                visibility: ((this.props.index > 0) ? "visible" : "hidden")
                             }
                         }
                         onClick={
@@ -598,7 +407,7 @@ class CrossStreamInferenceRow extends Component {
                         type="button"
                         style={
                             {
-                                visibility: ((true === true) ? "visible" : "hidden")
+                                visibility: ((this.props.index < this.props.maxIndex) ? "visible" : "hidden")
                             }
                         }
                         onClick={
@@ -631,8 +440,11 @@ class CrossStreamInferenceRow extends Component {
     }
 }
 
+
+// This Component class is used to create an input field for a single Cross-Stream Inference's order within the set of inferences
 class InputOrder extends Component {
     constructor(props) {
+        // First, call the super-class's constructor and properly bind its updateField method
         super(props);
         this.updateField = this.updateField.bind(this);
 
@@ -644,6 +456,7 @@ class InputOrder extends Component {
     updateField(event) {
     }
 
+    // Place the desired input element on the page
     render() {
         return (
             <input
@@ -657,8 +470,11 @@ class InputOrder extends Component {
     }
 }
 
+
+// This Component class is used to create an input field for a single Cross-Stream Inference's title
 class InputTitle extends Component {
     constructor(props) {
+        // First, call the super-class's constructor and properly bind its updateField method
         super(props);
         this.updateField = this.updateField.bind(this);
 
@@ -667,6 +483,7 @@ class InputTitle extends Component {
         };
     }
 
+    // Update the tag's state with the new value of the contained input
     updateField(event) {
         this.setState(
             {
@@ -675,6 +492,7 @@ class InputTitle extends Component {
         );
     }
 
+    // Place the desired input field on the page
     render() {
         return (
             <input
@@ -691,8 +509,11 @@ class InputTitle extends Component {
     }
 }
 
+
+// This Component class is used to create a textarea field for a single Cross-Stream Inference's description
 class TextAreaDescription extends Component {
     constructor(props) {
+        // First, call the super-class's constructor and properly bind its updateField method
         super(props);
         this.updateField = this.updateField.bind(this);
 
@@ -701,6 +522,7 @@ class TextAreaDescription extends Component {
         };
     }
 
+    // Update the tag's state with the new value of the contained textarea
     updateField(event) {
         this.setState(
             {
@@ -709,6 +531,7 @@ class TextAreaDescription extends Component {
         );
     }
 
+    // Place the desired textarea on the page
     render() {
         return (
             <textarea
@@ -725,6 +548,7 @@ class TextAreaDescription extends Component {
         );
     }
 }
+
 
 // This exported function attempts to build a Cross-Stream Inferences formset in the locations specified by the incoming arguments
 export function renderCrossStreamInferencesFormset(inferences, formConfig, inferencesConfig) {
