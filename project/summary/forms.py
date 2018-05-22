@@ -841,55 +841,129 @@ class EvidenceProfileForm(forms.ModelForm):
         # the objects will be done after they have all been built
         unordered_objects = {
             "cross_stream_inferences": {
+                "objects": {},
                 "desired_order": [],
-                "re_match": r"^inference_(title|description)_\d+$",
-                "re_replace_index": r"\D",
-                "re_replace_index_with": r"",
-                "re_replace_key": r"^inference_(title|description)_\d+$",
-                "re_replace_key_with": r"\1"
+                "ordering_field": "order",
+                "field_validation": {
+                    "title": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "description": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                },
+                "re_match": r"^inference_(\d+)_(title|description|order)$",
+                "re_replace_with": r"\1,\2",
             }
         }
 
-        # Iterate over the submitted form fields
+        # Iterate over the submitted form fields to build the various unordered objects that will be added to the sets of objects initialized above
         for form_key in self.submitted_data:
 
-            # Iterate over the sets of unordered objects
+            # Iterate over the sets of unordered_objects to check and see if this form field belongs in one of them
             for uo_key in unordered_objects:
                 if (re.search(unordered_objects[uo_key]["re_match"], form_key)):
-                    # This form field name matched the naming convention corresponding to one of the sets of objects
+                    # This form field's name matched the naming convention corresponding to this type of unordered object; attempt to add it to
+                    # this dictionary's object attribute
 
-                    # Get the index (i.e. ordered position) of the formset object from its field name, defaulting to 0 if it is not
-                    object_index = 0
+                    # Perform the regular expression substitution to retrieve the relevant parts of the field name
+                    fieldNameDetails = re.sub(unordered_objects[uo_key]["re_match"], unordered_objects[uo_key]["re_replace_with"], form_key).split(",")
+                    if (len(fieldNameDetails) == 2):
+                        # The array returned contains the expected two elements, continue
+
+                        # Make sure that the first element is an integer, defaulting to zero if it isn't
+                        try:
+                            fieldNameDetails[0] = int(fieldNameDetails[0])
+                        except:
+                            fieldNameDetails[0] = 0
+
+                        if (fieldNameDetails[0] >= 1):
+                            # The first array element is a positive integer, continue
+
+                            # Create a string version of the first array element to use as a key within the objects attribute
+                            object_key = str(fieldNameDetails[0])
+
+                            if (object_key not in unordered_objects[uo_key]["objects"]):
+                                # The object has not yet been initialized in the objects attribute, initialize it now as an empty dictionary
+                                unordered_objects[uo_key]["objects"][object_key] = {}
+
+                            # Add this form field's value to this object in the objects attribute; use the second element in the array of
+                            # values extracted from the field name as the object's attribute key
+                            unordered_objects[uo_key]["objects"][object_key][fieldNameDetails[1]] = self.submitted_data[form_key]
+
+        # Now iterate through each of the different types of unordered objects to validate their sets of objects and place them in the desired order
+        for uo_key, uo_dict in unordered_objects.items():
+            # Iterate through each of the objects in this object type's set to attempt to validate the object
+            for o_key, o_dict in uo_dict["objects"].items():
+                if (
+                    (uo_dict["ordering_field"] in o_dict)
+                    and (o_dict[uo_dict["ordering_field"]] != "")
+                ):
+                    # The object contains the non-empty expected field used for indicating the desired position, continue
+
+                    # Initialize the "object is OK flag"
+                    object_ok = True
+
+                    # Convert the value in the ordering field to an integer, defaulting to zero
                     try:
-                        object_index = int(re.sub(unordered_objects[uo_key]["re_replace_index"], unordered_objects[uo_key]["re_replace_index_with"], form_key))
+                        o_dict[uo_dict["ordering_field"]] = int(o_dict[uo_dict["ordering_field"]])
                     except:
-                        pass
+                        o_dict[uo_dict["ordering_field"]] = 0
 
-                    # Get the formset object's attribute name of the intended destination for the submitted form field; this is
-                    # extracted from the field's name
-                    object_attribute = re.sub(unordered_objects[uo_key]["re_replace_key"], unordered_objects[uo_key]["re_replace_key_with"], form_key)
+                    if (o_dict[uo_dict["ordering_field"]] <= 0):
+                        # There was a problem with the ordering field's value, set the OK flag accordingly
+                        object_ok = False
+                    else:
+                        # The ordering field's value is syntactically valid, attempt to validate the object
 
-                    if (object_index > 0):
-                        # Make sure that the destination array is long enough to accommodate this formset object in its desired position
-                        # This is done because there is no guarantee that the fields will arrive in the desired order, so empty
-                        # placeholders must be added if needed
-                        while (object_index > len(unordered_objects[uo_key]["desired_order"])):
-                            unordered_objects[uo_key]["desired_order"].append(None)
+                        # Iterate over this object type's validation rules to check the object
+                        for field_key, field_dict in uo_dict["field_validation"].items():
+                            if (object_ok):
+                                # No problems have been found yet with this object, keep checking
 
-                        if (not unordered_objects[uo_key]["desired_order"][object_index - 1]):
-                            # This element has just been created, set it to be an empty object instead of None
-                            unordered_objects[uo_key]["desired_order"][object_index - 1] = {}
+                                if ((field_dict["required"]) and (field_key not in o_dict)):
+                                    # This field is required, but it is not present, set the OK flag to False
+                                    object_ok = False
+                                elif (field_key in o_dict):
+                                    # This field is either required and present; or is not required, but is present, continue validating
 
-                        unordered_objects[uo_key]["desired_order"][object_index - 1][object_attribute] = self.submitted_data[form_key]
+                                    if ((not field_dict["can_be_empty"]) and (o_dict[field_key] == "")):
+                                        # This field cannot be empty, but it is; set the OK flag to False
+                                        object_ok = False
+                                    elif ((o_dict[field_key] != "") and (field_dict["type"] != "string")):
+                                        # This field is not empty and is supposed to be something other than a string, check it
+                                        # THERE IS NOTHING HERE YET, THIS WILL BE BUILT OUT AS OTHER TYPES ARE NEEDED
+                                        pass
 
-        # Iterate over each unordered object type's ordered array and get rid of any None values
-        for uo_key in unordered_objects:
-            unordered_objects[uo_key]["desired_order"][:] = [theObject for theObject in unordered_objects[uo_key]["desired_order"] if (theObject)]
+                    if (object_ok):
+                        # The object is valid, place it in this object type's ordered list attribute in the desired position
+
+                        # Get the the ordering field's value and subtract one from it to get the intended index in the ordered list
+                        list_index = o_dict[uo_dict["ordering_field"]] - 1
+
+                        # Remove the ordering field from the object; it is no longer needed
+                        o_dict.pop(uo_dict["ordering_field"], None)
+
+                        # Assume that objects can be processed outside of the desired order, this means that there may be a need to place this object
+                        # in a position more than one element beyond the ordered list's current length; iterate as many times as necessary, placing
+                        # None objects in the positions as needed
+                        while (list_index >= len(uo_dict["desired_order"])):
+                            uo_dict["desired_order"].append(None)
+
+                        # Place the object in the desired position in the ordered list
+                        uo_dict["desired_order"][list_index] = o_dict
+
+            # Get rid of any None values in the ordered list
+            uo_dict["desired_order"] = [ordered_object for ordered_object in uo_dict["desired_order"] if (ordered_object)]
 
         # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
         confidence_judgement = {
-            "rating": cleaned_data.get("confidence_judgement_rating"),
+            "score": cleaned_data.get("confidence_judgement_score"),
             "explanation": cleaned_data.get("confidence_judgement_explanation"),
         }
 
