@@ -39,3 +39,21 @@ class DataPivotUploadManager(BaseManager):
 
 class DataPivotQueryManager(BaseManager):
     assessment_relation = 'assessment'
+
+
+# This is the database interface manager for EvidenceProfile objects
+class EvidenceProfileManager(BaseManager):
+    # EvidenceProfile objects are direct children of Assessment objects
+    assessment_relation = 'assessment'
+
+
+# This is the database interface manager for EvidenceProfileStream objects
+class EvidenceProfileStreamManager(BaseManager):
+    # EvidenceProfileStream objects are grand-children of Assessment objects
+    assessment_relation = 'evidenceprofile__assessment'
+
+
+# This is the database interface manager for EvidenceProfileScenario objects
+class EvidenceProfileScenarioManager(BaseManager):
+    # EvidenceProfileScenario objects are great-grand-children of Assessment objects
+    assessment_relation = 'evidenceprofilestream__evidenceprofile__assessment'

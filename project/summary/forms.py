@@ -1,13 +1,15 @@
 from collections import OrderedDict
 import json
+import re
 
+from django.core import serializers
 from django.db.models import QuerySet
 from crispy_forms import layout as cfl
 from django import forms
 from django.core.urlresolvers import reverse
 from selectable import forms as selectable
 
-from assessment.models import EffectTag
+from assessment.models import EffectTag, ConfidenceJudgement
 from study.models import Study
 from animal.models import Endpoint
 from epi.models import Outcome
@@ -709,3 +711,265 @@ class SmartTagForm(forms.Form):
             if hasattr(widget, 'update_query_parameters'):
                 widget.update_query_parameters({'related': assessment_id})
                 widget.attrs['class'] += " smartTagSearch"
+
+
+# This class is the form used for adding/editing an Evidence Profile object
+class EvidenceProfileForm(forms.ModelForm):
+    submitted_data = None
+
+    class Meta:
+        # Set the base model and form fields for this form
+        model = models.EvidenceProfile
+        fields = ('title', 'slug', 'settings', 'caption', )
+
+    # This is the initialization method for this form object
+    def __init__(self, *args, **kwargs):
+        # Before doing anything else, get an un=modified copy of the incoming submitted data for use later
+        self.submitted_data = kwargs.get("data", None)
+
+        # Attempt to get a reference to this object's parent Assessment object, and then run the superclass's initialization method
+        assessment = kwargs.pop('parent', None)
+        super().__init__(*args, **kwargs)
+
+        if (assessment):
+            # A parent Assessment object was found, copy a reference to it into this object's instance
+            self.instance.assessment = assessment
+
+        # Get the initial values for the fields related to cross-stream conclusions
+        initial_confidence_judgement_score = ""
+        initial_confidence_judgement_explanation = ""
+        if (self.instance.cross_stream_conclusions != ""):
+            # This Evidence Profile object has a non-empty cross_stream_conclusions field, set initial values from it
+            try:
+                conclusionsJSON = json.loads(self.instance.cross_stream_conclusions)
+                initial_confidence_judgement_score = conclusionsJSON["confidence_judgement"]["score"]
+                initial_confidence_judgement_explanation = conclusionsJSON["confidence_judgement"]["explanation"]
+            except:
+                pass
+
+        confidenceJudgementChoices = []
+        for judgement in json.loads(serializers.serialize("json", ConfidenceJudgement.objects.all().order_by("value"))):
+            confidenceJudgementChoices.append((judgement["fields"]["value"], judgement["fields"]["name"]))
+
+        # Create an ordered dictionary of new fields that will be added to the form
+        new_fields = OrderedDict()
+        new_fields.update(
+            [
+                (
+                    "confidence_judgement_score"
+                    ,forms.ChoiceField(
+                        required = False
+                        ,label = "Total Judgement Score Across All Streams"
+                        ,choices = confidenceJudgementChoices
+                        ,widget = forms.Select(
+                            attrs={
+                                "style": "width:175px;"
+                            }
+                        )
+                    )
+                )
+                ,(
+                    "confidence_judgement_explanation"
+                    ,forms.CharField(
+                        required = False
+                        ,label = "Explanation"
+                        ,initial = initial_confidence_judgement_explanation
+                        ,help_text = "Explain why you selected the overall judgement score you did"
+                        ,widget = forms.Textarea(
+                            attrs = {
+                                "rows": 2
+                            }
+                        )
+                    )
+                )
+            ]
+        )
+
+        # Iterate through the new set of fields and add them to self.fields
+        for key, value in new_fields.items():
+            self.fields[key] = value
+
+        # Set the desired helper classes, etc. for this form
+        self.helper = self.setHelper()
+
+    # This method attempts to set the desired helper widgets for the form fields
+    def setHelper(self):
+        # Iterate through the set of form fields and look for those that do not use the forms.CheckboxInput widget
+        for fieldName in list(self.fields.keys()):
+            widget = self.fields[fieldName].widget
+            if (type(widget) != forms.CheckboxInput):
+                # This form field does not use the forms.CheckboxInput widget, add the 'span12' class to its widget
+                widget.attrs['class'] = 'span12'
+
+            if (fieldName == "settings"):
+                # For the "settings" field, constrain their textarea height to two rows
+                self.fields[fieldName].widget.attrs["rows"] = 2
+
+        if (self.instance.id):
+            # This is an existing evidence profile that is being edited, set inputs accordingly
+            inputs = {
+                "legend_text": "Update {}".format(self.instance),
+                "help_text":   "Update an existing evidence profile.",
+                "cancel_url": self.instance.get_absolute_url()
+            }
+        else:
+            # This is a new evidence profile that is being created, sete inputs accordingly
+            inputs = {
+                "legend_text": "Create new evidence profile",
+                "help_text":   "Create an evidence profile for this assessment.",
+                "cancel_url": self.instance.get_list_url(self.instance.assessment.id)
+            }
+
+        # Set the basic helper attributes fron the 'inputs' object just created, and then set some specialized ones for this class
+        helper = BaseFormHelper(self, **inputs)
+        helper.form_class = None
+        helper.form_id = "evidenceProfileForm"
+
+        return helper
+
+    # This method makes sure that the Evidence Profile's "slug" attribute is valid and URL-friendly
+    def clean_slug(self):
+        return clean_slug(self)
+
+    # This method overrides the super-class's clean() method
+    def clean(self):
+        # First, use the super-class's clean() method as a starting point
+        cleaned_data = super().clean()
+
+        # Initialize a dict to hold objects made up of related sets of form data, along with information about their form field naming conventions
+        # This object will be used as a temporary store to be built up while iterating over the incoming form key/value pairs; and then ordering of
+        # the objects will be done after they have all been built
+        unordered_objects = {
+            "cross_stream_inferences": {
+                "objects": {},
+                "desired_order": [],
+                "ordering_field": "order",
+                "field_validation": {
+                    "title": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "description": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                },
+                "re_match": r"^inference_(\d+)_(title|description|order)$",
+                "re_replace_with": r"\1,\2",
+            }
+        }
+
+        # Iterate over the submitted form fields to build the various unordered objects that will be added to the sets of objects initialized above
+        for form_key in self.submitted_data:
+
+            # Iterate over the sets of unordered_objects to check and see if this form field belongs in one of them
+            for uo_key in unordered_objects:
+                if (re.search(unordered_objects[uo_key]["re_match"], form_key)):
+                    # This form field's name matched the naming convention corresponding to this type of unordered object; attempt to add it to
+                    # this dictionary's object attribute
+
+                    # Perform the regular expression substitution to retrieve the relevant parts of the field name
+                    fieldNameDetails = re.sub(unordered_objects[uo_key]["re_match"], unordered_objects[uo_key]["re_replace_with"], form_key).split(",")
+                    if (len(fieldNameDetails) == 2):
+                        # The array returned contains the expected two elements, continue
+
+                        # Make sure that the first element is an integer, defaulting to zero if it isn't
+                        try:
+                            fieldNameDetails[0] = int(fieldNameDetails[0])
+                        except:
+                            fieldNameDetails[0] = 0
+
+                        if (fieldNameDetails[0] >= 1):
+                            # The first array element is a positive integer, continue
+
+                            # Create a string version of the first array element to use as a key within the objects attribute
+                            object_key = str(fieldNameDetails[0])
+
+                            if (object_key not in unordered_objects[uo_key]["objects"]):
+                                # The object has not yet been initialized in the objects attribute, initialize it now as an empty dictionary
+                                unordered_objects[uo_key]["objects"][object_key] = {}
+
+                            # Add this form field's value to this object in the objects attribute; use the second element in the array of
+                            # values extracted from the field name as the object's attribute key
+                            unordered_objects[uo_key]["objects"][object_key][fieldNameDetails[1]] = self.submitted_data[form_key]
+
+        # Now iterate through each of the different types of unordered objects to validate their sets of objects and place them in the desired order
+        for uo_key, uo_dict in unordered_objects.items():
+            # Iterate through each of the objects in this object type's set to attempt to validate the object
+            for o_key, o_dict in uo_dict["objects"].items():
+                if (
+                    (uo_dict["ordering_field"] in o_dict)
+                    and (o_dict[uo_dict["ordering_field"]] != "")
+                ):
+                    # The object contains the non-empty expected field used for indicating the desired position, continue
+
+                    # Initialize the "object is OK flag"
+                    object_ok = True
+
+                    # Convert the value in the ordering field to an integer, defaulting to zero
+                    try:
+                        o_dict[uo_dict["ordering_field"]] = int(o_dict[uo_dict["ordering_field"]])
+                    except:
+                        o_dict[uo_dict["ordering_field"]] = 0
+
+                    if (o_dict[uo_dict["ordering_field"]] <= 0):
+                        # There was a problem with the ordering field's value, set the OK flag accordingly
+                        object_ok = False
+                    else:
+                        # The ordering field's value is syntactically valid, attempt to validate the object
+
+                        # Iterate over this object type's validation rules to check the object
+                        for field_key, field_dict in uo_dict["field_validation"].items():
+                            if (object_ok):
+                                # No problems have been found yet with this object, keep checking
+
+                                if ((field_dict["required"]) and (field_key not in o_dict)):
+                                    # This field is required, but it is not present, set the OK flag to False
+                                    object_ok = False
+                                elif (field_key in o_dict):
+                                    # This field is either required and present; or is not required, but is present, continue validating
+
+                                    if ((not field_dict["can_be_empty"]) and (o_dict[field_key] == "")):
+                                        # This field cannot be empty, but it is; set the OK flag to False
+                                        object_ok = False
+                                    elif ((o_dict[field_key] != "") and (field_dict["type"] != "string")):
+                                        # This field is not empty and is supposed to be something other than a string, check it
+                                        # THERE IS NOTHING HERE YET, THIS WILL BE BUILT OUT AS OTHER TYPES ARE NEEDED
+                                        pass
+
+                    if (object_ok):
+                        # The object is valid, place it in this object type's ordered list attribute in the desired position
+
+                        # Get the the ordering field's value and subtract one from it to get the intended index in the ordered list
+                        list_index = o_dict[uo_dict["ordering_field"]] - 1
+
+                        # Remove the ordering field from the object; it is no longer needed
+                        o_dict.pop(uo_dict["ordering_field"], None)
+
+                        # Assume that objects can be processed outside of the desired order, this means that there may be a need to place this object
+                        # in a position more than one element beyond the ordered list's current length; iterate as many times as necessary, placing
+                        # None objects in the positions as needed
+                        while (list_index >= len(uo_dict["desired_order"])):
+                            uo_dict["desired_order"].append(None)
+
+                        # Place the object in the desired position in the ordered list
+                        uo_dict["desired_order"][list_index] = o_dict
+
+            # Get rid of any None values in the ordered list
+            uo_dict["desired_order"] = [ordered_object for ordered_object in uo_dict["desired_order"] if (ordered_object)]
+
+        # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
+        # within this evidence profile
+        confidence_judgement = {
+            "score": cleaned_data.get("confidence_judgement_score"),
+            "explanation": cleaned_data.get("confidence_judgement_explanation"),
+        }
+
+        cleaned_data["cross_stream_conclusions"] = {
+            "inferences": unordered_objects["cross_stream_inferences"]["desired_order"],
+            "confidence_judgement": confidence_judgement,
+        }
+
+        return cleaned_data

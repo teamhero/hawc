@@ -88,9 +88,31 @@ class TimeSpentEditingAdmin(admin.ModelAdmin):
         self.list_display_links = []
 
 
+class ConfidenceFactorAdmin(admin.ModelAdmin):
+    list_display = (
+        'id'
+        ,'name'
+        ,'description'
+        ,'increases_confidence'
+        ,'decreases_confidence'
+        ,'created'
+    )
+
+
+class ConfidenceJudgementAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'value',
+        'name',
+        'created'
+    )
+
+
 admin.site.register(models.Assessment, AssessmentAdmin)
 admin.site.register(models.DoseUnits, DoseUnitsAdmin)
 admin.site.register(models.Species, SpeciesAdmin)
 admin.site.register(models.Strain, StrainAdmin)
 admin.site.register(models.EffectTag, EffectTagAdmin)
 admin.site.register(models.TimeSpentEditing, TimeSpentEditingAdmin)
+admin.site.register(models.ConfidenceFactor, ConfidenceFactorAdmin)
+admin.site.register(models.ConfidenceJudgement, ConfidenceJudgementAdmin)

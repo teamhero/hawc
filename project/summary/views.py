@@ -1,5 +1,6 @@
 import json
 
+from django.core import serializers
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
@@ -8,7 +9,8 @@ from django.views.generic import TemplateView, FormView
 from assessment.models import Assessment
 from riskofbias.models import RiskOfBiasMetric
 from utils.helper import HAWCDjangoJSONEncoder
-from utils.views import (BaseList, BaseCreate, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin)
+from utils.views import BaseList, BaseCreate, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin
+from assessment.models import ConfidenceFactor, ConfidenceJudgement
 
 from . import forms, models
 
@@ -365,3 +367,166 @@ class DataPivotDelete(GetDataPivotObjectMixin, BaseDelete):
 
     def get_success_url(self):
         return reverse_lazy('summary:visualization_list', kwargs={'pk': self.assessment.pk})
+
+
+# This class is a "mix-in" superclass for use within Evidence Profile-related views that attempts to retrieve the desired object from the
+# database
+class GetEvidenceProfileObjectMixin(object):
+    # This method is the one that attempts to get the object from the database
+    def get_object(self):
+        # Get the 'slug' and the parent Assessent's primary key value from the URL
+        slug = self.kwargs.get('slug')
+        assessment = self.kwargs.get('pk')
+
+        # Attempt to get the objectusing the assessment and slug derived from the URL
+        obj = get_object_or_404(models.EvidenceProfile, assessment=assessment, slug=slug)
+
+        # Return the object retrieved
+        return super().get_object(object=obj)
+
+
+# This class is used for creating a new Evidence Profile object
+class EvidenceProfileNew(BaseCreate):
+    # Set some basic attributes for this view
+    parent_model = Assessment
+    parent_template_name = 'assessment'
+    success_message = 'Evidence Profile created.'
+    template_name = 'summary/evidenceprofile_form.html'
+
+    # Define the type of object being created and the form object that will be used
+    model = models.EvidenceProfile
+    form_class = forms.EvidenceProfileForm
+
+    # This method returns the URL that the requestor will be re-directed to after this request is handled
+    def get_success_url(self):
+        # Get the value for this Evidence Profile's visualization URL and return it
+        return self.object.get_update_url()
+
+    def get_context_data(self, **kwargs):
+        # Get the basic context attributes from the superclass's get_context_data() method
+        context = super().get_context_data(**kwargs)
+
+        # Set the desired additional context attributes to their initialized, empty values
+        context.update(getEvidenceProfileContextData(self.object))
+
+        return context
+
+    # This method handles a valid submitted form
+    def form_valid(self, form):
+        # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
+        # form fields
+        form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
+
+        # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
+        form.instance.hawcuser = self.request.user
+
+        return super().form_valid(form)
+
+
+class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
+    success_message = 'Evidence Profile updated.'
+    model = models.EvidenceProfile
+    form_class = forms.EvidenceProfileForm
+    template_name = 'summary/evidenceprofile_form.html'
+
+    # This method returns the URL that the requestor will be re-directed to after this request is handled
+    def get_success_url(self):
+        # Get the value for this Evidence Profile's visualization URL and return it
+        return self.object.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        # Get the basic context attributes from the superclass's get_context_data() method
+        context = super().get_context_data(**kwargs)
+
+        # Set the desired additional context attributes based on the values of the existing Evidence Profile
+        context.update(getEvidenceProfileContextData(self.object))
+
+        return context
+
+    # This method handles a valid submitted form
+    def form_valid(self, form):
+        # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
+        # form fields
+        form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
+        return super().form_valid(form)
+
+
+class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
+    model = models.EvidenceProfile
+    template_name = "summary/evidenceprofile_detail.html"
+
+
+# This function returns the set of serialized objects that are commonly used as context data for Evidence Profile objects
+def getEvidenceProfileContextData(object):
+    returnValue = {}
+
+    returnValue["stream_types"] = models.get_serialized_stream_types()
+
+    # Retrieve only the "fields" attribute from each of the factors that increase confidence
+    increase_confidence_factors = json.loads(serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True).order_by("name")))
+    increase_confidence_factors[:] = [increase_confidence_factor["fields"] for increase_confidence_factor in increase_confidence_factors if (increase_confidence_factor)]
+    returnValue["increase_confidence_factors"] = json.dumps(increase_confidence_factors)
+
+    # Retrieve only the "fields" attribute from each of the factors that decrease confidence
+    decrease_confidence_factors = json.loads(serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True).order_by("name")))
+    decrease_confidence_factors[:] = [decrease_confidence_factor["fields"] for decrease_confidence_factor in decrease_confidence_factors if (decrease_confidence_factor)]
+    returnValue["decrease_confidence_factors"] = json.dumps(decrease_confidence_factors)
+
+    # Retrieve only the "fields" attribute from each of the confidence judgement options
+    confidence_judgements = json.loads(serializers.serialize("json", ConfidenceJudgement.objects.all().order_by("value")))
+    confidence_judgements[:] = [confidence_judgement["fields"] for confidence_judgement in confidence_judgements if (confidence_judgement)]
+    returnValue["confidence_judgements"] = json.dumps(confidence_judgements)
+
+    # Initialize the evidenceProfile object to an empty dictionary
+    evidenceProfile = {}
+
+    if (object):
+        # The incoming object is not empty, create a JSON-friendly version of it, and include an additional attribute for the
+        # profile's existing child streams
+        evidenceProfile = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
+        evidenceProfile["streams"] = json.loads(serializers.serialize("json", object.streams.all().order_by("order")))
+    else:
+        # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, and include an additional
+        # attibute for the profile's child streams
+        evidenceProfile = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
+        evidenceProfile["streams"] = json.loads(serializers.serialize("json", models.EvidenceProfileStream.objects.none()))
+
+    # Any existing stream objects loaded from the database will have the actual data fields stored within a "fields" attribute; extract
+    # that data from the fields attribute and retain only that portion of the original stream object
+    evidenceProfile["streams"][:] = [stream["fields"] for stream in evidenceProfile["streams"] if (stream)]
+
+    #Attempt to de-serialize the profile's "cross_stream_conclusions" attribute
+    try:
+        evidenceProfile["cross_stream_conclusions"] = json.loads(evidenceProfile["cross_stream_conclusions"])
+    except:
+        evidenceProfile["cross_stream_conclusions"] = {}
+
+    # Make sure that the profile's cross_stream_conclusions attribute includes a confidence_judgement attribute of its own
+    if ("confidence_judgement" not in evidenceProfile["cross_stream_conclusions"]):
+        evidenceProfile["cross_stream_conclusions"]["confidence_judgement"] = {
+            "score": "",
+            "name": "",
+            "explanation": "",
+        }
+
+    # Make sure that the profile's cross_stream_conclusions attribute includes an inferences attribute of its own
+    if ("inferences" not in evidenceProfile["cross_stream_conclusions"]):
+        evidenceProfile["cross_stream_conclusions"]["inferences"] = []
+
+    # Attempt to de-serialize each stream's "confidence_judgement" and "outcome" attributes
+    for stream in evidenceProfile["streams"]:
+        try:
+            stream["confidence_judgement"] = json.loads(stream["confidence_judgement"])
+        except:
+            stream["confidence_judgement"] = {}
+
+        try:
+            stream["outcomes"] = json.loads(stream["outcomes"])
+        except:
+            stream["outcomes"] = []
+
+    # Serialize the evnidenceProfile into a JSON-formatted string version for inclusion in the request context (the JavaScript in the
+    # template will pick up all of the objects and datatypes as desired)
+    returnValue["evidenceProfile"] = json.dumps(evidenceProfile)
+
+    return returnValue

@@ -1,0 +1,13 @@
+.inferencesClearBoth {
+	clear: both;
+}
+
+.inferencesHeaderCell {
+    border: 0;
+    font-size: 0.9em;
+}
+
+.inferencesBodyCell {
+    border: 0;
+    vertical-align: top;
+}

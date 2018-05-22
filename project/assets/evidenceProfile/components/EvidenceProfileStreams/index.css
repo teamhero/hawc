@@ -1,0 +1,23 @@
+.streamsClearBoth {
+	clear: both;
+}
+
+.streamsDiv {
+}
+
+.streamDiv {
+	border: 1px solid #000000;
+	margin: 2px 0 6px 0;
+}
+
+.streamPartDiv {
+	margin: 0 2px 0 2px;
+}
+
+.streamPartDivWhite {
+	background-color: #FFFFFF;
+}
+
+.streamPartDivGrey {
+	background-color: #EEEEEE;
+}
