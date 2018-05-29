@@ -11,6 +11,7 @@ from myuser.lookups import AssessmentTeamMemberOrHigherLookup
 from study.models import Study
 from utils.forms import BaseFormHelper
 from . import models
+from django.db.models import Q
 
 
 class RoBDomainForm(forms.ModelForm):
@@ -109,15 +110,21 @@ class RoBMetricAnswersForm(forms.ModelForm):
         helper['description'].wrap(cfl.Field, css_class='html5text span12')
         return helper
 
-        def clean(self):
-            cleaned_data = super().clean()
-            if 'choice' and 'symbol' and 'score' and 'order' in self.changed_data and self._meta.model.objects\
-                    .filter(metric=self.instance.metric,
-                            choice=cleaned_data['choice'],
-                            symbol=cleaned_data['symbol'],
-                            score=cleaned_data['score'],
-                            order=cleaned_data['order']).count() > 0:
-                raise forms.ValidationError('Answer already exists for metric.')
+    def clean(self):
+        answer_choice = self.cleaned_data['choice']
+        answer_symbol = self.cleaned_data['symbol']
+        answer_score = self.cleaned_data['answer_score']
+        answer_order = self.cleaned_data['order']
+        occurances = models.RiskOfBiasMetricAnswers.objects\
+                    .filter(Q(metric=self.instance.metric), 
+                            Q(choice=answer_choice) | 
+                            Q(symbol=answer_symbol) | 
+                            Q(answer_score=answer_score) | 
+                            Q(order=answer_order)).count()
+        if occurances > 0:
+            raise forms.ValidationError('Metric Answer already exists in metric.')
+
+        return self.cleaned_data
 
 
 class RoBScoreForm(forms.ModelForm):
