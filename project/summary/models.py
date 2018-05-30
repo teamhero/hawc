@@ -460,7 +460,7 @@ class DataPivotUpload(DataPivot):
 class DataPivotQuery(DataPivot):
     objects = managers.DataPivotQueryManager()
 
-    MAXIMUM_QUERYSET_COUNT = 500
+    MAXIMUM_QUERYSET_COUNT = 1000
 
     EXPORT_GROUP = 0
     EXPORT_ENDPOINT = 1
