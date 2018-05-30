@@ -23,8 +23,8 @@
         {
           "name": "Allocation of animals to experimental groups?",
           "description": "<p><strong style='color: rgb(0, 102, 204);'>EXAMPLE:</strong><span style='color: rgb(0, 102, 204);'>&nbsp;</span><strong style='color: rgb(0, 102, 204);'>Not reported</strong><span style='color: rgb(0, 102, 204);'>. Study authors did not indicate whether animals were randomly allocated to treatment groups (assumed animals were not randomly assigned).</span>&nbsp;<span style='color: rgb(230, 0, 0);'>[Do not use the 'poor' option, use 'not reported' instead. These are functionally equivalent ratings]</span></p><p><strong style='font-size: 10pt;'>RATING GUIDANCE: </strong>Ideally, animal studies are randomized, with each animal or litter having an equal chance of being assigned to any experimental group, including controls, and allocation procedures sufficiently described.&nbsp;Less ideally, but generally adequate or good, are studies indicating normalization of experimental groups prior to exposure, for example according to body weight or litter, but without indication of randomization. Studies which fail to report information on allocation should be indicated as ‘not reported’, which is inferred as ‘poor’. However, the evaluator should draw a judgement (and provide rationale) regarding the expected impact of this limitation on the endpoints of interest when drawing the overall confidence judgement below.&nbsp;</p>",
-          "required_animal": false,
-          "required_epi": true,
+          "required_animal": true,
+          "required_epi": false,
           "required_invitro": false,
           "short_name": "Allocation",
           "hide_description": false,
