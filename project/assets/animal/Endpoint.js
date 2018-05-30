@@ -484,6 +484,7 @@ class Endpoint extends Observee {
             $plot = $('<div style="height:300px; width:300px">'),
             $tbl = $('<table class="table table-condensed table-striped">'),
             $content = $('<div class="container-fluid">'),
+            $notes = $('<div class="span12">'),
             $study, $exp, $ag, $end,
             exp, ag, tabs, divs;
 
@@ -519,10 +520,13 @@ class Endpoint extends Observee {
                 .append($details))
             .append($('<div class="row-fluid">')
                 .append($('<div class="span7">').append($tbl))
-                .append($('<div class="span5">').append($plot)));
+                .append($('<div class="span5">').append($plot)))
+            .append($('<div class="row-fluid">')
+                .append($notes));
 
         this.build_details_table($details);
         this.build_endpoint_table($tbl);
+        this.build_general_notes($notes);
         modal.getModal().on('shown', function(){
             self.renderPlot($plot, true);
         });
