@@ -1095,11 +1095,15 @@ class Result(models.Model):
     objects = managers.ResultManager()
 
     DOSE_RESPONSE_CHOICES = (
-        (0, "not-applicable"),
-        (1, "monotonic"),
-        (2, "non-monotonic"),
-        (3, "no trend"),
-        (4, "not reported"))
+        (0, "N/A, single dose level study"),
+        (1, "N/A, no effects detected"),
+        (2, "yes, visual appearance of monotonicity but no trend"),
+        (3, "yes, monotonic and significant trend"),
+        (4, "yes, visual appearance of non-monotonic but no trend"),
+        (5, "yes, non-monotonic and significant trend"),
+        (6, "no pattern"),
+        (7, "unclear"),
+        (8, "not-reported"))
 
     STATISTICAL_POWER_CHOICES = (
         (0, 'not reported or calculated'),
