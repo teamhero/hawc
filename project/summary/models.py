@@ -854,17 +854,7 @@ class EvidenceProfileScenario(models.Model):
 
 # This function returns a serialized JSON-friendly version of the different stream_type options available
 def get_serialized_stream_types():
-    returnValue = []
-
-    for choice in STUDY_TYPE_CHOICES:
-        returnValue = returnValue + [
-            {
-                "value": choice[0],
-                "name": choice[1]
-            }
-        ]
-
-    return returnValue
+    return [{"value":choice[0], "name":choice[1]} for choice in STUDY_TYPE_CHOICES]
 
 
 reversion.register(SummaryText)

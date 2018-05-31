@@ -103,3 +103,13 @@ class AssessmentRootedSerializer(serializers.ModelSerializer):
             instance.move(parent, pos='last-child')
 
         return instance
+
+class ConfidenceFactorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ConfidenceFactor
+        fields = ("id", "name", "description", "increases_confidence", "decreases_confidence")
+
+class ConfidenceJudgementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ConfidenceJudgement
+        fields = ("value", "name")

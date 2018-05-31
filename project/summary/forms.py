@@ -11,7 +11,7 @@ import pandas as pd
 from selectable import forms as selectable
 from xlrd import XLRDError, open_workbook
 
-from assessment.models import EffectTag, ConfidenceJudgement
+from assessment.models import EffectTag, ConfidenceFactor, ConfidenceJudgement
 from study.models import Study
 from animal.models import Endpoint
 from epi.models import Outcome
@@ -883,12 +883,52 @@ class EvidenceProfileForm(forms.ModelForm):
                 },
                 "re_match": r"^inference_(\d+)_(title|description|order)$",
                 "re_replace_with": r"\1,\2",
+            },
+            "evidence_profile_streams": {
+                "objects": {},
+                "desired_order": [],
+                "ordering_field": "order",
+                "field_validation": {
+                    "pk": {
+                        "required": False,
+                        "type": "integer",
+                        "can_be_empty": True,
+                    },
+                    "stream_type": {
+                        "required": True,
+                        "type": "integer",
+                        "valid_options": [stream_type["value"] for stream_type in models.get_serialized_stream_types()],
+                        "can_be_empty": False,
+                    },
+                    "stream_title": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "confidence_judgement_title": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "confidence_judgement_score": {
+                        "required": True,
+                        "type": "integer",
+                        "valid_options": [confidence_judgement.value for confidence_judgement in ConfidenceJudgement.objects.all().order_by("value")],
+                        "can_be_empty": False,
+                    },
+                    "confidence_judgement_explanation": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                },
+                "re_match": r"stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|order)$",
+                "re_replace_with": r"\1,\2",
             }
         }
 
         # Iterate over the submitted form fields to build the various unordered objects that will be added to the sets of objects initialized above
         for form_key in self.submitted_data:
-
             # Iterate over the sets of unordered_objects to check and see if this form field belongs in one of them
             for uo_key in unordered_objects:
                 if (re.search(unordered_objects[uo_key]["re_match"], form_key)):
@@ -897,6 +937,7 @@ class EvidenceProfileForm(forms.ModelForm):
 
                     # Perform the regular expression substitution to retrieve the relevant parts of the field name
                     fieldNameDetails = re.sub(unordered_objects[uo_key]["re_match"], unordered_objects[uo_key]["re_replace_with"], form_key).split(",")
+
                     if (len(fieldNameDetails) == 2):
                         # The array returned contains the expected two elements, continue
 
@@ -961,8 +1002,18 @@ class EvidenceProfileForm(forms.ModelForm):
                                         object_ok = False
                                     elif ((o_dict[field_key] != "") and (field_dict["type"] != "string")):
                                         # This field is not empty and is supposed to be something other than a string, check it
-                                        # THERE IS NOTHING HERE YET, THIS WILL BE BUILT OUT AS OTHER TYPES ARE NEEDED
-                                        pass
+
+                                        if (field_dict["type"] == "integer"):
+                                            # This field is supposed to be an integer, attempt to convert it to one
+                                            try:
+                                                o_dict[field_key] = int(o_dict[field_key])
+                                            except:
+                                                object_ok = False
+
+                                    if ((object_ok) and ("valid_options" in field_dict)):
+                                        check = [option for option in field_dict["valid_options"] if (option == o_dict[field_key])]
+                                        if (len(check) == 0):
+                                            object_ok = False
 
                     if (object_ok):
                         # The object is valid, place it in this object type's ordered list attribute in the desired position
@@ -981,20 +1032,47 @@ class EvidenceProfileForm(forms.ModelForm):
 
                         # Place the object in the desired position in the ordered list
                         uo_dict["desired_order"][list_index] = o_dict
+                    else:
+                        print("Not Valid")
+                        print(o_dict)
 
             # Get rid of any None values in the ordered list
             uo_dict["desired_order"] = [ordered_object for ordered_object in uo_dict["desired_order"] if (ordered_object)]
 
-        # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
+        # Convert the evidence profile stream objects that were built from submitted form data into the format that matches the
+        # EvidenceProfileStream class
+        unordered_objects["evidence_profile_streams"]["desired_order"] = [
+            {
+                "pk": stream["pk"],
+                "stream_type": stream["stream_type"],
+                "stream_title": stream["stream_title"],
+                "order": (10 * (index + 1)),
+                "confidence_judgement": {
+                    "title": stream["confidence_judgement_title"],
+                    "score": stream["confidence_judgement_score"],
+                    "name": "",
+                    "explanation": stream["confidence_judgement_explanation"]
+                }
+            }
+            for index, stream
+            in enumerate(unordered_objects["evidence_profile_streams"]["desired_order"])
+        ]
+
+        # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
+        cleaned_data["streams"] = unordered_objects["evidence_profile_streams"]["desired_order"]
+
+        # Create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
         confidence_judgement = {
             "score": cleaned_data.get("confidence_judgement_score"),
             "explanation": cleaned_data.get("confidence_judgement_explanation"),
         }
 
-        cleaned_data["cross_stream_conclusions"] = {
-            "inferences": unordered_objects["cross_stream_inferences"]["desired_order"],
-            "confidence_judgement": confidence_judgement,
-        }
+        cleaned_data["cross_stream_conclusions"] = json.dumps(
+            {
+                "inferences": unordered_objects["cross_stream_inferences"]["desired_order"],
+                "confidence_judgement": confidence_judgement,
+            }
+        )
 
         return cleaned_data

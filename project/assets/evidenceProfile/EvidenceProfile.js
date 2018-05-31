@@ -23,6 +23,10 @@ class EvidenceProfile {
     }
 
     static configure(configuration, object) {
+        // Initialize the top-level objects for this EvidenceProfile
+        EvidenceProfile.configuration = {};
+        EvidenceProfile.object = {};
+
         // This defines the object attributes' names (key) and data types (value)
         let objectAttributes = {
             title: "string",
@@ -33,8 +37,6 @@ class EvidenceProfile {
             streams: "array"
         };
 
-        EvidenceProfile.object = {};
-
         if (typeof(configuration) === "object") {
             // The configuration argument is an object, save it for later use
             EvidenceProfile.configuration = configuration;
@@ -43,7 +45,16 @@ class EvidenceProfile {
                 // The object argument is an object, iterate through it to build this object's object attribute
 
                 for (let attributeName in objectAttributes) {
-                    if ((attributeName in object) && (typeof(object[attributeName]) === objectAttributes[attributeName])) {
+                    if (
+                        (attributeName in object)
+                        && (
+                            (typeof(object[attributeName]) === objectAttributes[attributeName])
+                            || (
+                                (objectAttributes[attributeName] === "array")
+                                && (Array.isArray(object[attributeName]))
+                            )
+                        )
+                    ) {
                         // The object argument has the desired attribute name, and the attribute is of the desired type, copy it to this
                         // object's object attribute
                         EvidenceProfile.object[attributeName] = object[attributeName];
@@ -78,6 +89,20 @@ class EvidenceProfile {
             EvidenceProfile.configuration = null;
             EvidenceProfile.object = null;
         }
+
+        if (("streams" in EvidenceProfile.object) && (EvidenceProfile.object.streams.length > 0)) {
+            // One or more streams were provided as part of the object argument, convert each simple stream object into a formal
+            // EvidenceProfileStream object
+            let originalStreams = EvidenceProfile.object.streams;
+            EvidenceProfile.object.streams = [];
+
+            // Iterate through each of the original simple objects and use them as the incoming arguments for the EvidenceProfileStream
+            // object's contructor
+            let iTo = originalStreams.length;
+            for (let i=0; i<iTo; i++) {
+                EvidenceProfile.object.streams.push(new EvidenceProfileStream(originalStreams[i]));
+            }
+        }
     }
 
     // This function builds the formset for the "Evidence Profile Streams" portion of the Evidence Profile form
@@ -88,83 +113,6 @@ class EvidenceProfile {
     // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
     static buildCrossStreamInferencesFormset() {
         renderCrossStreamInferencesFormset(EvidenceProfile.object.cross_stream_conclusions.inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
-    }
-
-    // This method attempts to check the incoming evidenceProfile object to make sure that it is an object and has a "cross_stream_conclusions" attribute
-    // that matches the desired format
-    static checkEvidenceProfile(evidenceProfile) {
-        var returnValue = {};
-
-        if (typeof(evidenceProfile) === "object") {
-            // The incoming evidenceProfile argument is an object, use it for the basis of returnValue
-
-            console.log(EvidenceProfile.objectAttributes);
-            console.log(EvidenceProfile);
-
-            for (let attributeName in EvidenceProfile.objectAttributes) {
-                console.log(attributeName);
-            }
-
-            /*
-            returnValue = evidenceProfile;
-
-            if (typeof(returnValue["cross_stream_conclusions"]) == "string") {
-                // evidenceProfile contains a string attribute named "cross_stream_conclusions," attempt to de-serialize it from JSON
-
-                try {
-                    returnValue.cross_stream_conclusions = JSON.parse(returnValue.cross_stream_conclusions);
-                }
-                catch(error) {
-                    // The cross_stream_conclusions attribute was not a valid JSON packet, create an initialized object of the desired format in its
-                    // place
-                    returnValue["cross_stream_conclusions"] = {
-                        "inferences": [],
-                        "confidence_judgement": {
-                            "rating": null,
-                            "explanation": ""
-                        }
-                    }
-                }
-            }
-            else {
-                // evidenceProfile did not contain a string attribute named "cross_stream_conclusions," create an initialized object of the desired
-                // format in its place
-                returnValue["cross_stream_conclusions"] = {
-                    "inferences": [],
-                    "confidence_judgement": {
-                        "rating": null,
-                        "explanation": ""
-                    }
-                }
-            }
-
-            if (typeof(returnValue.cross_stream_conclusions["inferences"]) != "object") {
-                // returnValue.cross_stream_conclusions.inferences either does not exist or is not of the desired format, create/replace it
-                // with an object of the desired format
-                returnValue.cross_stream_conclusions["inferences"] = [];
-            }
-            */
-        }
-
-        return returnValue;
-    }
-
-
-    // This method attempts to check the incoming streams array of objects to make sure that they match the desired format
-    static checkStreams(streams) {
-        var returnValue = [];
-
-        if (typeof(streams) === "object") {
-            // streams is an object, assume it is an array and iterate over its elements to check each one
-            for (let i=0; i<streams.length; i++) {
-                if (typeof(streams[i]) == "object") {
-                    // This stream is an object, attempt to instantiate it and push it onto the array being returned
-                    returnValue.push(new EvidenceProfileStream(streams[i]));
-                }
-            }
-        }
-
-        return returnValue;
     }
 }
 
