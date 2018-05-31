@@ -216,8 +216,13 @@ class Visual(models.Model):
         blank=True)
     settings = models.TextField(
         default="{}")
+    caption = models.TextField(
+        blank=True)
+    published = models.BooleanField(
+        default=False,
+        verbose_name='Publish visual for public viewing',
+        help_text='For assessments marked for public viewing, mark visual to be viewable by public')
     sort_order = models.CharField(max_length=40,choices=SORT_ORDER_CHOICES, default="short_citation",)
-    caption = models.TextField()
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -365,7 +370,12 @@ class DataPivot(models.Model):
         help_text="Paste content from a settings file from a different "
                   "data-pivot, or keep set to \"undefined\".")
     caption = models.TextField(
+        blank=True,
         default="")
+    published = models.BooleanField(
+        default=False,
+        verbose_name='Publish visual for public viewing',
+        help_text='For assessments marked for public viewing, mark visual to be viewable by public')
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -857,17 +867,7 @@ class EvidenceProfileScenario(models.Model):
 
 # This function returns a serialized JSON-friendly version of the different stream_type options available
 def get_serialized_stream_types():
-    returnValue = []
-
-    for choice in STUDY_TYPE_CHOICES:
-        returnValue = returnValue + [
-            {
-                "value": choice[0],
-                "name": choice[1]
-            }
-        ]
-
-    return returnValue
+    return [{"value":choice[0], "name":choice[1]} for choice in STUDY_TYPE_CHOICES]
 
 
 reversion.register(SummaryText)
