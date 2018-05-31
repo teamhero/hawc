@@ -126,6 +126,11 @@ CELERY_BROKER_URL = os.getenv('DJANGO_BROKER_URL')
 CELERY_RESULT_EXPIRES = 60 * 60 * 5  # 5 hours
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ('json', 'pickle', )
+CELERY_IMPORTS = (
+    'assessment.tasks',
+    'bmd.tasks',
+    'lit.tasks',
+)
 
 
 # Cache settings
