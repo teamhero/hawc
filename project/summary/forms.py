@@ -772,9 +772,9 @@ class EvidenceProfileForm(forms.ModelForm):
             except:
                 pass
 
-        confidenceJudgementChoices = []
-        for judgement in json.loads(serializers.serialize("json", ConfidenceJudgement.objects.all().order_by("value"))):
-            confidenceJudgementChoices.append((judgement["fields"]["value"], judgement["fields"]["name"]))
+        # Create a list of confidence judgement options from the appropriate lookup table
+        confidenceJudgementChoices = [(confidenceJudgement.value, confidenceJudgement.name) for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value")]
+        confidenceJudgementChoices.insert(0, ("", "Select Judgement"))
 
         # Create an ordered dictionary of new fields that will be added to the form
         new_fields = OrderedDict()
