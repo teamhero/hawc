@@ -1,0 +1,13 @@
+.outcomesClearBoth {
+	clear: both;
+}
+
+.outcomesHeaderCell {
+    border: 0;
+    font-size: 0.9em;
+}
+
+.outcomesBodyCell {
+    border: 0;
+    vertical-align: top;
+}

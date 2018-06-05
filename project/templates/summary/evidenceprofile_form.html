@@ -86,6 +86,14 @@
                   buttonSetPrefix: "btn_stream",
                   buttonSetRegEx: new RegExp("^btn_stream_(\\d+)_(moveup|movedown|remove)$", "gi"),
                   streamTypes: evidenceProfile.Library.setStreamTypes({{stream_types|safe}}),
+                  outcomesFormset: {
+                    tableIdPattern: "table_outcomes_<<streamIndex>>",
+                    outcomeIdPrefixPattern: "row_outcome_<<streamIndex>>",
+                    fieldPrefixPattern: "stream_<<streamIndex>>",
+                    addButtonIdPattern: "add_outcome_row_<<streamIndex>>",
+                    buttonSetPrefixPattern: "btn_outcome_<<streamIndex>>",
+                    buttonSetRegEx: new RegExp("^btn_outcome_(\\d)_(\\d)_(moveup|movedown|remove)$", "gi"),
+                  }
                 }
               },
               {{evidenceProfile|safe}},

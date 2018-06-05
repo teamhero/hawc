@@ -161,7 +161,7 @@ class CrossStreamInferencesFormset extends Component {
 
                         let inferenceIndex = this.findInferenceIndex(buttonDetails[0]);
                         if (inferenceIndex > -1) {
-                            // The row was found within this.state.rows, keep working with it
+                            // The row was found within this.inferences, keep working with it
 
                             if ((buttonDetails[1] === "moveup") && (inferenceIndex > 0)) {
                                 // The clicked-upon element is a "Move Up" button in a row that is not at the top of the array, move it
@@ -254,9 +254,9 @@ class CrossStreamInferencesFormset extends Component {
         }
     }
 
-    // This method attemts to find the array index of the element in this.inferences that contains the CrossStreamInferencRow element
+    // This method attemts to find the array index of the element in this.inferences that contains the CrossStreamInferenceRow element
     // whose index is the passed-in argument value
-    // The this.inference array indices and the CrossStreamInferenceRow elements' index values are initially the same; but as rows get
+    // The this.inferences array indices and the CrossStreamInferenceRow elements' index values are initially the same; but as rows get
     // moved up and down, that changes -- making this method necessary
     findInferenceIndex(index) {
         let returnValue = -1;
@@ -318,7 +318,7 @@ class CrossStreamInferencesFormset extends Component {
 // This Component class is used to manage a single Cross-Stream Inference's row in the formset
 class CrossStreamInferenceRow extends Component {
     constructor(props) {
-        // Frist, call the super-class's constructor
+        // First, call the super-class's constructor
         super(props);
     }
 

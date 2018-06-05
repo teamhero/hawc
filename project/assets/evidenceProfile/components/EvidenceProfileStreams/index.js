@@ -4,6 +4,8 @@ import EvidenceProfileStream from "../../EvidenceProfileStream";
 
 import "./index.css";
 
+import {renderOutcomesFormset} from "./Outcomes";
+
 // This Component object is the container for the entire Evidence Profile Stream formset
 class EvidenceProfileStreamsFormset extends Component {
     streams = [];
@@ -19,7 +21,7 @@ class EvidenceProfileStreamsFormset extends Component {
         // First, look for a "streams" object in the incoming props -- defaulting to an empty array if none is found
         let iterateOverStreams = (("streams" in props) && (typeof(props.streams) === "object") && (props.streams !== null)) ? props.streams : [];
 
-        // Iterate over the inconing streams and use them to build the object level "streams" and "streamOrder" attribures
+        // Iterate over the incoming streams and use them to build the object level "streams" and "streamReferences" attribures
         let iTo = iterateOverStreams.length;
         for (let i=0; i<=iTo; i++) {
             this.streams.push(
@@ -47,10 +49,12 @@ class EvidenceProfileStreamsFormset extends Component {
                 stream_type_optionSet={this.props.config.streamTypes}
                 stream_title={this.streams[i].stream.object.stream_title}
                 confidence_judgement={this.streams[i].stream.object.confidence_judgement}
+                outcomes={this.streams[i].stream.object.outcomes}
                 confidenceJudgements={this.props.confidenceJudgements}
                 idPrefix={this.props.config.streamIdPrefix}
                 fieldPrefix={this.props.config.fieldPrefix}
                 buttonSetPrefix={this.props.config.buttonSetPrefix}
+                outcomesFormsetConfig={this.props.config.outcomesFormset}
                 handleButtonClick={this.handleButtonClick}
             />;
         }
@@ -79,7 +83,7 @@ class EvidenceProfileStreamsFormset extends Component {
             // The click event's details were passed in, and the clicked-upon element has a non-empty ID attribute, continue checking
 
             if (event.target.id === this.props.config.addButtonId) {
-                // The element clicked upon is the "Add A New Stream" button, add a new stream to this.streams and this.streamOrder
+                // The element clicked upon is the "Add A New Stream" button, add a new stream to this.streams and this.streamReferences
 
                 // Get the next index value for this new <div>
                 let newDivIndex = Math.max(...this.streams.map(stream => stream.div.props.index)) + 1;
@@ -107,10 +111,12 @@ class EvidenceProfileStreamsFormset extends Component {
                         stream_type_optionSet={this.props.config.streamTypes}
                         stream_title={this.streams[streamIndex].stream.object.stream_title}
                         confidence_judgement={this.streams[streamIndex].stream.object.confidence_judgement}
+                        outcomes={this.streams[streamIndex].stream.object.outcomes}
                         confidenceJudgements={this.props.confidenceJudgements}
                         idPrefix={this.props.config.streamIdPrefix}
                         fieldPrefix={this.props.config.fieldPrefix}
                         buttonSetPrefix={this.props.config.buttonSetPrefix}
+                        outcomesFormsetConfig={this.props.config.outcomesFormset}
                         handleButtonClick={this.handleButtonClick}
                     />;
 
@@ -192,7 +198,7 @@ class EvidenceProfileStreamsFormset extends Component {
             let reference = this.streamReferences["div_" + this.streams[i].div.props.index];
 
             // Alternate the <div> color on streams
-            reference.divReference.style.backgroundColor = ((i % 2) === 1) ? "#EEEEEE" : "#FFFFFF";
+            reference.divReference.style.backgroundColor = ((i % 2) === 0) ? "#EEEEEE" : "#FFFFFF";
 
             // Only make the "Move Up" button visible whenever it is not in the first stream
             reference.moveUpReference.style.visibility = (i === 0) ? "hidden" : "visible";
@@ -279,6 +285,13 @@ class StreamDiv extends Component {
                 margin: "0 4px 4px 0",
             },
         ],
+        [
+            {
+                width: "100%",
+                float: "left",
+                margin: "12px 0 0 0",
+            }
+        ],
     ];
 
     constructor(props) {
@@ -294,14 +307,16 @@ class StreamDiv extends Component {
             score: "",
             explanation: "",
         }
+
+        this.outcomes = (("outcomes" in props) && (props.outcomes !== null) && (typeof(props.outcomes) === "object") && (Array.isArray(props.outcomes))) ? props.outcomes : [];
+
+        // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
+        this.plusOne = this.props.index + 1;
+        this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne;
+        this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
     }
 
     render() {
-        // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
-        let plusOne = this.props.index + 1;
-        let fieldPrefix = this.props.fieldPrefix + "_" + plusOne;
-        let buttonSetPrefix = this.props.buttonSetPrefix + "_" + plusOne;
-
         return (
             <div
                 ref={
@@ -311,7 +326,7 @@ class StreamDiv extends Component {
                 }
                 id={this.props.idPrefix + "_" + this.props.order}
                 className="streamDiv"
-                style={{backgroundColor:(((plusOne % 2) === 0) ? "#FFFFFF" : "#EEEEEE")}}
+                style={{backgroundColor:(((this.plusOne % 2) === 0) ? "#FFFFFF" : "#EEEEEE")}}
             >
                 <InputOrder
                     ref={
@@ -319,15 +334,15 @@ class StreamDiv extends Component {
                             this.orderReference = input;
                         }
                     }
-                    id={fieldPrefix + "_order"}
+                    id={this.fieldPrefix + "_order"}
                     value={this.props.order}
                 />
 
-                <input type={"hidden"} id={fieldPrefix + "_pk"} name={fieldPrefix + "_pk"} value={this.pk} />
+                <input type={"hidden"} id={this.fieldPrefix + "_pk"} name={this.fieldPrefix + "_pk"} value={this.pk} />
 
                 <div className="streamPartDiv">
                     <div style={this.streamRows[0][0]}>
-                        <label htmlFor={fieldPrefix + "_stream_type"} className="control-label">Type</label>
+                        <label htmlFor={this.fieldPrefix + "_stream_type"} className="control-label">Type</label>
                         <div className="controls">
                             <SelectStreamType
                                 ref={
@@ -335,14 +350,14 @@ class StreamDiv extends Component {
                                         this.streamTypeReference = input;
                                     }
                                 }
-                                id={fieldPrefix + "_stream_type"}
+                                id={this.fieldPrefix + "_stream_type"}
                                 value={this.stream_type}
                                 optionSet={this.props.stream_type_optionSet}
                             />
                         </div>
                     </div>
                     <div style={this.streamRows[0][1]}>
-                        <label htmlFor={fieldPrefix + "_stream_title"} className="control-label">Title</label>
+                        <label htmlFor={this.fieldPrefix + "_stream_title"} className="control-label">Title</label>
                         <div className="controls">
                             <InputStreamTitle
                                 ref={
@@ -350,7 +365,7 @@ class StreamDiv extends Component {
                                         this.streamTitleReference = input;
                                     }
                                 }
-                                id={fieldPrefix + "_stream_title"}
+                                id={this.fieldPrefix + "_stream_title"}
                                 value={this.stream_title}
                             />
                         </div>
@@ -374,7 +389,7 @@ class StreamDiv extends Component {
                                 (e) => this.props.handleButtonClick(e)
                             }
                         >
-                            <i id={buttonSetPrefix + "_moveup"} className="icon-arrow-up" />
+                            <i id={this.buttonSetPrefix + "_moveup"} className="icon-arrow-up" />
                         </button>
                         <br />
 
@@ -396,7 +411,7 @@ class StreamDiv extends Component {
                                 (e) => this.props.handleButtonClick(e)
                             }
                         >
-                            <i id={buttonSetPrefix + "_movedown"} className="icon-arrow-down" />
+                            <i id={this.buttonSetPrefix + "_movedown"} className="icon-arrow-down" />
                         </button>
                         <br />
 
@@ -413,7 +428,7 @@ class StreamDiv extends Component {
                                 (e) => this.props.handleButtonClick(e)
                             }
                         >
-                            <i id={buttonSetPrefix + "_remove"} className="icon-remove" />
+                            <i id={this.buttonSetPrefix + "_remove"} className="icon-remove" />
                         </button>
                         <br />
                     </div>
@@ -423,7 +438,7 @@ class StreamDiv extends Component {
 
                 <div className="streamPartDiv">
                     <div style={this.streamRows[1][0]}>
-                        <label htmlFor={fieldPrefix + "_confidence_judgement_title"} className="control-label">Within-Stream Confidence Judgement<br /><span style={{fontSize:"0.8em",}}>Title</span></label>
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_title"} className="control-label">Within-Stream Confidence Judgement<br /><span style={{fontSize:"0.8em",}}>Title</span></label>
                         <div className="controls">
                             <InputConfidenceJudgementTitle
                                 ref={
@@ -431,12 +446,12 @@ class StreamDiv extends Component {
                                         this.confidenceJudgementTitleReference = input;
                                     }
                                 }
-                                id={fieldPrefix + "_confidence_judgement_title"}
+                                id={this.fieldPrefix + "_confidence_judgement_title"}
                                 value={this.confidence_judgement.title}
                             />
                         </div>
 
-                        <label htmlFor={fieldPrefix + "_confidence_judgement_score"} className="control-label"><span style={{fontSize:"0.8em",}}>Score</span></label>
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_score"} className="control-label"><span style={{fontSize:"0.8em",}}>Score</span></label>
                         <div className="controls">
                             <SelectConfidenceJudgementScore
                                 ref={
@@ -444,14 +459,14 @@ class StreamDiv extends Component {
                                         this.confidenceJudgementScoreReference = input;
                                     }
                                 }
-                                id={fieldPrefix + "_confidence_judgement_score"}
+                                id={this.fieldPrefix + "_confidence_judgement_score"}
                                 value={this.confidence_judgement.score}
                                 optionSet={this.props.confidenceJudgements}
                             />
                         </div>
                     </div>
                     <div style={this.streamRows[1][0]}>
-                        <label htmlFor={fieldPrefix + "_confidence_judgement_explanation"} className="control-label"><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_explanation"} className="control-label"><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
                         <div className="controls">
                             <TextAreaConfidenceJudgementExplanation
                                 ref={
@@ -459,9 +474,18 @@ class StreamDiv extends Component {
                                         this.confidenceJudgementExplanationReference = input;
                                     }
                                 }
-                                id={fieldPrefix + "_confidence_judgement_explanation"}
+                                id={this.fieldPrefix + "_confidence_judgement_explanation"}
                                 value={this.confidence_judgement.explanation}
                             />
+                        </div>
+                    </div>
+
+                    <br className="streamsClearBoth" />
+
+                    <div className="streamPartDiv">
+                        <div style={this.streamRows[2][0]}>
+                            <div id={this.fieldPrefix + "_outcomesFormset"}>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -469,6 +493,10 @@ class StreamDiv extends Component {
                 <br className="streamsClearBoth" />
             </div>
         );
+    }
+
+    componentDidMount() {
+        renderOutcomesFormset(this.outcomes, this.fieldPrefix + "_outcomesFormset", this.props.outcomesFormsetConfig, this.props.confidenceJudgements);
     }
 }
 
@@ -492,7 +520,7 @@ class InputOrder extends Component {
     render() {
         return (
             <input
-                id={this.id}
+                id={this.props.id}
                 type="hidden"
                 name={this.props.id}
                 value={this.state.value}
@@ -723,6 +751,7 @@ class TextAreaConfidenceJudgementExplanation extends Component {
         );
     }
 }
+
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the
 // individual Evidence Profile Streams

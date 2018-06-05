@@ -11,8 +11,8 @@ import {
 import Library from "./Library";
 import EvidenceProfileStream from "./EvidenceProfileStream";
 
-import {renderCrossStreamInferencesFormset} from "./components/CrossStreamInferences";
 import {renderEvidenceProfileStreamsFormset} from "./components/EvidenceProfileStreams";
+import {renderCrossStreamInferencesFormset} from "./components/CrossStreamInferences";
 
 // This class is intended to hold an Evidence Profile object -- essentially all of the data needed to generate an Evidence Profile report,
 // or a form for creating and managing an Evidence Profile
