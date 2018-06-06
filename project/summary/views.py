@@ -463,6 +463,7 @@ class EvidenceProfileNew(BaseCreate):
                 stream_title = stream["stream_title"],
                 order = stream["order"],
                 confidence_judgement = json.dumps(stream["confidence_judgement"]),
+                outcomes = json.dumps(stream["outcomes"]),
             ).save()
 
 
@@ -510,7 +511,8 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
                 stream_title = stream["stream_title"],
                 order = stream["order"],
                 confidence_judgement = json.dumps(stream["confidence_judgement"]),
-                created = pytz.timezone(timezone.get_default_timezone_name()).localize(datetime.now())
+                outcomes = json.dumps(stream["outcomes"]),
+                created = pytz.timezone(timezone.get_default_timezone_name()).localize(datetime.now()),
             ).save()
 
         # Iterate through the list of old streams that need to be deleted and delete them
