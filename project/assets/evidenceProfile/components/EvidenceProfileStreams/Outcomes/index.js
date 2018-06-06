@@ -25,19 +25,6 @@ class OutcomesFormset extends Component {
         // First, look for an "outcomes" object in the incoming props -- defaulting to an empty array if none is found
         let iterateOverOutcomes = (("outcomes" in props) && (typeof(props.outcomes) === "object") && (props.outcomes !== null)) ? props.outcomes : [];
 
-        iterateOverOutcomes.push(
-            {
-                title: "Seriously?",
-                score: 0,
-                explanation: "Wow, this is lame even by high-school slacker levels",
-            },
-            {
-                title: "Yes!",
-                score: 3,
-                explanation: "Now this is more like it"
-            }
-        );
-
         // Iterate over the incoming outcomes and use them to build the object level "outcomes" and "outcomeReferences" attribures
         let iTo = iterateOverOutcomes.length;
         for (let i=0; i<=iTo; i++) {
@@ -131,9 +118,9 @@ class OutcomesFormset extends Component {
                 this.outcomes.push(
                     {
                         outcome: {
-                            title: "Alpha",
-                            score: 2,
-                            explanation: "Alpha Explained"
+                            title: "",
+                            score: "",
+                            explanation: "",
                         },
                         row: null
                     }
