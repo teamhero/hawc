@@ -9,7 +9,7 @@ from django import forms
 from django.core.urlresolvers import reverse
 from selectable import forms as selectable
 
-from assessment.models import EffectTag, ConfidenceJudgement
+from assessment.models import EffectTag, ConfidenceFactor, ConfidenceJudgement
 from study.models import Study
 from animal.models import Endpoint
 from epi.models import Outcome
@@ -747,9 +747,9 @@ class EvidenceProfileForm(forms.ModelForm):
             except:
                 pass
 
-        confidenceJudgementChoices = []
-        for judgement in json.loads(serializers.serialize("json", ConfidenceJudgement.objects.all().order_by("value"))):
-            confidenceJudgementChoices.append((judgement["fields"]["value"], judgement["fields"]["name"]))
+        # Create a list of confidence judgement options from the appropriate lookup table
+        confidenceJudgementChoices = [(confidenceJudgement.value, confidenceJudgement.name) for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value")]
+        confidenceJudgementChoices.insert(0, ("", "Select Judgement"))
 
         # Create an ordered dictionary of new fields that will be added to the form
         new_fields = OrderedDict()
@@ -836,14 +836,22 @@ class EvidenceProfileForm(forms.ModelForm):
         # First, use the super-class's clean() method as a starting point
         cleaned_data = super().clean()
 
+        # These objects will be used frequently, so go ahead and create:
+        #   * A list of valid confidence judgement values for validating submitted form data
+        #   * A dictionary mapping of confidence judgement values to names for use when building the final objects that will be saved as part of cleaned_data
+        confidence_judgement_value_list = []
+        confidence_judgement_dict = {}
+        for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value"):
+            confidence_judgement_value_list.append(confidenceJudgement.value)
+            confidence_judgement_dict[confidenceJudgement.value] = confidenceJudgement.name
+
         # Initialize a dict to hold objects made up of related sets of form data, along with information about their form field naming conventions
         # This object will be used as a temporary store to be built up while iterating over the incoming form key/value pairs; and then ordering of
         # the objects will be done after they have all been built
-        unordered_objects = {
+        unordered_types = {
             "cross_stream_inferences": {
-                "objects": {},
-                "desired_order": [],
                 "ordering_field": "order",
+                "retain_ordering_field": False,
                 "field_validation": {
                     "title": {
                         "required": True,
@@ -858,70 +866,180 @@ class EvidenceProfileForm(forms.ModelForm):
                 },
                 "re_match": r"^inference_(\d+)_(title|description|order)$",
                 "re_replace_with": r"\1,\2",
-            }
+            },
+            "evidence_profile_streams": {
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "field_validation": {
+                    "pk": {
+                        "required": False,
+                        "type": "integer",
+                        "can_be_empty": True,
+                    },
+                    "stream_type": {
+                        "required": True,
+                        "type": "integer",
+                        "valid_options": [stream_type["value"] for stream_type in models.get_serialized_stream_types()],
+                        "can_be_empty": False,
+                    },
+                    "stream_title": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "confidence_judgement_title": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "confidence_judgement_score": {
+                        "required": True,
+                        "type": "integer",
+                        "valid_options": confidence_judgement_value_list,
+                        "can_be_empty": False,
+                    },
+                    "confidence_judgement_explanation": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                },
+                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|order)$",
+                "re_replace_with": r"\1,\2",
+            },
+            "stream_outcomes": {
+                "parent_object_type": "evidence_profile_streams",
+                "parent_field": "outcomes",
+                "ordering_field": "order",
+                "retain_ordering_field": False,
+                "re_match": r"^stream_(\d+)_(\d+)_(title|score|explanation|order)$",
+                "re_replace_with": r"\1,\2,\3",
+                "field_validation": {
+                    "title": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "score": {
+                        "required": True,
+                        "type": "integer",
+                        "valid_options": confidence_judgement_value_list,
+                        "can_be_empty": False,
+                    },
+                    "explanation": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                },
+            },
         }
 
-        # Iterate over the submitted form fields to build the various unordered objects that will be added to the sets of objects initialized above
-        for form_key in self.submitted_data:
+        #Iterate over the sets of unordered object types and add some key/value attributes to each one that are common to all
+        for ut_key, ut_dict in unordered_types.items():
+            # "objects" is a dictionary to hold the individual objects as they are built up from individual form fields
+            ut_dict["objects"] = {}
 
-            # Iterate over the sets of unordered_objects to check and see if this form field belongs in one of them
-            for uo_key in unordered_objects:
-                if (re.search(unordered_objects[uo_key]["re_match"], form_key)):
+            # "type_lineage" is a list tracing this object type's parentage all the way to the top level
+            # One object type can be a child of another object type
+            # THESE RELATIONSHIPS CAN BE ARBITRARILY DEEP! (3 levels deep for now, but that could change)
+            # Build up a list for the full lineage of object types; starting out by checking this object type's key
+            ut_dict["type_lineage"] = []
+            check_key = ut_key
+            while (("parent_object_type" in unordered_types[check_key]) and (unordered_types[check_key]["parent_object_type"] in unordered_types)):
+                # This type has a parent type, add the key being checked to typeLineage and get the parent's key to check in the
+                # next iteration through this loop
+                ut_dict["type_lineage"].insert(0, check_key)
+                check_key = unordered_types[check_key]["parent_object_type"]
+
+            # Add the final object type key that was checked to typeLineage (the final check_key value will not be in typeLineage yet because
+            # it didn't have a parent type)
+            ut_dict["type_lineage"].insert(0, check_key)
+
+            if (len(ut_dict["type_lineage"]) == 1):
+                # "desired_order" is a list to hold the same objects as the "objects" dictionary, but in the desired order
+                # This field is only needed for top-level object types (i.e. those with only themselves in their type_lineage list)
+                ut_dict["desired_order"] = []
+
+        # Iterate over the submitted form fields to build the various unordered objects that will be added to the sets of objects initialized above
+        for form_key, form_value in self.submitted_data.items():
+
+            # Iterate over the sets of unordered object types to check and see if this form field belongs in one of them
+            for ut_key, ut_dict in unordered_types.items():
+                if (re.search(ut_dict["re_match"], form_key)):
                     # This form field's name matched the naming convention corresponding to this type of unordered object; attempt to add it to
                     # this dictionary's object attribute
 
                     # Perform the regular expression substitution to retrieve the relevant parts of the field name
-                    fieldNameDetails = re.sub(unordered_objects[uo_key]["re_match"], unordered_objects[uo_key]["re_replace_with"], form_key).split(",")
-                    if (len(fieldNameDetails) == 2):
-                        # The array returned contains the expected two elements, continue
+                    fieldNameDetails = re.sub(ut_dict["re_match"], ut_dict["re_replace_with"], form_key).split(",")
 
-                        # Make sure that the first element is an integer, defaulting to zero if it isn't
-                        try:
-                            fieldNameDetails[0] = int(fieldNameDetails[0])
-                        except:
-                            fieldNameDetails[0] = 0
+                    if ((len(ut_dict["type_lineage"]) + 1) == len(fieldNameDetails)):
+                        # The number of elements in the details extracted from the incoming form field's name coresonds to the object type's expected
+                        # lineage, continue
 
-                        if (fieldNameDetails[0] >= 1):
-                            # The first array element is a positive integer, continue
+                        # Iterate over most of fieldNameDetails and convert all but the final element to an integer
+                        i = 0
+                        detailsOk = True
+                        iTo = len(fieldNameDetails) - 1
+                        while ((i < iTo) and (detailsOk)):
+                            try:
+                                # Perform the integer conversion within a try block in case it isn't a valid integer
+                                fieldNameDetails[i] = int(fieldNameDetails[i])
 
-                            # Create a string version of the first array element to use as a key within the objects attribute
-                            object_key = str(fieldNameDetails[0])
+                                if (fieldNameDetails[i] <= 0):
+                                    # The element's value is an integer, but not a positive one, flip detailsOk flag to False
+                                    detailsOk = False
+                            except:
+                                # This element was not a valid integer, flip the detailsOk flag to False
+                                detailsOk = False
 
-                            if (object_key not in unordered_objects[uo_key]["objects"]):
-                                # The object has not yet been initialized in the objects attribute, initialize it now as an empty dictionary
-                                unordered_objects[uo_key]["objects"][object_key] = {}
+                            # Increment i
+                            i = i + 1
 
-                            # Add this form field's value to this object in the objects attribute; use the second element in the array of
-                            # values extracted from the field name as the object's attribute key
-                            unordered_objects[uo_key]["objects"][object_key][fieldNameDetails[1]] = self.submitted_data[form_key]
+                        if (detailsOk):
+                            # All of the elements in fieldNameDetails that should be integers are integers, continue
 
-        # Now iterate through each of the different types of unordered objects to validate their sets of objects and place them in the desired order
-        for uo_key, uo_dict in unordered_objects.items():
+                            # Get the key for placing this data field within this object type's "object" attribute and get the field name
+                            object_key = "_".join([str(detail) for detail in fieldNameDetails if (isinstance(detail, int))])
+                            field_name = fieldNameDetails[len(fieldNameDetails) - 1]
+
+                            if (object_key not in ut_dict["objects"]):
+                                # Thie object has not yet been initialized in the objects attributes, initialize it now as an empty dictionary
+                                ut_dict["objects"][object_key] = {}
+
+                            # Add this form field's value to this object in the objects attribute
+                            ut_dict["objects"][object_key][field_name] = self.submitted_data[form_key]
+
+        # Now iterate through each of the different types of unordered objects to validate the objects that have been built up from the submitted
+        # form fields
+        for ut_key, ut_dict in unordered_types.items():
+            validated_objects = {}
+
             # Iterate through each of the objects in this object type's set to attempt to validate the object
-            for o_key, o_dict in uo_dict["objects"].items():
+            for o_key, o_dict in ut_dict["objects"].items():
                 if (
-                    (uo_dict["ordering_field"] in o_dict)
-                    and (o_dict[uo_dict["ordering_field"]] != "")
+                    (ut_dict["ordering_field"] in o_dict)
+                    and (o_dict[ut_dict["ordering_field"]] != "")
                 ):
-                    # The object contains the non-empty expected field used for indicating the desired position, continue
+                    # The object contains the expected field used for indicating the desired position and it is not empty, continue
 
                     # Initialize the "object is OK flag"
                     object_ok = True
 
                     # Convert the value in the ordering field to an integer, defaulting to zero
                     try:
-                        o_dict[uo_dict["ordering_field"]] = int(o_dict[uo_dict["ordering_field"]])
+                        o_dict[ut_dict["ordering_field"]] = int(o_dict[ut_dict["ordering_field"]])
                     except:
-                        o_dict[uo_dict["ordering_field"]] = 0
+                        o_dict[ut_dict["ordering_field"]] = 0
 
-                    if (o_dict[uo_dict["ordering_field"]] <= 0):
+                    if (o_dict[ut_dict["ordering_field"]] <= 0):
                         # There was a problem with the ordering field's value, set the OK flag accordingly
                         object_ok = False
                     else:
                         # The ordering field's value is syntactically valid, attempt to validate the object
 
                         # Iterate over this object type's validation rules to check the object
-                        for field_key, field_dict in uo_dict["field_validation"].items():
+                        for field_key, field_dict in ut_dict["field_validation"].items():
                             if (object_ok):
                                 # No problems have been found yet with this object, keep checking
 
@@ -936,40 +1054,153 @@ class EvidenceProfileForm(forms.ModelForm):
                                         object_ok = False
                                     elif ((o_dict[field_key] != "") and (field_dict["type"] != "string")):
                                         # This field is not empty and is supposed to be something other than a string, check it
-                                        # THERE IS NOTHING HERE YET, THIS WILL BE BUILT OUT AS OTHER TYPES ARE NEEDED
-                                        pass
+
+                                        if (field_dict["type"] == "integer"):
+                                            # This field is supposed to be an integer, attempt to convert it to one
+                                            try:
+                                                o_dict[field_key] = int(o_dict[field_key])
+                                            except:
+                                                object_ok = False
+
+                                    if ((object_ok) and ("valid_options" in field_dict)):
+                                        check = [option for option in field_dict["valid_options"] if (option == o_dict[field_key])]
+                                        if (len(check) == 0):
+                                            object_ok = False
 
                     if (object_ok):
-                        # The object is valid, place it in this object type's ordered list attribute in the desired position
+                        # This object has been validated, save a reference to it in validated_objects
+                        # There was a problem validating this object, remove it from the set of objects for this type
+                        validated_objects[o_key] = o_dict
 
-                        # Get the the ordering field's value and subtract one from it to get the intended index in the ordered list
-                        list_index = o_dict[uo_dict["ordering_field"]] - 1
+            # Copy the dictionary of validated objects back into this type's objects attribute
+            ut_dict["objects"] = validated_objects
 
-                        # Remove the ordering field from the object; it is no longer needed
-                        o_dict.pop(uo_dict["ordering_field"], None)
+        # Now iterate through each unordered type's objects and attempt to place them in the desired order
+        for ut_key, ut_dict in unordered_types.items():
 
-                        # Assume that objects can be processed outside of the desired order, this means that there may be a need to place this object
-                        # in a position more than one element beyond the ordered list's current length; iterate as many times as necessary, placing
-                        # None objects in the positions as needed
-                        while (list_index >= len(uo_dict["desired_order"])):
-                            uo_dict["desired_order"].append(None)
+            # Iterate through each of the objects within this object type to retrieve the ordered list in which it should be placed
+            for o_key, o_dict in ut_dict["objects"].items():
+                # Split the object's key to produce an ordered list of the key portions for its full lineage
+                lineage_keys = o_key.split("_")
 
-                        # Place the object in the desired position in the ordered list
-                        uo_dict["desired_order"][list_index] = o_dict
+                # Initialize the values used to confirm that this object's lineage is intact, i.e. that all of the objects in the
+                # lineage exist within their unordered object type
+                i = 0
+                iTo = len(lineage_keys)
+                lineage_intact = True
+                key = ""
 
-            # Get rid of any None values in the ordered list
-            uo_dict["desired_order"] = [ordered_object for ordered_object in uo_dict["desired_order"] if (ordered_object)]
+                # Iterate over the lineage_keys and confirm that everything is intact
+                while ((i < iTo) and (lineage_intact)):
+                    # Set the new key value for the object being checked, then check to see if it exists within the expected object type
+                    key = lineage_keys[i] if (key == "") else key + "_" + lineage_keys[i]
+                    lineage_intact =  (key in unordered_types[ut_dict["type_lineage"][i]]["objects"])
 
-        # Now, create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
+                    # Increment to the next element in the list
+                    i = i + 1
+
+                # Look for the desired list object to which o_dict will be added
+                ordering_list = None
+                if (lineage_intact):
+                    # The object's full lineage is intact, continue
+
+                    if (("parent_object_type" in ut_dict) and (ut_dict["parent_object_type"] != "")):
+                        # This object is the child of another object, this means that it will be part of an attribute within that parent object
+
+                        # Initialize the values used to build the parent's key
+                        i = 0
+                        parent_key_index = len(lineage_keys) - 2
+                        parent_key = ""
+
+                        # Iterate over the relevant part of lineage_keys to build parent_key
+                        while (i <= parent_key_index):
+                            parent_key = lineage_keys[i] if (parent_key == "") else parent_key + "_" + lineage_keys[i]
+                            i = i + 1
+
+                        if (
+                            (parent_key_index >= 0)
+                            and (parent_key in unordered_types[ut_dict["type_lineage"][parent_key_index]]["objects"])
+                        ):
+                            # parent_key was built and is found within the expected unordered object type, make sure that it includes the attribute
+                            # that will hold this object
+
+                            if (ut_dict["parent_field"] not in unordered_types[ut_dict["type_lineage"][parent_key_index]]["objects"][parent_key]):
+                                # The field that will hold this object was not found, add it to the object
+                                unordered_types[ut_dict["type_lineage"][parent_key_index]]["objects"][parent_key][ut_dict["parent_field"]] = []
+
+                            # Get a reference to the parent's attribute that will hold this object to use as the desired list object
+                            ordering_list = unordered_types[ut_dict["type_lineage"][parent_key_index]]["objects"][parent_key][ut_dict["parent_field"]]
+                    elif ("desired_order" in ut_dict):
+                        # This object is not a child of another object, and it has a "desired_order" attribute
+                        # Get a reference to the desired_order attribute to use as the desired list object
+                        ordering_list = ut_dict["desired_order"]
+
+                if (isinstance(ordering_list, list)):
+                    # The desired list object was found, add this object to it
+
+                    list_index = o_dict[ut_dict["ordering_field"]] - 1
+                    while (list_index >= len(ordering_list)):
+                        ordering_list.append(None)
+
+                    if (not ordering_list[list_index]):
+                        ordering_list[list_index] = {}
+
+                    for field_key, field_value in o_dict.items():
+                        ordering_list[list_index][field_key] = field_value
+
+        # Finally, iterate through the unordered object types that have a desired_order attribute and make sure that it contains the same object that
+        # is found in the objects attribute
+        for ut_key in [ut_key for ut_key, ut_dict in unordered_types.items() if ("desired_order" in ut_dict)]:
+            # Iterate through the objects within this object type and make sure that each one is copied to the desired position in desired_order
+            for o_key, o_dict in unordered_types[ut_key]["objects"].items():
+                unordered_types[ut_key]["desired_order"][o_dict[unordered_types[ut_key]["ordering_field"]] - 1] = o_dict
+
+                if (not unordered_types[ut_key]["retain_ordering_field"]):
+                    # This object's ordering field does not need to be retained, get rid of it
+                    unordered_types[ut_key]["desired_order"][o_dict[unordered_types[ut_key]["ordering_field"]] - 1].pop(unordered_types[ut_key]["ordering_field"])
+
+            unordered_types[ut_key]["desired_order"] = [object for object in unordered_types[ut_key]["desired_order"] if (object)]
+
+        # Convert the evidence profile stream objects that were built from submitted form data into the format that matches the
+        # EvidenceProfileStream class
+        unordered_types["evidence_profile_streams"]["desired_order"] = [
+            {
+                "pk": stream["pk"],
+                "stream_type": stream["stream_type"],
+                "stream_title": stream["stream_title"],
+                "order": (10 * (index + 1)),
+                "confidence_judgement": {
+                    "title": stream["confidence_judgement_title"],
+                    "score": stream["confidence_judgement_score"],
+                    "name": confidence_judgement_dict[stream["confidence_judgement_score"]],
+                    "explanation": stream["confidence_judgement_explanation"]
+                },
+                "outcomes": [{key:outcome[key] for key in outcome if (key != "order")} for outcome in stream["outcomes"]],
+            }
+            for index, stream
+            in enumerate(unordered_types["evidence_profile_streams"]["desired_order"])
+        ]
+
+        # Now iterate through each outcome within each evidence profile stream and add the appropriate name attribute to it
+        for stream in unordered_types["evidence_profile_streams"]["desired_order"]:
+            for outcome in stream["outcomes"]:
+                outcome["name"] = confidence_judgement_dict[outcome["score"]]
+
+        # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
+        cleaned_data["streams"] = unordered_types["evidence_profile_streams"]["desired_order"]
+
+        # Create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile
         confidence_judgement = {
             "score": cleaned_data.get("confidence_judgement_score"),
             "explanation": cleaned_data.get("confidence_judgement_explanation"),
         }
 
-        cleaned_data["cross_stream_conclusions"] = {
-            "inferences": unordered_objects["cross_stream_inferences"]["desired_order"],
-            "confidence_judgement": confidence_judgement,
-        }
+        cleaned_data["cross_stream_conclusions"] = json.dumps(
+            {
+                "inferences": unordered_types["cross_stream_inferences"]["desired_order"],
+                "confidence_judgement": confidence_judgement,
+            }
+        )
 
         return cleaned_data

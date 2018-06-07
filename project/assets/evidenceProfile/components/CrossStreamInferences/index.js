@@ -16,7 +16,7 @@ class CrossStreamInferencesFormset extends Component {
 
         // Get the incoming inferences from the props and save them as an object-level attribute (defaulting to an empty
         // array if no inferences were passed in)
-        this.inferences = (typeof(props.inferences) === "object") ? props.inferences : [];
+        this.inferences = (("inferences" in props) && (typeof(props.inferences) === "object") && (props.inferences !== null)) ? props.inferences : [];
         let iTo = this.inferences.length;
         for (let i=0; i<iTo; i++) {
             this.inferences[i]["row"] = null;
@@ -104,7 +104,7 @@ class CrossStreamInferencesFormset extends Component {
             // The click event's details were passed in, and the clicked-upon element has a non-empty ID attribute, continue checking
 
             if (event.target.id === this.props.config.addButtonId) {
-                // The element clicked upon is the "Add A New Visualization" button, add a new inference to this.inferences
+                // The element clicked upon is the "Add A New Inference" button, add a new inference to this.inferences
 
                 // Get values that will be used within props for the new inference row
                 let newRowIndex = this.findMaximumIndex() + 1;
@@ -161,7 +161,7 @@ class CrossStreamInferencesFormset extends Component {
 
                         let inferenceIndex = this.findInferenceIndex(buttonDetails[0]);
                         if (inferenceIndex > -1) {
-                            // The row was found within this.state.rows, keep working with it
+                            // The row was found within this.inferences, keep working with it
 
                             if ((buttonDetails[1] === "moveup") && (inferenceIndex > 0)) {
                                 // The clicked-upon element is a "Move Up" button in a row that is not at the top of the array, move it
@@ -254,14 +254,14 @@ class CrossStreamInferencesFormset extends Component {
         }
     }
 
-    // This mthod attemts to find the array index of the element in this.inferences that contains the CrossStreamInferencRow element
+    // This method attemts to find the array index of the element in this.inferences that contains the CrossStreamInferenceRow element
     // whose index is the passed-in argument value
-    // The this.inference array indices and the CrossStreamInferenceRow elements' index values are initially the same; but as rows get
+    // The this.inferences array indices and the CrossStreamInferenceRow elements' index values are initially the same; but as rows get
     // moved up and down, that changes -- making this method necessary
     findInferenceIndex(index) {
         let returnValue = -1;
 
-        if (typeof(index) == "number") {
+        if (typeof(index) === "number") {
             // The index argument is a number
 
             index = Math.floor(index);
@@ -275,7 +275,7 @@ class CrossStreamInferencesFormset extends Component {
                 let iTo = this.inferences.length;
 
                 // Iterate through this.inferences until we either reach the end or find the element that contains the formset row being sought
-                while ((returnValue == -1) && (i < iTo)) {
+                while ((returnValue === -1) && (i < iTo)) {
                     if (this.inferences[i].row.props.index === index) {
                         // The desired formset row was found, save i as returnValue
                         returnValue = i;
@@ -318,7 +318,7 @@ class CrossStreamInferencesFormset extends Component {
 // This Component class is used to manage a single Cross-Stream Inference's row in the formset
 class CrossStreamInferenceRow extends Component {
     constructor(props) {
-        // Frist, call the super-class's constructor
+        // First, call the super-class's constructor
         super(props);
     }
 

@@ -12,6 +12,7 @@ import {
 class EvidenceProfileStream {
     // This defines the object attributes' names (key) and data types (value)
     objectAttributes = {
+        pk: "number",
         stream_type: "number",
         stream_title: "string",
         confidence_judgement: "object",
@@ -22,7 +23,7 @@ class EvidenceProfileStream {
     constructor(object) {
         this.object = {};
 
-        if (typeof(object) == "object") {
+        if (typeof(object) === "object") {
             // The incoming object argument is indeed an object, look for the expected object fields and use them to populate this.object
 
             // Iterate through the desired set of object attributes and look for each one in the incoming argument
@@ -31,7 +32,6 @@ class EvidenceProfileStream {
                 // attribute; otherwise, set the attribute to null
                 this.object[attributeName] = ((attributeName in object) && (typeof(object[attributeName]) === this.objectAttributes[attributeName])) ? this.object[attributeName] = object[attributeName] : null;
             }
-
          }
          else {
             // The incoming object argument is not an object, initialize this EvidenceProfileStream object to an empty stream

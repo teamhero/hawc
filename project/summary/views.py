@@ -1,12 +1,16 @@
 import json
+import pytz
+from datetime import datetime
 
 from django.core import serializers
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.views.generic import TemplateView, FormView
 
 from assessment.models import Assessment
+from assessment.serializers import ConfidenceFactorSerializer, ConfidenceJudgementSerializer
 from riskofbias.models import RiskOfBiasMetric
 from utils.helper import HAWCDjangoJSONEncoder
 from utils.views import BaseList, BaseCreate, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin
@@ -400,6 +404,7 @@ class EvidenceProfileNew(BaseCreate):
     # This method returns the URL that the requestor will be re-directed to after this request is handled
     def get_success_url(self):
         # Get the value for this Evidence Profile's visualization URL and return it
+        # Currently returning the "Update" URL, change this later when desired
         return self.object.get_update_url()
 
     def get_context_data(self, **kwargs):
@@ -413,14 +418,29 @@ class EvidenceProfileNew(BaseCreate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-        # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
-        # form fields
-        form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
+        # Set the form instance's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
+        # related form fields
+        form.instance.cross_stream_conclusions = form.cleaned_data.get("cross_stream_conclusions")
 
         # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
         form.instance.hawcuser = self.request.user
 
         return super().form_valid(form)
+
+    # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
+    # of all of the child Streams and grandchild Scenarios
+    def post_object_save(self, form):
+        # Iterate through the streams from the cleaned data and use each one to create a new EvidenceProfileStream object
+        for stream in form.cleaned_data.get("streams"):
+            models.EvidenceProfileStream(
+                evidenceprofile = self.object,
+                hawcuser = self.request.user,
+                stream_type = stream["stream_type"],
+                stream_title = stream["stream_title"],
+                order = stream["order"],
+                confidence_judgement = json.dumps(stream["confidence_judgement"]),
+                outcomes = json.dumps(stream["outcomes"]),
+            ).save()
 
 
 class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
@@ -445,10 +465,35 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-        # Set the object model's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
-        # form fields
-        form.instance.cross_stream_conclusions = json.dumps(form.cleaned_data.get("cross_stream_conclusions"))
+        # Set the form instance's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
+        # related form fields
+        form.instance.cross_stream_conclusions = form.cleaned_data.get("cross_stream_conclusions")
+
         return super().form_valid(form)
+
+    # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
+    # of all of the child Streams and grandchild Scenarios
+    def post_object_save(self, form):
+        # Build a list of primary keys for each existing stream that is not part of the submitted data -- these streams will be deleted
+        streamsToDelete = [currentStream["pk"] for currentStream in self.object.streams.all().values("pk") if (currentStream["pk"] not in [newStream["pk"] for newStream in form.cleaned_data.get("streams")])]
+
+        # Iterate through the streams from the cleaned data and use each one to create a new EvidenceProfileStream object
+        for stream in form.cleaned_data.get("streams"):
+            models.EvidenceProfileStream(
+                pk = (stream["pk"] if (stream["pk"] > 0) else None),
+                evidenceprofile = self.object,
+                hawcuser = self.request.user,
+                stream_type = stream["stream_type"],
+                stream_title = stream["stream_title"],
+                order = stream["order"],
+                confidence_judgement = json.dumps(stream["confidence_judgement"]),
+                outcomes = json.dumps(stream["outcomes"]),
+                created = pytz.timezone(timezone.get_default_timezone_name()).localize(datetime.now()),
+            ).save()
+
+        # Iterate through the list of old streams that need to be deleted and delete them
+        for pk in streamsToDelete:
+            models.EvidenceProfileStream(pk=pk).delete()
 
 
 class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
@@ -460,22 +505,23 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
 def getEvidenceProfileContextData(object):
     returnValue = {}
 
+    # Get serializer objects that will be used to generate serialized objects from lookup tables
+    confidenceFactorSerializer = ConfidenceFactorSerializer()
+    confidenceJudgementSerializer = ConfidenceJudgementSerializer()
+
+    # Get a JSON-friendly version of the available stream type options
     returnValue["stream_types"] = models.get_serialized_stream_types()
 
-    # Retrieve only the "fields" attribute from each of the factors that increase confidence
-    increase_confidence_factors = json.loads(serializers.serialize("json", ConfidenceFactor.objects.filter(increases_confidence=True).order_by("name")))
-    increase_confidence_factors[:] = [increase_confidence_factor["fields"] for increase_confidence_factor in increase_confidence_factors if (increase_confidence_factor)]
-    returnValue["increase_confidence_factors"] = json.dumps(increase_confidence_factors)
+    # Retrieve only the values from each of the factors that INCREASE confidence in the lookup table and serialize them into a
+    # JSON-formatted string
+    returnValue["increase_confidence_factors"] = json.dumps([confidenceFactorSerializer.to_representation(confidenceFactor) for confidenceFactor in ConfidenceFactor.objects.filter(increases_confidence=True).order_by("name")])
 
-    # Retrieve only the "fields" attribute from each of the factors that decrease confidence
-    decrease_confidence_factors = json.loads(serializers.serialize("json", ConfidenceFactor.objects.filter(decreases_confidence=True).order_by("name")))
-    decrease_confidence_factors[:] = [decrease_confidence_factor["fields"] for decrease_confidence_factor in decrease_confidence_factors if (decrease_confidence_factor)]
-    returnValue["decrease_confidence_factors"] = json.dumps(decrease_confidence_factors)
+    # Retrieve only the values from each of the factors that DECREASE confidence in the lookup table and serialize them into a
+    # JSON-formatted string
+    returnValue["decrease_confidence_factors"] = json.dumps([confidenceFactorSerializer.to_representation(confidenceFactor) for confidenceFactor in ConfidenceFactor.objects.filter(decreases_confidence=True).order_by("name")])
 
-    # Retrieve only the "fields" attribute from each of the confidence judgement options
-    confidence_judgements = json.loads(serializers.serialize("json", ConfidenceJudgement.objects.all().order_by("value")))
-    confidence_judgements[:] = [confidence_judgement["fields"] for confidence_judgement in confidence_judgements if (confidence_judgement)]
-    returnValue["confidence_judgements"] = json.dumps(confidence_judgements)
+    # Retrieve all the values from the confidence judgements lookup table and serialize them into a JSON-formatted string
+    returnValue["confidence_judgements"] = json.dumps([confidenceJudgementSerializer.to_representation(confidenceJudgement) for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value")])
 
     # Initialize the evidenceProfile object to an empty dictionary
     evidenceProfile = {}
@@ -484,7 +530,12 @@ def getEvidenceProfileContextData(object):
         # The incoming object is not empty, create a JSON-friendly version of it, and include an additional attribute for the
         # profile's existing child streams
         evidenceProfile = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
+
+        # Add a serialized version of the Evidence Profile object's streams to evidenceProfile, and copy the stream's primary key over into its
+        # "fields" dictionary for retention in a later step
         evidenceProfile["streams"] = json.loads(serializers.serialize("json", object.streams.all().order_by("order")))
+        for stream in evidenceProfile["streams"]:
+            stream["fields"]["pk"] = stream["pk"]
     else:
         # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, and include an additional
         # attibute for the profile's child streams
