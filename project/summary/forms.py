@@ -861,6 +861,15 @@ class EvidenceProfileForm(forms.ModelForm):
         # First, use the super-class's clean() method as a starting point
         cleaned_data = super().clean()
 
+        # These objects will be used frequently, so go ahead and create:
+        #   * A list of valid confidence judgement values for validating submitted form data
+        #   * A dictionary mapping of confidence judgement values to names for use when building the final objects that will be saved as part of cleaned_data
+        confidence_judgement_value_list = []
+        confidence_judgement_dict = {}
+        for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value"):
+            confidence_judgement_value_list.append(confidenceJudgement.value)
+            confidence_judgement_dict[confidenceJudgement.value] = confidenceJudgement.name
+
         # Initialize a dict to hold objects made up of related sets of form data, along with information about their form field naming conventions
         # This object will be used as a temporary store to be built up while iterating over the incoming form key/value pairs; and then ordering of
         # the objects will be done after they have all been built
@@ -911,7 +920,7 @@ class EvidenceProfileForm(forms.ModelForm):
                     "confidence_judgement_score": {
                         "required": True,
                         "type": "integer",
-                        "valid_options": [confidence_judgement.value for confidence_judgement in ConfidenceJudgement.objects.all().order_by("value")],
+                        "valid_options": confidence_judgement_value_list,
                         "can_be_empty": False,
                     },
                     "confidence_judgement_explanation": {
@@ -939,7 +948,7 @@ class EvidenceProfileForm(forms.ModelForm):
                     "score": {
                         "required": True,
                         "type": "integer",
-                        "valid_options": [confidence_judgement.value for confidence_judgement in ConfidenceJudgement.objects.all().order_by("value")],
+                        "valid_options": confidence_judgement_value_list,
                         "can_be_empty": False,
                     },
                     "explanation": {
@@ -1188,7 +1197,7 @@ class EvidenceProfileForm(forms.ModelForm):
                 "confidence_judgement": {
                     "title": stream["confidence_judgement_title"],
                     "score": stream["confidence_judgement_score"],
-                    "name": "",
+                    "name": confidence_judgement_dict[stream["confidence_judgement_score"]],
                     "explanation": stream["confidence_judgement_explanation"]
                 },
                 "outcomes": [{key:outcome[key] for key in outcome if (key != "order")} for outcome in stream["outcomes"]],
@@ -1196,6 +1205,11 @@ class EvidenceProfileForm(forms.ModelForm):
             for index, stream
             in enumerate(unordered_types["evidence_profile_streams"]["desired_order"])
         ]
+
+        # Now iterate through each outcome within each evidence profile stream and add the appropriate name attribute to it
+        for stream in unordered_types["evidence_profile_streams"]["desired_order"]:
+            for outcome in stream["outcomes"]:
+                outcome["name"] = confidence_judgement_dict[outcome["score"]]
 
         # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
         cleaned_data["streams"] = unordered_types["evidence_profile_streams"]["desired_order"]
