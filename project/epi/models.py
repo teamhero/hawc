@@ -143,6 +143,14 @@ class StudyPopulationCriteria(models.Model):
 class StudyPopulation(models.Model):
     objects = managers.StudyPopulationManager()
 
+    TEXT_CLEANUP_FIELDS = (
+        'name',
+        'age_profile',
+        'source',
+        'region',
+        'comments',
+    )
+
     DESIGN_CHOICES = (
         ('CO', 'Cohort'),
         ('CX', 'Cohort (Retrospective)'),
