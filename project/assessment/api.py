@@ -277,6 +277,19 @@ class AssessmentEndpointList(AssessmentViewset):
             "url": "{}{}".format(app_url, 'study/'),
             })
 
+        
+        # reference
+        count = apps.get_model('lit', 'Reference')\
+            .objects\
+            .get_qs(instance.id)\
+            .count()
+        instance.items.append({
+            "count": count,
+            "title": "references",
+            "type": "reference",
+            "url": "{}{}".format(app_url, 'reference/'),
+            })
+
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 

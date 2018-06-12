@@ -57,6 +57,10 @@
           "url": "{% url 'study:api:study-cleanup-list' %}",
           "title": "Study"
         },
+        "reference": {
+          "url": "{% url 'lit:api:reference-cleanup-list' %}",
+          "title": "Reference"
+        },
         "csrf": "{{ csrf_token }}",
         "host": "//{{request.get_host}}"
     }

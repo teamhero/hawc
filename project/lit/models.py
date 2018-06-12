@@ -579,6 +579,10 @@ class ReferenceTags(ItemBase):
 class Reference(models.Model):
     objects = managers.ReferenceManager()
 
+    TEXT_CLEANUP_FIELDS = (
+        'full_text_url',
+    )
+
     assessment = models.ForeignKey(
         'assessment.Assessment',
         related_name='references')
