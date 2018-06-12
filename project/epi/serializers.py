@@ -227,4 +227,12 @@ class StudyPopulationCleanupFieldsSerializer(DynamicFieldsMixin, serializers.Mod
         cleanup_fields = model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
 
+
+class ExposureCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Exposure
+        cleanup_fields = model.TEXT_CLEANUP_FIELDS
+        fields = cleanup_fields + ('id', )
+
 SerializerHelper.add_serializer(models.Outcome, OutcomeSerializer)

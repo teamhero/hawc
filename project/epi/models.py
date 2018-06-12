@@ -717,6 +717,11 @@ class Exposure(models.Model):
         (3, "SEM"),
         (4, "GSD"),
         (5, "other"))
+    
+    TEXT_CLEANUP_FIELDS = (
+        'metric_description',
+        'analytical_method',
+    )
 
     study_population = models.ForeignKey(
         StudyPopulation,

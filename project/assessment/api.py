@@ -224,6 +224,17 @@ class AssessmentEndpointList(AssessmentViewset):
             'url': "{}{}".format(app_url, 'study-populations/'),
         })
 
+        count = apps.get_model('epi', 'Exposure')\
+            .objects\
+            .get_qs(instance.id)\
+            .count()
+        instance.items.append({
+            "count": count,
+            "title": "epi exposures",
+            'type': 'exposures',
+            'url': "{}{}".format(app_url, 'exposures/'),
+        })
+
         # in vitro
         instance.items.append({
             "count": instance.ivendpoint_count,
