@@ -162,4 +162,12 @@ class EndpointCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSeria
         fields = cleanup_fields + ('id', )
 
 
+class DosingRegimeCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.DosingRegime
+        cleanup_fields = model.TEXT_CLEANUP_FIELDS
+        fields = cleanup_fields + ('id', )
+
+
 SerializerHelper.add_serializer(models.Endpoint, EndpointSerializer)

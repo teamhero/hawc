@@ -465,6 +465,10 @@ class DosingRegime(models.Model):
         ("B" , "Untreated + Vehicle-treated"),
         ("Y" , "Yes (untreated and/or vehicle)"),
         ("N" , "No"))
+    
+    TEXT_CLEANUP_FIELDS = (
+        'description',
+    )
 
     dosed_animals = models.OneToOneField(
         AnimalGroup,

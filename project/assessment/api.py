@@ -205,6 +205,17 @@ class AssessmentEndpointList(AssessmentViewset):
             'url': "{}{}".format(app_url, 'animal-groups/'),
         })
 
+        count = apps.get_model('animal', 'DosingRegime')\
+            .objects\
+            .get_qs(instance.id)\
+            .count()
+        instance.items.append({
+            "count": count,
+            "title": "animal bioassay dosing regimes",
+            'type': 'dosing-regime',
+            'url': "{}{}".format(app_url, 'dosing-regime/'),
+        })
+
         # epi
         instance.items.append({
             "count": instance.outcome_count,
