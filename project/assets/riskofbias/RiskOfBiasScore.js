@@ -7,6 +7,61 @@ class RiskOfBiasScore {
     constructor(study, data){
         this.study = study;
         this.data = data;
+        if (data.metric.answers.length > 0) {
+            var values = [];
+            var choices = {};
+            var symbols = {};
+            var shades = {};
+
+            for (var i=0; i < data.metric.answers.length; i++) {
+                var choice = data.metric.answers[i].choice;
+                var symbol = data.metric.answers[i].symbol;
+                var shade = data.metric.answers[i].shade;
+                var answerScore = data.metric.answers[i].answer_score;
+                
+                values.push(answerScore);
+                choices[answerScore] = choice;
+                symbols[answerScore] = symbol;
+                shades[answerScore] = shade;
+            }
+            
+            _.extend(RiskOfBiasScore, {
+                score_values: values,
+                score_text: symbols,
+                score_shades: shades,
+                score_text_description: choices,
+            });
+        }
+        else {
+            _.extend(RiskOfBiasScore, {
+                score_values: [0, 1, 2, 10, 3, 4],
+                score_text: {
+                    0: 'N/A',
+                    1: '--',
+                    2: '-',
+                    10: 'NR',
+                    3: '+',
+                    4: '++',
+                },
+                score_shades: {
+                    0: '#E8E8E8',
+                    1: '#CC3333',
+                    2: '#FFCC00',
+                    10: '#FFCC00',
+                    3: '#6FFF00',
+                    4: '#00CC00',
+                },
+                score_text_description: {
+                    0: 'Not applicable',
+                    1: 'Critically deficient',
+                    2: 'Poor',
+                    10: 'Not reported',
+                    3: 'Adequate',
+                    4: 'Good',
+                },
+                collapsedNR: 'Probably high risk of bias/not reported',
+            });
+        }
         this.data.metric.created = new Date(this.data.metric.created);
         this.data.metric.last_updated = new Date(this.data.metric.last_updated);
     }
@@ -40,7 +95,7 @@ class RiskOfBiasScore {
 
 }
 
-_.extend(RiskOfBiasScore, {
+/*_.extend(RiskOfBiasScore, {
     score_values: [0, 1, 2, 10, 3, 4],
     score_text: {
         0: 'N/A',
@@ -67,6 +122,6 @@ _.extend(RiskOfBiasScore, {
         4: 'Good',
     },
     collapsedNR: 'Probably high risk of bias/not reported',
-});
+});*/
 
 export default RiskOfBiasScore;

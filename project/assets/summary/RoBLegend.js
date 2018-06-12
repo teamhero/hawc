@@ -24,14 +24,14 @@ class RoBLegend  {
         if (!this.settings.show_na_legend){
             scores.splice(scores.indexOf(0), 1);
         }
-        if (!this.settings.show_nr_legend || collapseNR){
+        /*if (!this.settings.show_nr_legend || collapseNR){
             scores.splice(scores.indexOf(10), 1);
-        }
+        }*/
         fields = _.map(scores, function(v){
             let desc = RiskOfBiasScore.score_text_description[v];
-            if (v === 2 && collapseNR){
+            /*if (v === 2 && collapseNR){
                 desc = RiskOfBiasScore.collapsedNR;
-            }
+            }*/
             return {
                 value:          v,
                 color:          RiskOfBiasScore.score_shades[v],
