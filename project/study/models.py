@@ -94,7 +94,7 @@ class Study(Reference):
         help_text="Details on correspondence between data-extractor and author, if needed.")
     published = models.BooleanField(
         default=False,
-        help_text="If True, this study, risk of bias, and extraction details "
+        help_text="If True, this study, study evaluation, and extraction details "
                   "may be visible to reviewers and/or the general public "
                   "(if assessment-permissions allow this level of visibility). "
                   "Team-members and project-management can view both "
@@ -329,7 +329,7 @@ class Study(Reference):
             return self.riskofbiases.objects.none()
         except MultipleObjectsReturned:
             raise ValidationError(
-                'Multiple active final risk of bias reviews for "{}", '
+                'Multiple active final study evaluation reviews for "{}", '
                 'there should only be one per study.'.format(self))
 
     def get_active_robs(self, with_final=True):

@@ -19,7 +19,7 @@
             <li><a href="{% url 'study:list' assessment.pk %}">Study list</a></li>
 
             {% if assessment.enable_risk_of_bias %}
-                <li><a href="{% url 'riskofbias:arob_detail' assessment.pk %}">Risk of bias</a></li>
+                <li><a href="{% url 'riskofbias:arob_detail' assessment.pk %}">Study evaluation</a></li>
             {% endif %}
 
             <li><a href="{% url 'assessment:endpoint_list' assessment.pk %}">Endpoint list</a></li>

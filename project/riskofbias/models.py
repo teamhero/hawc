@@ -227,11 +227,11 @@ class RiskOfBias(models.Model):
         auto_now=True)
 
     class Meta:
-        verbose_name_plural = 'Risk of Biases'
+        verbose_name_plural = 'Study Evaluation'
         ordering = ('final',)
 
     def __str__(self):
-        return '{} (Risk of bias)'.format(self.study.short_citation)
+        return '{} (Study evaluation)'.format(self.study.short_citation)
 
     def get_assessment(self):
         return self.study.get_assessment()
@@ -491,10 +491,10 @@ class RiskOfBiasAssessment(models.Model):
         default=1)
     help_text = models.TextField(
         default="<p>When a study is entered into the HAWC database for use in an assessment, "
-            "risk of bias metrics can be entered for a metric of bias for each study. "
-            "Risk of Bias metrics are organized by domain. The following questions are "
+            "study evaluation metrics can be entered for a metric of bias for each study. "
+            "Study evaluation metrics are organized by domain. The following questions are "
             "required for evaluation for this assessment.</p>",
-        help_text="Detailed instructions for completing risk of bias assessments."
+        help_text="Detailed instructions for completing study evaluation assessments."
     )
 
     def get_absolute_url(self):
