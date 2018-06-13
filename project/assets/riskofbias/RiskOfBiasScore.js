@@ -32,36 +32,6 @@ class RiskOfBiasScore {
                 score_text_description: choices,
             });
         }
-        else {
-            _.extend(RiskOfBiasScore, {
-                score_values: [0, 1, 2, 10, 3, 4],
-                score_text: {
-                    0: 'N/A',
-                    1: '--',
-                    2: '-',
-                    10: 'NR',
-                    3: '+',
-                    4: '++',
-                },
-                score_shades: {
-                    0: '#E8E8E8',
-                    1: '#CC3333',
-                    2: '#FFCC00',
-                    10: '#FFCC00',
-                    3: '#6FFF00',
-                    4: '#00CC00',
-                },
-                score_text_description: {
-                    0: 'Not applicable',
-                    1: 'Critically deficient',
-                    2: 'Poor',
-                    10: 'Not reported',
-                    3: 'Adequate',
-                    4: 'Good',
-                },
-                collapsedNR: 'Probably high risk of bias/not reported',
-            });
-        }
         this.data.metric.created = new Date(this.data.metric.created);
         this.data.metric.last_updated = new Date(this.data.metric.last_updated);
     }
@@ -95,7 +65,7 @@ class RiskOfBiasScore {
 
 }
 
-/*_.extend(RiskOfBiasScore, {
+_.extend(RiskOfBiasScore, {
     score_values: [0, 1, 2, 10, 3, 4],
     score_text: {
         0: 'N/A',
@@ -122,6 +92,6 @@ class RiskOfBiasScore {
         4: 'Good',
     },
     collapsedNR: 'Probably high risk of bias/not reported',
-});*/
+});
 
 export default RiskOfBiasScore;
