@@ -30,7 +30,7 @@ class Study(Reference):
         (4, '---'),
         (0, 'Authors report they have no COI'),
         (1, 'Authors disclosed COI'),
-        (2, 'Unclear'),
+        (2, 'Not reported, but a COI is inferred based on author affiliation and/or funding source'),
         (3, 'Not reported'))
 
     TEXT_CLEANUP_FIELDS = (
@@ -66,9 +66,14 @@ class Study(Reference):
         help_text='Study contains in-vitro data')
     short_citation = models.CharField(
         max_length=256,
-        help_text="How the study should be identified (i.e. Smith et al. (2012), etc.)")
+        help_text="How the study should be identified in HAWC (last name year, HERO ID). "
+                  "This field is used to select studies for figures and endpoint filters within HAWC, "
+                  "so you may need to add distinguishing features such as chemical name. "
+                  "This field is commonly used in HAWC visualizations.")
     full_citation = models.TextField(
-        help_text="Complete study citation, in desired format.")
+        help_text="Complete study citation, in desired format. First author last name, Initial; "
+                  "Second author last name, Initial; etc. (Year). Title. Journal volume (issue): "
+                  "pages. Web link")
     coi_reported = models.PositiveSmallIntegerField(
         choices=COI_REPORTED_CHOICES,
         default=4,
@@ -77,32 +82,41 @@ class Study(Reference):
     coi_details = models.TextField(
         blank=True,
         verbose_name="COI details",
-        help_text="Details related to potential or disclosed conflict(s) of interest")
-    funding_source = models.TextField(blank=True)
+        help_text="Details related to potential or disclosed conflict(s) of interest. "
+                  "When available, cut and paste the COI declaration with quotations. "
+                  "Provide details when a COI is inferred.")
+    funding_source = models.TextField(
+        blank=True,
+        help_text="When available, cut and paste the funding source information with quotations.")
     study_identifier = models.CharField(
         max_length=128,
         blank=True,
         verbose_name="Internal study identifier",
-        help_text="Reference descriptor for assessment-tracking purposes "
-                  "(for example, \"{Author, year, #EndNoteNumber}\")")
+        help_text="HERO LitCiter reference format {First author last name, year, HERO ID} "
+                  "*This field is used for HERO reference formatting purposes to help document preparation.")
     contact_author = models.BooleanField(
         default=False,
-        help_text="Was the author contacted for clarification of methods or results?")
+        help_text="Was the author contacted for clarification of methods, results, or to request additional data?")
     ask_author = models.TextField(
         blank=True,
         verbose_name="Correspondence details",
-        help_text="Details on correspondence between data-extractor and author, if needed.")
+        help_text="Details on correspondence between data-extractor and author, if needed. "
+                  "Please include data and details of the correspondence. The files documenting "
+                  "the correspondence can also be added to HAWC as attachments and HERO as a "
+                  "new record, but first it is important to redact confidence or personal "
+                  "information (e.g., email address).")
     published = models.BooleanField(
         default=False,
-        help_text="If True, this study, study evaluation, and extraction details "
-                  "may be visible to reviewers and/or the general public "
-                  "(if assessment-permissions allow this level of visibility). "
-                  "Team-members and project-management can view both "
-                  "published and unpublished studies.")
+        help_text="If True, this study, study evaluation, and extraction details may be visible "
+                  "to reviewers and/or the public (if assessment-permissions allow this level "
+                  "of visibility). Team-members and project-management can view both published "
+                  "and unpublished studies.")
     summary = models.TextField(
         blank=True,
-        verbose_name="Summary and/or extraction comments",
-        help_text="Study summary or details on data-extraction needs.")
+        verbose_name="Extraction comments",
+        help_text="This field is often left blank, but used to add comments on data extraction, "
+                  "e.g., reference to full study reports or indicating which outcomes/endpoints "
+                  "in a study were not extracted.")
 
     COPY_NAME = "studies"
 
