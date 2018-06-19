@@ -26,6 +26,8 @@ class Experiment(models.Model):
     objects = managers.ExperimentManager()
 
     EXPERIMENT_TYPE_CHOICES = (
+        ("1r", "1-generation reproductive"),
+        ("2r", "2-generation reproductive"),
         ("Ac", "Acute (<24 hr)"),
         ("St", "Short-term (1-30 days)"),
         ("Sb", "Subchronic (30-90 days)"),
