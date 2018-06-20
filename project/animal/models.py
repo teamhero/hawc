@@ -1069,7 +1069,7 @@ class Endpoint(BaseEndpoint):
 
     def get_selected_bmd_model(self):
         try:
-            return self.bmd_model.model
+            return self.bmd_model
         except ObjectDoesNotExist:
             return None
 
