@@ -1,5 +1,4 @@
 import $ from '$';
-import d3 from 'd3';
 
 import {saveAs} from 'filesaver.js';
 import HAWCModal from 'utils/HAWCModal';
@@ -34,7 +33,7 @@ class EvidenceProfile {
             settings: "string",
             caption: "string",
             cross_stream_conclusions: "object",
-            streams: "array"
+            streams: "array",
         };
 
         if (typeof(configuration) === "object") {
