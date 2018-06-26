@@ -425,7 +425,7 @@ class EvidenceProfileNew(BaseCreate):
         # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
         form.instance.hawcuser = self.request.user
 
-        return super().form_valid(form)
+        # return super().form_valid(form)
 
     # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
     # of all of the child Streams and grandchild Scenarios
@@ -469,7 +469,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
         # related form fields
         form.instance.cross_stream_conclusions = form.cleaned_data.get("cross_stream_conclusions")
 
-        return super().form_valid(form)
+        # return super().form_valid(form)
 
     # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
     # of all of the child Streams and grandchild Scenarios
@@ -514,11 +514,11 @@ def getEvidenceProfileContextData(object):
 
     # Retrieve only the values from each of the factors that INCREASE confidence in the lookup table and serialize them into a
     # JSON-formatted string
-    returnValue["increase_confidence_factors"] = json.dumps([confidenceFactorSerializer.to_representation(confidenceFactor) for confidenceFactor in ConfidenceFactor.objects.filter(increases_confidence=True).order_by("name")])
+    returnValue["confidence_factors_increase"] = json.dumps([confidenceFactorSerializer.to_representation(confidenceFactor) for confidenceFactor in ConfidenceFactor.objects.filter(increases_confidence=True).order_by("name")])
 
     # Retrieve only the values from each of the factors that DECREASE confidence in the lookup table and serialize them into a
     # JSON-formatted string
-    returnValue["decrease_confidence_factors"] = json.dumps([confidenceFactorSerializer.to_representation(confidenceFactor) for confidenceFactor in ConfidenceFactor.objects.filter(decreases_confidence=True).order_by("name")])
+    returnValue["confidence_factors_decrease"] = json.dumps([confidenceFactorSerializer.to_representation(confidenceFactor) for confidenceFactor in ConfidenceFactor.objects.filter(decreases_confidence=True).order_by("name")])
 
     # Retrieve all the values from the confidence judgements lookup table and serialize them into a JSON-formatted string
     returnValue["confidence_judgements"] = json.dumps([confidenceJudgementSerializer.to_representation(confidenceJudgement) for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value")])
@@ -533,14 +533,29 @@ def getEvidenceProfileContextData(object):
 
         # Add a serialized version of the Evidence Profile object's streams to evidenceProfile, and copy the stream's primary key over into its
         # "fields" dictionary for retention in a later step
-        evidenceProfile["streams"] = json.loads(serializers.serialize("json", object.streams.all().order_by("order")))
+        streamObjectList = object.streams.all().order_by("order")
+        evidenceProfile["streams"] = json.loads(serializers.serialize("json", streamObjectList))
         for stream in evidenceProfile["streams"]:
             stream["fields"]["pk"] = stream["pk"]
+            stream["fields"]["scenarios"] = []
+
+        i = 0
+        iTo = len(streamObjectList)
+        maxStreamIndex = len(evidenceProfile["streams"]) - 1
+        while ((i < iTo) and (i <= maxStreamIndex)):
+            evidenceProfile["streams"][i]["fields"]["scenarios"] = json.loads(serializers.serialize("json", streamObjectList[i].scenarios.all().order_by("order")))
+
+            for scenario in evidenceProfile["streams"][i]["fields"]["scenarios"]:
+                scenario["fields"]["pk"] = scenario["pk"]
+
+            evidenceProfile["streams"][i]["fields"]["scenarios"][:] = [scenario["fields"] for scenario in evidenceProfile["streams"][i]["fields"]["scenarios"] if (scenario)]
+
+            i = i + 1
     else:
         # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, and include an additional
         # attibute for the profile's child streams
         evidenceProfile = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
-        evidenceProfile["streams"] = json.loads(serializers.serialize("json", models.EvidenceProfileStream.objects.none()))
+        evidenceProfile["streams"] = []
 
     # Any existing stream objects loaded from the database will have the actual data fields stored within a "fields" attribute; extract
     # that data from the fields attribute and retain only that portion of the original stream object
@@ -575,6 +590,35 @@ def getEvidenceProfileContextData(object):
             stream["outcomes"] = json.loads(stream["outcomes"])
         except:
             stream["outcomes"] = []
+
+        # Attempt to iterate through each scenario within this stream and de=serialize their "outcome," "studies," "confidencefactor_increase,"
+        # "confidencefactor_decrease" and "summary_of_findings" attributes
+        if ("scenarios" in stream):
+            for scenario in stream["scenarios"]:
+                try:
+                    scenario["outcome"] = json.loads(scenario["outcome"])
+                except:
+                    scenario["outcome"] = {}
+
+                try:
+                    scenario["studies"] = json.loads(scenario["studies"])
+                except:
+                    scenario["studies"] = {}
+
+                try:
+                    scenario["confidencefactors_increase"] = json.loads(scenario["confidencefactors_increase"])
+                except:
+                    scenario["confidencefactors_increase"] = []
+
+                try:
+                    scenario["confidencefactors_decrease"] = json.loads(scenario["confidencefactors_decrease"])
+                except:
+                    scenario["confidencefactors_decrease"] = []
+
+                try:
+                    scenario["summary_of_findings"] = json.loads(scenario["summary_of_findings"])
+                except:
+                    scenario["summary_of_findings"] = {}
 
     # Serialize the evnidenceProfile into a JSON-formatted string version for inclusion in the request context (the JavaScript in the
     # template will pick up all of the objects and datatypes as desired)
