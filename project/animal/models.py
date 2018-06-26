@@ -526,6 +526,10 @@ class DosingRegime(models.Model):
     def get_assessment(self):
         return self.dosed_animals.get_assessment()
 
+    @classmethod
+    def delete_caches(cls, ids):
+        SerializerHelper.delete_caches(cls, ids)
+
     @property
     def dose_groups(self):
         if not hasattr(self, '_dose_groups'):

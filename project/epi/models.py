@@ -280,6 +280,10 @@ class StudyPopulation(models.Model):
     def get_assessment(self):
         return self.study.get_assessment()
 
+    @classmethod
+    def delete_caches(cls, ids):
+        SerializerHelper.delete_caches(cls, ids)
+
     @property
     def inclusion_criteria(self):
         return self.criteria.filter(spcriteria__criteria_type="I")
@@ -861,6 +865,10 @@ class Exposure(models.Model):
 
     def get_crumbs(self):
         return get_crumbs(self, self.study_population)
+
+    @classmethod
+    def delete_caches(cls, ids):
+        SerializerHelper.delete_caches(cls, ids)
 
     @staticmethod
     def flat_complete_header_row():
