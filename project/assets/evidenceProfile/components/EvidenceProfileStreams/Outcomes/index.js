@@ -288,7 +288,7 @@ class OutcomeRow extends Component {
 
         // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
         this.plusOne = this.props.index + 1;
-        this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne;
+        this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne + "_outcome";
         this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
     }
 
