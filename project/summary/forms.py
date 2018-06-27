@@ -852,6 +852,8 @@ class EvidenceProfileForm(forms.ModelForm):
             "cross_stream_inferences": {
                 "ordering_field": "order",
                 "retain_ordering_field": False,
+                "re_match": r"^inference_(\d+)_(title|description|order)$",
+                "re_replace_with": r"\1,\2",
                 "field_validation": {
                     "title": {
                         "required": True,
@@ -864,12 +866,12 @@ class EvidenceProfileForm(forms.ModelForm):
                         "can_be_empty": True,
                     },
                 },
-                "re_match": r"^inference_(\d+)_(title|description|order)$",
-                "re_replace_with": r"\1,\2",
             },
             "evidence_profile_streams": {
                 "ordering_field": "order",
                 "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|order)$",
+                "re_replace_with": r"\1,\2",
                 "field_validation": {
                     "pk": {
                         "required": False,
@@ -904,15 +906,13 @@ class EvidenceProfileForm(forms.ModelForm):
                         "can_be_empty": True,
                     },
                 },
-                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|order)$",
-                "re_replace_with": r"\1,\2",
             },
             "stream_outcomes": {
                 "parent_object_type": "evidence_profile_streams",
                 "parent_field": "outcomes",
                 "ordering_field": "order",
                 "retain_ordering_field": False,
-                "re_match": r"^stream_(\d+)_(\d+)_(title|score|explanation|order)$",
+                "re_match": r"^stream_(\d+)_(\d+)_outcome_(title|score|explanation|order)$",
                 "re_replace_with": r"\1,\2,\3",
                 "field_validation": {
                     "title": {
@@ -930,6 +930,42 @@ class EvidenceProfileForm(forms.ModelForm):
                         "required": True,
                         "type": "string",
                         "can_be_empty": True,
+                    },
+                },
+            },
+            "stream_scenarios": {
+                "parent_object_type": "evidence_profile_streams",
+                "parent_field": "scenarios",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_scenario_(order|pk|scenario_name|outcome|summary_of_findings_score|summary_of_findings_explanation)$",
+                "re_replace_with": r"\1,\2,\3",
+                "field_validation": {
+                    "pk": {
+                        "required": False,
+                        "type": "integer",
+                        "can_be_empty": True,
+                    },
+                     "outcome": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "scenario_name": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "summary_of_findings_score": {
+                        "required": True,
+                        "type": "integer",
+                        "valid_options": confidence_judgement_value_list,
+                        "can_be_empty": False,
+                    },
+                    "summary_of_findings_explanation": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
                     },
                 },
             },
@@ -976,7 +1012,6 @@ class EvidenceProfileForm(forms.ModelForm):
                     if ((len(ut_dict["type_lineage"]) + 1) == len(fieldNameDetails)):
                         # The number of elements in the details extracted from the incoming form field's name coresonds to the object type's expected
                         # lineage, continue
-
                         # Iterate over most of fieldNameDetails and convert all but the final element to an integer
                         i = 0
                         detailsOk = True
@@ -1095,7 +1130,6 @@ class EvidenceProfileForm(forms.ModelForm):
                     # Set the new key value for the object being checked, then check to see if it exists within the expected object type
                     key = lineage_keys[i] if (key == "") else key + "_" + lineage_keys[i]
                     lineage_intact =  (key in unordered_types[ut_dict["type_lineage"][i]]["objects"])
-
                     # Increment to the next element in the list
                     i = i + 1
 
@@ -1173,9 +1207,10 @@ class EvidenceProfileForm(forms.ModelForm):
                     "title": stream["confidence_judgement_title"],
                     "score": stream["confidence_judgement_score"],
                     "name": confidence_judgement_dict[stream["confidence_judgement_score"]],
-                    "explanation": stream["confidence_judgement_explanation"]
+                    "explanation": stream["confidence_judgement_explanation"],
                 },
-                "outcomes": [{key:outcome[key] for key in outcome if (key != "order")} for outcome in stream["outcomes"]],
+                "outcomes": [{key:outcome[key] for key in outcome if (key != "order")} for outcome in stream["outcomes"]] if ("outcomes" in stream) else [],
+                "scenarios": [{key:scenario[key] if (key != "order") else (scenario[key] * 10) for key in scenario} for scenario in stream["scenarios"]] if ("scenarios" in stream) else [],
             }
             for index, stream
             in enumerate(unordered_types["evidence_profile_streams"]["desired_order"])
@@ -1185,6 +1220,31 @@ class EvidenceProfileForm(forms.ModelForm):
         for stream in unordered_types["evidence_profile_streams"]["desired_order"]:
             for outcome in stream["outcomes"]:
                 outcome["name"] = confidence_judgement_dict[outcome["score"]]
+
+        cleaned_data["scenarios"] = {}
+
+        # Now iterate through each evidence profile stream and set each scenario's full outcome attribute from its submitted value and then move the
+        # stream's set of scenarios out to cleaned_data["scenarios"]
+        # The scenarios are moved because they are child objects stored in a separate, related database table
+        for index, stream in enumerate(unordered_types["evidence_profile_streams"]["desired_order"]):
+            streamOutcomes = {}
+            for outcome in stream["outcomes"]:
+                streamOutcomes[outcome["title"] + "|" + str(outcome["score"])] = outcome
+
+            for scenario in stream["scenarios"]:
+                scenario["outcome"] = streamOutcomes[scenario["outcome"]] if (scenario["outcome"] in streamOutcomes) else scenario["outcome"]
+
+                scenario["summary_of_findings"] = {
+                    "score": scenario["summary_of_findings_score"],
+                    "name": confidence_judgement_dict[scenario["summary_of_findings_score"]],
+                    "explanation": scenario["summary_of_findings_explanation"],
+                }
+
+                del scenario["summary_of_findings_score"]
+                del scenario["summary_of_findings_explanation"]
+
+            cleaned_data["scenarios"][index] = stream["scenarios"]
+            del stream["scenarios"]
 
         # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
         cleaned_data["streams"] = unordered_types["evidence_profile_streams"]["desired_order"]
@@ -1202,5 +1262,12 @@ class EvidenceProfileForm(forms.ModelForm):
                 "confidence_judgement": confidence_judgement,
             }
         )
+
+        """
+        for stream in cleaned_data["streams"]:
+            print(stream["pk"])
+            print(stream["outcomes"])
+            print("-------------------------------------------")
+        """
 
         return cleaned_data

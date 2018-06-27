@@ -431,8 +431,9 @@ class EvidenceProfileNew(BaseCreate):
     # of all of the child Streams and grandchild Scenarios
     def post_object_save(self, form):
         # Iterate through the streams from the cleaned data and use each one to create a new EvidenceProfileStream object
-        for stream in form.cleaned_data.get("streams"):
-            models.EvidenceProfileStream(
+        scenarios = form.cleaned_data.get("scenarios")
+        for index, stream in enumerate(form.cleaned_data.get("streams")):
+            streamToSave = models.EvidenceProfileStream(
                 evidenceprofile = self.object,
                 hawcuser = self.request.user,
                 stream_type = stream["stream_type"],
@@ -440,8 +441,28 @@ class EvidenceProfileNew(BaseCreate):
                 order = stream["order"],
                 confidence_judgement = json.dumps(stream["confidence_judgement"]),
                 outcomes = json.dumps(stream["outcomes"]),
-            ).save()
+            )
 
+            streamToSave.save()
+
+            if (index in scenarios):
+                # This stream has an accompanying set of scenarios, save them to the database
+                for scenario in scenarios[index]:
+                    scenarioToSave = models.EvidenceProfileScenario(
+                        pk = (scenario["pk"] if (scenario["pk"] > 0) else None),
+                        evidenceprofilestream = streamToSave,
+                        hawcuser = self.request.user,
+                        scenario_name = scenario["scenario_name"],
+                        outcome = json.dumps(scenario["outcome"]),
+                        summary_of_findings = json.dumps(scenario["summary_of_findings"]),
+                        studies = "{}",
+                        confidencefactors_increase = "[]",
+                        confidencefactors_decrease = "[]",
+                        order = scenario["order"],
+                        created = pytz.timezone(timezone.get_default_timezone_name()).localize(datetime.now()),
+                    )
+
+                    scenarioToSave.save();
 
 class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
     success_message = 'Evidence Profile updated.'
@@ -469,7 +490,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
         # related form fields
         form.instance.cross_stream_conclusions = form.cleaned_data.get("cross_stream_conclusions")
 
-        # return super().form_valid(form)
+        return super().form_valid(form)
 
     # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
     # of all of the child Streams and grandchild Scenarios
@@ -478,22 +499,73 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
         streamsToDelete = [currentStream["pk"] for currentStream in self.object.streams.all().values("pk") if (currentStream["pk"] not in [newStream["pk"] for newStream in form.cleaned_data.get("streams")])]
 
         # Iterate through the streams from the cleaned data and use each one to create a new EvidenceProfileStream object
-        for stream in form.cleaned_data.get("streams"):
-            models.EvidenceProfileStream(
-                pk = (stream["pk"] if (stream["pk"] > 0) else None),
-                evidenceprofile = self.object,
-                hawcuser = self.request.user,
-                stream_type = stream["stream_type"],
-                stream_title = stream["stream_title"],
-                order = stream["order"],
-                confidence_judgement = json.dumps(stream["confidence_judgement"]),
-                outcomes = json.dumps(stream["outcomes"]),
-                created = pytz.timezone(timezone.get_default_timezone_name()).localize(datetime.now()),
-            ).save()
+        scenarios = form.cleaned_data.get("scenarios")
+        for index, stream in enumerate(form.cleaned_data.get("streams")):
+
+            # Either load an existing stream or create a new one
+            streamToSave = None
+            if (stream["pk"] > 0):
+                # A primary key was passed in for this stream, try to get it from the database, defaulting to a new stream object is something goes wrong
+
+                try:
+                    streamToSave = models.EvidenceProfileStream.objects.get(id=stream["pk"])
+                except:
+                    streamToSave = models.EvidenceProfileStream()
+            else:
+                # No primary key was passed in for this stream, create a new stream object
+                streamToSave = models.EvidenceProfileStream()
+
+            # Set the stream object's attributes based on the submitted form data
+            streamToSave.evidenceprofile = self.object
+            streamToSave.hawcuser = self.request.user
+            streamToSave.stream_type = stream["stream_type"]
+            streamToSave.stream_title = stream["stream_title"]
+            streamToSave.order = stream["order"]
+            streamToSave.confidence_judgement = json.dumps(stream["confidence_judgement"])
+            streamToSave.outcomes = json.dumps(stream["outcomes"])
+
+            streamToSave.save()
+
+            if (index in scenarios):
+                # Build a list of primary keys for each existing scenario that is not part of the submitted data -- thesescenarios will be deleted
+                scenariosToDelete = [currentScenario["pk"] for currentScenario in models.EvidenceProfileScenario.objects.filter(evidenceprofilestream=streamToSave).values("pk") if (currentScenario["pk"] not in [newScenario["pk"] for newScenario in [scenario for stream_pk, scenario in scenarios.items() if (stream_pk == index)][0] if newScenario["pk"] > 0])]
+
+                # This stream has an accompanying set of scenarios, iterate through them and save each one to the database
+                for scenario in scenarios[index]:
+
+                    # Either load an existing scenario or create a new one
+                    scenarioToSave = None
+                    if (scenario["pk"] > 0):
+                        # A primary key was passed in for this scenario, try to get it from the database, defaulting to a new scenario object is something goes wrong
+
+                        try:
+                            scenarioToSave = models.EvidenceProfileScenario.objects.get(id=scenario["pk"])
+                        except:
+                            scenarioToSave = models.EvidenceProfileScenario()
+                    else:
+                        # No primary key was passed in for this scenario, create a new scenario object
+                        scenarioToSave = models.EvidenceProfileScenario()
+
+                    # Set the scenario object's attributes based on the submitted form data
+                    scenarioToSave.evidenceprofilestream = streamToSave
+                    scenarioToSave.hawcuser = self.request.user
+                    scenarioToSave.scenario_name = scenario["scenario_name"]
+                    scenarioToSave.outcome = json.dumps(scenario["outcome"])
+                    scenarioToSave.summary_of_findings = json.dumps(scenario["summary_of_findings"])
+                    scenarioToSave.studies = "{}"
+                    scenarioToSave.confidencefactors_increase = "[]"
+                    scenarioToSave.confidencefactors_decrease = "[]"
+                    scenarioToSave.order = scenario["order"]
+
+                    scenarioToSave.save();
+
+                # Iterate through the list of old scenarios that need to be deleted from this stream and delete them
+                for pk in scenariosToDelete:
+                    models.EvidenceProfileScenario.objects.get(id=pk).delete()
 
         # Iterate through the list of old streams that need to be deleted and delete them
         for pk in streamsToDelete:
-            models.EvidenceProfileStream(pk=pk).delete()
+            models.EvidenceProfileStream.objects.get(id=pk).delete()
 
 
 class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):

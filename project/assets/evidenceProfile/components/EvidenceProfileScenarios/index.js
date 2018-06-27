@@ -38,7 +38,7 @@ class EvidenceProfileScenariosFormset extends Component {
 
         // Now iterate through this.streams and build each div and reference
         for (let i=0; i<=iTo; i++) {
-            let outcome = (i < iTo) ? this.scenarios[i].scenario.object.outcome.title + "|" + this.scenarios[i].scenario.object.outcome.score : "";
+            let outcome = ((i < iTo) && ("title" in this.scenarios[i].scenario.object.outcome)) ? this.scenarios[i].scenario.object.outcome.title + "|" + this.scenarios[i].scenario.object.outcome.score : "";
 
             this.scenarios[i].div = <ScenarioDiv
                 key={i}
@@ -316,7 +316,8 @@ class ScenarioDiv extends Component {
 
         super(props);
 
-        this.pk = (("pk" in props) && (props.pk !== null) && (typeof(props.pk) === "number")) ? props.pk : 0;
+        this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
+        this.scenario_name = (("scenario_name" in this.props) && (this.props.scenario_name !== null)) ? this.props.scenario_name : "";
 
         this.summary_of_findings = (
             ("summary_of_findings" in this.props)
@@ -331,7 +332,7 @@ class ScenarioDiv extends Component {
 
         // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
         this.plusOne = this.props.index + 1;
-        this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne;
+        this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne + "_scenario";
         this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
     }
 
