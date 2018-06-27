@@ -31,6 +31,7 @@ class Study(Reference):
         (0, 'Authors report they have no COI'),
         (1, 'Authors disclosed COI'),
         (2, 'Not reported, but a COI is inferred based on author affiliation and/or funding source'),
+        (5, 'Not reported, but no COI is inferred based on author affiliation and/or funding source'),
         (3, 'Not reported'))
 
     TEXT_CLEANUP_FIELDS = (
@@ -243,7 +244,7 @@ class Study(Reference):
         try:
             return final.get_final_url()
         except AttributeError:
-            raise Http404('Final RoB does not exist')
+            raise Http404('Overall study confidence does not exist')
 
     def get_assessment(self):
         return self.assessment
