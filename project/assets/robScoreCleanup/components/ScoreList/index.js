@@ -1,3 +1,5 @@
+import _ from 'underscore';
+
 import React, { Component, PropTypes } from 'react';
 
 import CheckboxScoreDisplay from 'robScoreCleanup/components/CheckboxScoreDisplay';
