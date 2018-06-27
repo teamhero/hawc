@@ -72,7 +72,7 @@ class MetaResultFlatDataPivot(FlatFileExporter):
             'upper CI',
             'CI units',
             'heterogeneity',
-            'Final ROB'			
+            'Overall study confidence'			
         ]
 
     def _get_data_rows(self):

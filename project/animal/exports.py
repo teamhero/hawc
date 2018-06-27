@@ -217,7 +217,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'percent affected',
             'percent lower ci',
             'percent upper ci',
-			'Final ROB'
+			'Overall study confidence'
         ]
 
     def _get_data_rows(self):
@@ -384,7 +384,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
         rng = range(1, num_doses + 1)
         header.extend(['Dose {0}'.format(i) for i in rng])
         header.extend(['Significant {0}'.format(i) for i in rng])
-        header.append('Final ROB');
+        header.append('Overall study confidence');
 
         # distinct applied last so that queryset can add annotations above
         # in self.queryset.model.max_dose_count

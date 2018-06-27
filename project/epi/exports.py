@@ -116,7 +116,7 @@ class OutcomeDataPivot(FlatFileExporter):
             'percent control mean',
             'percent control low',
             'percent control high',
-            'Final ROB'
+            'Overall study confidence'
        ]
 
     def _get_data_rows(self):

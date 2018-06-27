@@ -67,7 +67,7 @@ class DataPivotEndpoint(FlatFileExporter):
             'minimum dose',
             'maximum dose',
             'number of doses',
-            'Final ROB'
+            'Overall study confidence'
         ]
 
         num_cats = 0
