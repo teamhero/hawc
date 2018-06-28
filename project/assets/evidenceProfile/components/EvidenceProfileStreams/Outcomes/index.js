@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 
 import "./index.css";
 
+import {updateOutcomesOptionSet} from "../../../Library"
+
 // This Component object is the container for this entire Outcomes formset
 class OutcomesFormset extends Component {
     outcomes = [];
@@ -12,7 +14,7 @@ class OutcomesFormset extends Component {
        // First, call the super-class's constructor
         super(props);
 
-        // Set seme variables that will be used within this Component
+        // Set some variables that will be used within this Component
         this.addButtonId = props.config.addButtonIdPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
         this.tableId = props.config.tableIdPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
         this.outcomeIdPrefix = props.config.outcomeIdPrefixPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
@@ -46,7 +48,7 @@ class OutcomesFormset extends Component {
                     }
                 }
                 index={i}
-                maxIndex={(iTo - 1)}
+                maxIndex={iTo}
                 order={(i + 1)}
                 streamIndex={this.props.streamIndex}
                 title={this.outcomes[i].outcome.title}
@@ -87,13 +89,6 @@ class OutcomesFormset extends Component {
                 <button id={this.addButtonId} className="btn btn-primary pull-right" type="button" onClick={this.handleButtonClick}>New Outcome</button>
                 <br className="outcomesClearBoth" />
                 <table id={this.tableId} className="outcomesTable">
-                    <thead>
-                        <tr>
-                            <th className="outcomesHeaderCell" style={columnStyles[0]}>Title</th>
-                            <th className="outcomesHeaderCell" style={columnStyles[1]}>Description</th>
-                            <th className="outcomesHeaderCell" style={columnStyles[2]}></th>
-                        </tr>
-                    </thead>
                     <tbody>
                         {this.state.rows}
                     </tbody>
@@ -163,7 +158,7 @@ class OutcomesFormset extends Component {
                 let countOutcomes = this.outcomes.length;
                 let buttonDetails = event.target.id.replace(this.props.config.buttonSetRegEx, "$1,$2,$3").split(",");
                 if ((buttonDetails.length == 3) && (buttonDetails[0] !== "") && (buttonDetails[1] !== "") && (buttonDetails[2] !== "")) {
-                    // Three non-empty details were extracted from the clicked-up element's ID, continue
+                    // Three non-empty details were extracted from the clicked-upon element's ID, continue
 
                     buttonDetails[0] = parseInt(buttonDetails[0]);
                     buttonDetails[1] = parseInt(buttonDetails[1]);
@@ -174,10 +169,9 @@ class OutcomesFormset extends Component {
                         if (outcomeIndex > -1) {
                             // The row was found within this.outcomes, keep working with it
 
-
                             buttonDetails[2] = buttonDetails[2].toLowerCase();
                             if ((buttonDetails[2] === "moveup") && (this.props.streamIndex > 0)) {
-                                // The user clicked on the "Move Up" button and the stream is not at the top of the list, move it up in the list
+                                // The user clicked on the "Move Up" button and the outcome is not at the top of the list, move it up in the list
 
                                 let temp = this.outcomes[outcomeIndex];
                                 this.outcomes[outcomeIndex] = this.outcomes[outcomeIndex - 1];
@@ -190,7 +184,7 @@ class OutcomesFormset extends Component {
                                 );
                             }
                             else if ((buttonDetails[2] === "movedown") && (outcomeIndex < (this.outcomes.length - 1))) {
-                                // The user clicked on the "Move Down" button and the stream is not at the bottom of the list, move it down
+                                // The user clicked on the "Move Down" button and the outcome is not at the bottom of the list, move it down
                                 // in the list
 
                                 let temp = this.outcomes[outcomeIndex];
@@ -220,8 +214,8 @@ class OutcomesFormset extends Component {
         }
     }
 
-    // After this Component has been updated (i.e. a <tr> added, removed or moved up/down), this method runs to re-color the rows set
-    // and button visibility
+    // After this Component has been updated (i.e. a <tr> added, removed or moved up/down), this method runs to re-color the rows and set
+    // button visibility
     componentDidUpdate() {
         let iTo = this.outcomes.length;
         let iMax = iTo - 1;
@@ -244,9 +238,12 @@ class OutcomesFormset extends Component {
                 }
             );
         }
+
+        // Update the set of outcom <option>s available with this parent stream
+        updateOutcomesOptionSet(this.props.streamIndex);
     }
 
-    // This method attemts to find the array index of the element in this.outcomes that contains the OutcomeRow element
+    // This method attempts to find the array index of the element in this.outcomes that contains the OutcomeRow element
     // whose index is the passed-in argument value
     // The this.outcomes array indices and the OutcomeReference elements' index values are initially the same; but as rows get
     // moved up and down, that changes -- making this method necessary
@@ -291,7 +288,7 @@ class OutcomeRow extends Component {
 
         // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
         this.plusOne = this.props.index + 1;
-        this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne;
+        this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne + "_outcome";
         this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
     }
 
@@ -304,6 +301,7 @@ class OutcomeRow extends Component {
                     }
                 }
                 id={this.props.idPrefix + "_" + this.plusOne}
+                className="outcomesBodyRow"
                 style={
                     {
                         backgroundColor: ((this.props.index % 2) === 1) ? "#EEEEEE" : "#FFFFFF",
@@ -331,6 +329,7 @@ class OutcomeRow extends Component {
                             }
                             id={this.fieldPrefix + "_title"}
                             value={this.props.title}
+                            streamIndex={this.props.streamIndex}
                         />
                     </div>
 
@@ -345,6 +344,7 @@ class OutcomeRow extends Component {
                             id={this.fieldPrefix + "_score"}
                             value={this.props.score}
                             optionSet={this.props.confidenceJudgements}
+                            streamIndex={this.props.streamIndex}
                         />
                     </div>
                 </td>
@@ -450,6 +450,7 @@ class InputOrder extends Component {
         return (
             <input
                 id={this.props.id}
+                className="outcomesInputOrder"
                 type="hidden"
                 name={this.props.id}
                 value={this.state.value}
@@ -479,6 +480,9 @@ class InputTitle extends Component {
                 value: event.target.value
             }
         );
+
+        // Update the set of outcom <option>s available with this parent stream
+        updateOutcomesOptionSet(this.props.streamIndex);
     }
 
     // This method generates the HTML code for this Component
@@ -486,7 +490,7 @@ class InputTitle extends Component {
         return (
             <input
                 id={this.props.id}
-                className="span12 textinput textInput"
+                className="span12 textinput textInput outcomesInputTitle"
                 type="text"
                 maxLength="50"
                 required="required"
@@ -532,6 +536,9 @@ class SelectScore extends Component {
                 value: event.target.value
             }
         );
+
+        // Update the set of outcom <option>s available with this parent stream
+        updateOutcomesOptionSet(this.props.streamIndex);
     }
 
     // The method generates this <select> tag's HTML code for this Component
@@ -539,6 +546,7 @@ class SelectScore extends Component {
         return (
             <select
                 id={this.props.id}
+                className="outcomesSelectScore"
                 name={this.props.id}
                 required={"required"}
                 value={this.state.value}
@@ -593,7 +601,7 @@ class TextAreaExplanation extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the
 // Outomes within an individual Evidence Profile Stream
-export function renderOutcomesFormset(outcomes, divId, config, confidenceJudgements) {
+export function renderOutcomesFormset(outcomes, divId, config, confidenceJudgements, scenariosFormsetReference) {
     // First, look for the <div> element in the Evidence Profile Stream that will hold the Outcomes -- this formset will placed be within that element
     if ((divId !== null) && (divId !== "")) {
         // divId is not null and is not an empty string, continue checking it
@@ -612,6 +620,7 @@ export function renderOutcomesFormset(outcomes, divId, config, confidenceJudgeme
                         config={config}
                         streamIndex={streamIndex}
                         confidenceJudgements={confidenceJudgements}
+                        scenariosFormsetReference={scenariosFormsetReference}
                     />,
                     outcomesFormsetDiv
                 );

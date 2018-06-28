@@ -1,3 +1,6 @@
+import React, { Component, PropTypes } from 'react';
+import ReactDOM from 'react-dom';
+
 import $ from '$';
 import d3 from 'd3';
 
@@ -64,11 +67,11 @@ class Library {
     		// The incoming confidence_factors argument is of the expected type, iterate through its elements to build returnValue
     		for (var i=0; i<confidence_factors.length; i++) {
     			returnValue.factors[i] = {
-    				"value": confidence_factors[i].pk
-    				,"name": confidence_factors[i].fields.name
+    				"value": confidence_factors[i].id
+    				,"name": confidence_factors[i].name
     			};
 
-    			returnValue.values[i] = confidence_factors[i].fields.name;
+    			returnValue.values[i] = confidence_factors[i].name;
     		}
     	}
 
@@ -93,6 +96,87 @@ class Library {
                     (position.toLowerCase() !== "before") ? "afterend" : "beforebegin",
                     '<hr style="margin-top:32px; border-width:1px;" />'
                 );
+            }
+        }
+    }
+}
+
+// This function attempts to update the Outcome <option>s in an Evidence Profile Stream's child Evidence Profile Scenario child objects
+export function updateOutcomesOptionSet(streamIndex) {
+    if ((typeof(streamIndex) === "number") && (streamIndex >= 1)) {
+        // streamIndex is syntactically valid, look for the DOM element with the expected ID
+
+        let outcomesFormsetId = "table_outcomes_" + Math.floor(streamIndex);
+        let outcomesFormset = document.getElementById(outcomesFormsetId);
+        let scenariosFormsetId = "div_scenarios_" + Math.floor(streamIndex);
+        let scenariosFormset = document.getElementById(scenariosFormsetId);
+        if ((outcomesFormset !== null) && (scenariosFormset !== null)) {
+            // The expected DOM elements were found, continue
+
+            // First, look for the outcome table body rows and iterate over them
+            let optionSet = '<option value="">Select Score</option>';
+            /*
+            let optionSet = [
+                <option key={0} value={""}>Select Score</option>
+            ];
+            */
+
+            let outcomes = outcomesFormset.getElementsByClassName("outcomesBodyRow");
+            let iTo = outcomes.length;
+            for (let i=0; i<iTo; i++) {
+                let orderFields = outcomes[i].getElementsByClassName("outcomesInputOrder");
+                let titleFields = outcomes[i].getElementsByClassName("outcomesInputTitle");
+                let scoreFields = outcomes[i].getElementsByClassName("outcomesSelectScore");
+
+                if ((orderFields.length > 0) && (titleFields.length > 0) && (scoreFields.length > 0)) {
+                    // This row includes the expected form fields, use their values to build the set of options
+
+                    let orderValue = orderFields[0].value;
+                    let titleValue = titleFields[0].value;
+                    let scoreValue = scoreFields[0].value;
+
+                    orderValue = (!isNaN(orderValue)) ? Math.floor(orderValue * 1) : 0;
+                    if ((orderValue > 0) && (titleValue !== "") && (scoreValue !== "")) {
+                        // This row's order field has a syntactically valid value
+
+                        // Iterate over the outcome score's <option>s to find the one whoe name corresponds to scoreValue
+                        let scoreName = "";
+                        let scoreNames = scoreFields[0].getElementsByTagName("option");
+                        let j = 0;
+                        let jTo = scoreNames.length;
+                        while ((scoreName === "") && (j < jTo)) {
+                            if ((scoreNames[j].value !== "") && (scoreNames[j].value === scoreValue)) {
+                                // This score name's corresponding value is not empty AND matches the selected value from the same <select> element, save the
+                                // name to scoreName
+                                scoreName = scoreNames[j].innerHTML;
+                            }
+
+                            j++;
+                        }
+
+                        if (scoreName !== "") {
+                            // The score's name was found push a corresponding <option> onto optionSet
+                            /*
+                            optionSet.push(<option key={optionSet.length} value={titleValue + "|" + scoreValue}>{"title: " + titleValue + ", score: " + scoreName}</option>);
+                            */
+                            optionSet = optionSet + '<option value="' + titleValue + "|" + scoreValue + '">title: ' + titleValue + ', score: ' + scoreName + '</option>';
+                        }
+                    }
+                }
+            }
+
+            // optionSet has been built, update the outcome <select> in each scenario
+            let scenarios = scenariosFormset.getElementsByClassName("scenarioDiv");
+            iTo = scenarios.length;
+            for (let i=0; i<iTo; i++) {
+                let outcomeField = scenarios[i].getElementsByClassName("scenarioOutcome");
+                if (outcomeField.length > 0) {
+                    // This scenario <div> includes the desired <select> field, attempt to change its optionSet
+
+                    let temp = outcomeField[0].value;
+                    outcomeField[0].innerHTML = optionSet;
+                    outcomeField[0].value = temp;
+                }
             }
         }
     }

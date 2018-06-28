@@ -1,8 +1,10 @@
 import $ from '$';
-import d3 from 'd3';
 
 import {saveAs} from 'filesaver.js';
 import HAWCModal from 'utils/HAWCModal';
+
+import Library from "./Library";
+import EvidenceProfileScenario from "./EvidenceProfileScenario";
 
 import {
     NULL_CASE,
@@ -16,12 +18,14 @@ class EvidenceProfileStream {
         stream_type: "number",
         stream_title: "string",
         confidence_judgement: "object",
-        outcomes: "object",
+        outcomes: "array",
     };
 
     // This constructor takes in an object and attempts to copy the desired attributes to this object's object-level "object" attribute
     constructor(object) {
-        this.object = {};
+        this.object = {
+            scenarios: [],
+        };
 
         if (typeof(object) === "object") {
             // The incoming object argument is indeed an object, look for the expected object fields and use them to populate this.object
@@ -30,7 +34,25 @@ class EvidenceProfileStream {
             for (let attributeName in this.objectAttributes) {
                 // If the object argument contains the desired attribute and it is of the desired datatype, copy it to this object's "object"
                 // attribute; otherwise, set the attribute to null
-                this.object[attributeName] = ((attributeName in object) && (typeof(object[attributeName]) === this.objectAttributes[attributeName])) ? this.object[attributeName] = object[attributeName] : null;
+                this.object[attributeName] = (
+                    (attributeName in object)
+                    && (
+                        (typeof(object[attributeName]) === this.objectAttributes[attributeName])
+                        || (
+                            (this.objectAttributes[attributeName] === "array")
+                            && (Array.isArray(object[attributeName]))
+                        )
+                    )
+                ) ? object[attributeName] : null;
+            }
+
+            // Handle any incoming child Scenario objects
+            if (("scenarios" in object) && (typeof(object.scenarios) === "object") && (Array.isArray(object.scenarios)) && (object.scenarios.length > 0)) {
+                // the incoming object argument includes an array of child scenarios, use them to create Scenario objects that are added to this Stream
+
+                for (let i=0; i<object.scenarios.length; i++) {
+                    this.object.scenarios.push(new EvidenceProfileScenario(object.scenarios[i]));
+                }
             }
          }
          else {
