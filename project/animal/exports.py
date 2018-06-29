@@ -140,6 +140,13 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             e['animal_group']['strain']
         )
 
+    @classmethod
+    def _get_observation_time_and_time_units(cls, e):
+        return '{} {}'.format(
+            e['observation_time'],
+            e['observation_time_units']
+        )
+
     def _get_header_row(self):
         # move qs.distinct() call here so we can make qs annotations.
         self.queryset = self.queryset.distinct('pk')
@@ -176,6 +183,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'diagnostic',
             'tags',
             'observation time',
+            'observation time text',
             'data type',
             'doses',
             'dose units',
@@ -257,6 +265,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
                 ser['effect_subtype'],
                 ser['diagnostic'],
                 self._get_tags(ser),
+                self._get_observation_time_and_time_units(ser),
                 ser['observation_time_text'],
                 ser['data_type_label'],
                 self._get_doses_str(doses),
@@ -338,6 +347,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
             'diagnostic',
             'tags',
             'observation time',
+            'observation time text',
             'data type',
             'doses',
             'dose units',
@@ -441,6 +451,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
                 ser['effect_subtype'],
                 ser['diagnostic'],
                 self._get_tags(ser),
+                self._get_observation_time_and_time_units(ser),
                 ser['observation_time_text'],
                 ser['data_type_label'],
                 self._get_doses_str(doses),
