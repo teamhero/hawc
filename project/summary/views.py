@@ -425,7 +425,7 @@ class EvidenceProfileNew(BaseCreate):
         # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
         form.instance.hawcuser = self.request.user
 
-        # return super().form_valid(form)
+        return super().form_valid(form)
 
     # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
     # of all of the child Streams and grandchild Scenarios
