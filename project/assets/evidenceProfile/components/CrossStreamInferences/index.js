@@ -96,6 +96,7 @@ class CrossStreamInferencesFormset extends Component {
                 buttonSetPrefix={this.props.config.buttonSetPrefix}
                 buttonSetRegEx={this.props.config.buttonSetRegEx}
                 handleButtonClick={this.handleButtonClick}
+                rowReferences={this.rowReferences}
             />;
         }
 
@@ -175,6 +176,7 @@ class CrossStreamInferencesFormset extends Component {
                     buttonSetPrefix={this.props.config.buttonSetPrefix}
                     buttonSetRegEx={this.props.config.buttonSetRegEx}
                     handleButtonClick={this.handleButtonClick}
+                    rowReferences={this.rowReferences}
                 />;
 
                 // Set this.state.rows to the new inference rows array (inclding the new inference added to the end)
@@ -404,7 +406,7 @@ class CrossStreamInferenceCaption extends Component {
                 }
             >
                 <td
-                    colSpan={3}
+                    colSpan={4}
                     className={"inferencesCaptionCell"}
                     style={columnStyles[4]}
                 >
@@ -494,6 +496,8 @@ class CrossStreamInferenceRow extends Component {
                         }
                         prefix={fieldPrefix}
                         value={this.props.title}
+                        index={this.props.index}
+                        rowReferences={this.props.rowReferences}
                     />
                 </td>
                 <td className={"inferencesBodyCell"} style={columnStyles[2]}>
@@ -622,9 +626,23 @@ class InputTitle extends Component {
     updateField(event) {
         this.setState(
             {
-                value: event.target.value
+                value: event.target.value,
             }
         );
+
+        let referenceKey = "caption_" + this.props.index;
+
+        if (
+            (typeof(this.props.rowReferences) === "object")
+            && (referenceKey in this.props.rowReferences)
+            && (typeof(this.props.rowReferences[referenceKey]) === "object")
+        ) {
+            this.props.rowReferences[referenceKey].setState(
+                {
+                    title: event.target.value,
+                }
+            );
+        }
     }
 
     // Place the desired input field on the page
