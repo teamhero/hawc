@@ -118,7 +118,7 @@ class RoBLegend  {
             .attr('x', -buff)
             .attr('y', -buff)
             .attr('height', dim.height+2*buff)
-            .attr('width', dim.width);
+            .attr('width', dim.width+8*buff);
 
         // center the legend-text
         title.attr('x', dim.width/2);
