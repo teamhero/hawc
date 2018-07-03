@@ -434,6 +434,22 @@ class D3Plot {
         this.menu_div = $('<div class="options_menu"></div>');
         this.plot_div.append(this.menu_div);
 
+        // add hide legend button to menu
+        var hide_legend = {id:'hide',
+                           cls: 'btn btn-mini pull-right',
+                           title: 'Hide legend',
+                           text: 'H',
+                           on_click(){plot._hide_plot();}};
+        this.add_menu_button(hide_legend);
+
+        // add show legend button to menu
+        var show_legend = {id:'show',
+                           cls: 'btn btn-mini pull-right',
+                           title: 'Show legend',
+                           text: 'S',
+                           on_click(){plot._show_plot;}};
+        this.add_menu_button(show_legend);
+
         // add close button to menu
         var close_button = {id:'close',
                             cls: 'btn btn-mini pull-right',
@@ -491,6 +507,17 @@ class D3Plot {
     _toggle_menu_bar(){
         $(this.menu_div).toggleClass('hidden');
         $(this.cog_button).toggleClass('hidden');
+    }
+
+    _hide_plot(){
+        //var menu = $('<div class="options_menu"></div>').clone();
+        //var container = $('<div class=dr-plot-container></div>')
+        $(this.plot_div).toggleClass('hidden');
+        //container.appendTo(menu);
+    }
+
+    _show_plot(){
+        $(this.plot_div).toggleClass('show');
     }
 
     _download_image(options){
