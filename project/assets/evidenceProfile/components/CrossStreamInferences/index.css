@@ -1,3 +1,7 @@
+.inferencesTable {
+	table-layout: fixed;
+}
+
 .inferencesClearBoth {
 	clear: both;
 }
@@ -7,7 +11,20 @@
     font-size: 0.9em;
 }
 
+.inferencesCaptionCell {
+	border: 1px solid #FFFFFF;
+	background-color: #000000;
+	color: #FFFFFF;
+	text-align: left;
+    padding: 2px 5px 2px 5px;
+}
+
 .inferencesBodyCell {
-    border: 0;
+	border: 0;
     vertical-align: top;
+    padding: 5px 5px 2px 5px;
+}
+
+.showInferenceButton {
+	margin: 0 10px 0 0;
 }

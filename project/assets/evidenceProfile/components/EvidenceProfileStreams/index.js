@@ -7,6 +7,9 @@ import "./index.css";
 import {renderOutcomesFormset} from "./Outcomes";
 import {renderEvidenceProfileScenariosFormset} from "../EvidenceProfileScenarios";
 
+let shade1 = "#EEEEEE";
+let shade2 = "#FFFFFF";
+
 // This Component object is the container for the entire Evidence Profile Stream formset
 class EvidenceProfileStreamsFormset extends Component {
     streams = [];
@@ -203,7 +206,7 @@ class EvidenceProfileStreamsFormset extends Component {
             let reference = this.streamReferences["div_" + this.streams[i].div.props.index];
 
             // Alternate the <div> color on streams
-            reference.divReference.style.backgroundColor = ((i % 2) === 0) ? "#EEEEEE" : "#FFFFFF";
+            reference.divReference.style.backgroundColor = ((i % 2) === 0) ? shade1 : shade2;
 
             // Only make the "Move Up" button visible whenever it is not in the first stream
             reference.moveUpReference.style.visibility = (i === 0) ? "hidden" : "visible";
@@ -343,7 +346,7 @@ class StreamDiv extends Component {
                 }
                 id={this.props.idPrefix + "_" + this.props.order}
                 className="streamDiv"
-                style={{backgroundColor:(((this.plusOne % 2) === 0) ? "#FFFFFF" : "#EEEEEE")}}
+                style={{backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1)}}
             >
                 <InputOrder
                     ref={
