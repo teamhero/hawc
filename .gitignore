@@ -26,6 +26,7 @@ public/media
 venv
 .vagrant
 sql
+.pytest_cache
 
 # javascript
 node_modules
