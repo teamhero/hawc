@@ -36,7 +36,6 @@ def clean_slug(form):
 
 
 class PrefilterMixin(object):
-
     PREFILTER_COMBO_FIELDS = [
         'studies',
         'systems', 'organs', 'effects', 'effect_subtypes',

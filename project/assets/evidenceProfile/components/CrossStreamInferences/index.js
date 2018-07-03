@@ -2,6 +2,33 @@ import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import "./index.css";
 
+let shade1 = "#EEEEEE";
+let shade2 = "#FFFFFF";
+
+// Set the basic styles for each of the columns used within this formset
+let columnStyles = [
+    {
+        width: "25px",
+        display: "table-cell",
+    },
+    {
+        width: "204px",
+        display: "table-cell",
+    }
+    ,{
+        width: "311px",
+        display: "table-cell",
+    }
+    ,{
+        width: "40px",
+        display: "table-cell",
+    }
+    ,{
+        width: "580px",
+        display: "table-cell",
+    },
+];
+
 // This Component class is used to manage the Cross-Stream Inferences formset portion of the Evidence Profile form
 class CrossStreamInferencesFormset extends Component {
     inferences = [];
@@ -27,6 +54,7 @@ class CrossStreamInferencesFormset extends Component {
             {
                 title: "",
                 description: "",
+                caption: null,
                 row: null,
             }
         );
@@ -35,6 +63,22 @@ class CrossStreamInferencesFormset extends Component {
         // inference's "row" attribute
         iTo = this.inferences.length;
         for (let i=0; i<iTo; i++) {
+            this.inferences[i].caption = <CrossStreamInferenceCaption
+                key={(i + 0.5)}
+                ref={
+                    (input) => {
+                        this.rowReferences["caption_" + i] = input;
+                    }
+                }
+                index={i}
+                maxIndex={(iTo - 1)}
+                order={(i + 1)}
+                title={this.inferences[i].title}
+                idPrefix={this.props.config.rowIdPrefix}
+                buttonSetPrefix={this.props.config.buttonSetPrefix}
+                handleButtonClick={this.handleButtonClick}
+            />;
+
             this.inferences[i].row = <CrossStreamInferenceRow
                 key={i}
                 ref={
@@ -55,41 +99,19 @@ class CrossStreamInferencesFormset extends Component {
             />;
         }
 
-        // Set the initial row objects based on the incoming inference objects
         this.state = {
-            rows: this.inferences.map(inference => inference.row),
+            rows: this.buildRows(),
         };
     }
 
     // This method generates the HTML that replaces this object's JSX representation
     render() {
-        // Set the basic styles for each of the columns used within this formset
-        let columnStyles = [
-            {
-
-                width: "204px",
-            }
-            ,{
-                width: "336px",
-            }
-            ,{
-                width: "40px",
-            }
-        ];
-
         return (
             <div>
                 <strong className="control-label">Inferences Across Streams</strong>
                 <button id={this.props.config.addButtonId} className="btn btn-primary pull-right" type="button" onClick={this.handleButtonClick}>New Inference</button>
                 <br className="inferencesClearBoth" />
-                <table id={this.props.config.tableid} className="inferencesTable">
-                    <thead>
-                        <tr>
-                            <th className="inferencesHeaderCell" style={columnStyles[0]}>Title</th>
-                            <th className="inferencesHeaderCell" style={columnStyles[1]}>Description</th>
-                            <th className="inferencesHeaderCell" style={columnStyles[2]}></th>
-                        </tr>
-                    </thead>
+                <table id={this.props.config.tableid} className={"inferencesTable"}>
                     <tbody>
                         {this.state.rows}
                     </tbody>
@@ -119,6 +141,22 @@ class CrossStreamInferencesFormset extends Component {
                     }
                 );
 
+                this.inferences[inferenceIndex].caption = <CrossStreamInferenceCaption
+                    key={(newRowIndex + 0.5)}
+                    ref={
+                        (input) => {
+                            this.rowReferences["caption_" + newRowIndex] = input;
+                        }
+                    }
+                    index={newRowIndex}
+                    maxIndex={newRowIndex}
+                    order={(newRowIndex + 1)}
+                    title={this.inferences[inferenceIndex].title}
+                    idPrefix={this.props.config.rowIdPrefix}
+                    buttonSetPrefix={this.props.config.buttonSetPrefix}
+                    handleButtonClick={this.handleButtonClick}
+                />;
+
                 // Create the new CrossStreamInferenceRow component object
                 this.inferences[inferenceIndex].row = <CrossStreamInferenceRow
                     key={newRowIndex}
@@ -142,12 +180,12 @@ class CrossStreamInferencesFormset extends Component {
                 // Set this.state.rows to the new inference rows array (inclding the new inference added to the end)
                 this.setState(
                     {
-                        rows: this.inferences.map(inference => inference.row),
+                        rows: this.buildRows(),
                     }
                 );
             }
             else if (event.target.id.match(this.props.config.buttonSetRegEx)) {
-                // The element clicked upon is either a "Move Up," "Move Down" or "Remove" button from a row within the formset, attempt
+                // The element clicked upon is either a "Move Up," "Move Down," "Show" or "Hide" button from a row within the formset, attempt
                 // to handle it
 
                 let countInferences = this.inferences.length;
@@ -174,7 +212,7 @@ class CrossStreamInferencesFormset extends Component {
                                 // Update the state of this component (displays the re-ordered rows in the formset)
                                 this.setState(
                                     {
-                                        rows: this.inferences.map(inference => inference.row),
+                                        rows: this.buildRows(),
                                     }
                                 );
 
@@ -211,7 +249,7 @@ class CrossStreamInferencesFormset extends Component {
                                 // Update the state of this component (displays the re-ordered rows in the formset)
                                 this.setState(
                                     {
-                                        rows: this.inferences.map(inference => inference.row),
+                                        rows: this.buildRows(),
                                     }
                                 );
 
@@ -243,9 +281,17 @@ class CrossStreamInferencesFormset extends Component {
                                 this.inferences.splice(inferenceIndex, 1);
                                 this.setState(
                                     {
-                                        rows: this.inferences.map(inference => inference.row),
+                                        rows: this.buildRows(),
                                     }
                                 );
+                            }
+                            else if (buttonDetails[1] === "showinference") {
+                                this.rowReferences["caption_" + this.inferences[inferenceIndex].row.props.index].captionReference.style.display = "none";
+                                this.rowReferences["row_" + this.inferences[inferenceIndex].row.props.index].rowReference.style.display = "table-row";
+                            }
+                            else if (buttonDetails[1] === "hideinference") {
+                                this.rowReferences["caption_" + this.inferences[inferenceIndex].row.props.index].captionReference.style.display = "table-row";
+                                this.rowReferences["row_" + this.inferences[inferenceIndex].row.props.index].rowReference.style.display = "none";
                             }
                         }
                     }
@@ -294,16 +340,29 @@ class CrossStreamInferencesFormset extends Component {
         return Math.max(...this.inferences.map(inference => inference.row.props.index));
     }
 
+    buildRows() {
+        let returnValue = [];
+        let iTo = this.inferences.length;
+
+        for (let i=0; i<iTo; i++) {
+            returnValue.push(this.inferences[i].caption);
+            returnValue.push(this.inferences[i].row);
+        }
+
+        return returnValue;
+    }
+
     // After this Component has been updated (i.e. a row added, removed or moved up/down), this method runs to re-color the rows set
     // and button visibility
     componentDidUpdate() {
         let iTo = this.inferences.length;
         let iMax = iTo - 1;
+
         for (let i=0; i<iTo; i++) {
             let reference = this.rowReferences["row_" + this.inferences[i].row.props.index];
 
             // Alternate the row color on inference rows
-            reference.rowReference.style.backgroundColor = ((i % 2) === 1) ? "#EEEEEE" : "#FFFFFF";
+            reference.rowReference.style.backgroundColor = ((i % 2) === 1) ? shade1 : shade2;
 
             // Only make the "Move Up" button visible whenever it is not in the first row
             reference.moveUpReference.style.visibility = (i === 0) ? "hidden" : "visible";
@@ -314,6 +373,62 @@ class CrossStreamInferencesFormset extends Component {
     }
 }
 
+
+class CrossStreamInferenceCaption extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor
+        super(props);
+
+        this.state = {
+            title: this.props.title,
+        }
+    }
+
+    // This method generates the HTML for the table row that replaces this object's JSX representation
+    render() {
+        let plusOne = this.props.index + 1;
+        let buttonSetPrefix = this.props.buttonSetPrefix + "_" + plusOne;
+
+        return(
+            <tr
+                ref={
+                    (input) => {
+                        this.captionReference = input;
+                    }
+                }
+                id={this.props.idPrefix + "_" + plusOne + "_caption"}
+                style={
+                    {
+                        display: ((this.props.index < this.props.maxIndex) ? "table-row" : "none"),
+                    }
+                }
+            >
+                <td
+                    colSpan={3}
+                    className={"inferencesCaptionCell"}
+                    style={columnStyles[4]}
+                >
+                    <button
+                        ref={
+                            (input) => {
+                                this.showInferenceReference = input;
+                            }
+                        }
+                        className="btn btn-mini showInferenceButton"
+                        title="show inference"
+                        type="button"
+                        onClick={
+                            (e) => this.props.handleButtonClick(e)
+                        }
+                     >
+                        <i id={buttonSetPrefix + "_showinference"} className="icon-plus" />
+                    </button>
+                    {(this.state.title !== "") ? <strong><em>{this.state.title}</em></strong> : "[No Title Yet]"}
+                </td>
+            </tr>
+        );
+    }
+}
 
 // This Component class is used to manage a single Cross-Stream Inference's row in the formset
 class CrossStreamInferenceRow extends Component {
@@ -338,11 +453,30 @@ class CrossStreamInferenceRow extends Component {
                 id={this.props.idPrefix + "_" + plusOne}
                 style={
                     {
-                        backgroundColor: ((this.props.index % 2) === 1) ? "#EEEEEE" : "#FFFFFF",
+                        backgroundColor: ((this.props.index % 2) === 1) ? shade1 : shade2,
+                        display: ((this.props.index < this.props.maxIndex) ? "none" : "table-row"),
                     }
                 }
             >
-                <td className="inferencesBodyCell">
+                <td className={"inferencesBodyCell"} style={columnStyles[0]}>
+                    <button
+                        ref={
+                            (input) => {
+                                this.hideInferenceReference = input;
+                            }
+                        }
+                        className="btn btn-mini"
+                        title="hide inference"
+                        type="button"
+                        onClick={
+                            (e) => this.props.handleButtonClick(e)
+                        }
+                    >
+                        <i id={buttonSetPrefix + "_hideinference"} className="icon-minus" />
+                    </button>
+                </td>
+                <td className={"inferencesBodyCell"} style={columnStyles[1]}>
+                    <span style={{fontSize:"0.8em", color:"#111111"}}>Title</span>
                     <InputOrder
                         ref={
                             (input) => {
@@ -362,7 +496,8 @@ class CrossStreamInferenceRow extends Component {
                         value={this.props.title}
                     />
                 </td>
-                <td className="inferencesBodyCell">
+                <td className={"inferencesBodyCell"} style={columnStyles[2]}>
+                    <span style={{fontSize:"0.8em", color:"#111111"}}>Description</span>
                     <TextAreaDescription
                         ref={
                             (input) => {
@@ -373,7 +508,7 @@ class CrossStreamInferenceRow extends Component {
                         value={this.props.description}
                     />
                 </td>
-                <td className="inferencesBodyCell">
+                <td className={"inferencesBodyCell"} style={columnStyles[3]}>
                     <button
                         ref={
                             (input) => {
