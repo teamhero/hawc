@@ -52,4 +52,4 @@ notebooks/*.ipynb
 
 .vscode
 project/package-lock.json
-project/yarn.lock
+yarn.lock
