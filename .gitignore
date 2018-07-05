@@ -51,3 +51,5 @@ notebooks/*.ipynb
 .DS_Store
 
 .vscode
+project/package-lock.json
+project/yarn.lock
