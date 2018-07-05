@@ -33,6 +33,8 @@ class Experiment(models.Model):
         ("Ca", "Cancer"),
         ("Me", "Mechanistic"),
         ("Rp", "Reproductive"),
+        ("1r", "1-generation reproductive"),
+        ("2r", "2-generation reproductive"),
         ("Dv", "Developmental"),
         ("Ot", "Other"),
         ("NR", "Not-reported"))
