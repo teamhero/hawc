@@ -610,6 +610,12 @@ class EndpointFilterForm(forms.Form):
         help_text="ex: Smith et al. 2010",
         required=False)
 
+    chemical = forms.CharField(
+            label='Chemical name',
+            widget=selectable.AutoCompleteWidget(lookups.ExpChemicalLookup),
+            help_text="ex: sodium",
+            required=False)
+
     cas = forms.CharField(
         label='CAS',
         widget=selectable.AutoCompleteWidget(lookups.RelatedExperimentCASLookup),
@@ -742,6 +748,7 @@ class EndpointFilterForm(forms.Form):
     def get_query(self):
 
         studies = self.cleaned_data.get('studies')
+        chemical = self.cleaned_data.get('chemical')
         cas = self.cleaned_data.get('cas')
         lifestage_exposed = self.cleaned_data.get('lifestage_exposed')
         lifestage_assessed = self.cleaned_data.get('lifestage_assessed')
@@ -762,6 +769,8 @@ class EndpointFilterForm(forms.Form):
         query = Q()
         if studies:
             query &= Q(animal_group__experiment__study__in=studies)
+        if chemical:
+            query &= Q(animal_group__experiment__chemical__icontains=chemical)
         if cas:
             query &= Q(animal_group__experiment__cas__icontains=cas)
         if lifestage_exposed:
