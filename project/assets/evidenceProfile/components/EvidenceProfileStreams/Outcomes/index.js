@@ -5,6 +5,10 @@ import "./index.css";
 
 import {updateOutcomesOptionSet} from "../../../Library"
 
+// Set the colors to be used as shades for the alternating outcomes within this stream
+let shade1 = "#E9FFE9";
+let shade2 = "#CFFFCF";
+
 // This Component object is the container for this entire Outcomes formset
 class OutcomesFormset extends Component {
     outcomes = [];
@@ -33,13 +37,32 @@ class OutcomesFormset extends Component {
             this.outcomes.push(
                 {
                     outcome: (i < iTo) ? iterateOverOutcomes[i] : ({title:"", score: "", explanation:""}),
+                    caption: null,
                     row: null,
                 }
             );
         }
 
-        // Iterate through this.outcomes and create a new OUtcomeRow for that ouctome and place it into the outcome's "row" attribute
+        // Iterate through this.outcomes to create the caption and detail rows
         for (let i=0; i<=iTo; i++) {
+            // Create a new OutcomeCaption for this inference and place it into the outcome's "caption" attribute
+            this.outcomes[i].caption = <OutcomeCaption
+                key={(i + 0.5)}
+                ref={
+                    (input) => {
+                        this.outcomeReferences["caption_" + i] = input;
+                    }
+                }
+                index={i}
+                maxIndex={iTo}
+                order={(i + 1)}
+                title={this.outcomes[i].outcome.title}
+                idPrefix={this.outcomeIdPrefix}
+                buttonSetPrefix={this.buttonSetPrefix}
+                handleButtonClick={this.handleButtonClick}
+            />;
+
+            // Create a new OutcomeRow for this outcome and place it into the outcome's "row" attribute
             this.outcomes[i].row = <OutcomeRow
                 key={i}
                 ref={
@@ -60,35 +83,23 @@ class OutcomesFormset extends Component {
                 buttonSetRegEx={this.props.config.buttonSetRegEx}
                 confidenceJudgements={this.props.confidenceJudgements}
                 handleButtonClick={this.handleButtonClick}
+                outcomeReferences={this.outcomeReferences}
             />;
         }
 
+        // Load the initial state with all rows (both captions and details) in the desired order
         this.state = {
-            rows: this.outcomes.map(outcome => outcome.row),
+            rows: this.buildRows(),
         }
     }
 
     render() {
-        // Set the basic styles for each of the columns used within this formset
-        let columnStyles = [
-            {
-
-                width: "204px",
-            }
-            ,{
-                width: "336px",
-            }
-            ,{
-                width: "40px",
-            }
-        ];
-
         return(
             <div>
-                <strong className="control-label">Outcomes Used Within This Profile Stream</strong>
-                <button id={this.addButtonId} className="btn btn-primary pull-right" type="button" onClick={this.handleButtonClick}>New Outcome</button>
-                <br className="outcomesClearBoth" />
-                <table id={this.tableId} className="outcomesTable">
+                <strong className={"control-label"}>Outcomes Used Within This Profile Stream</strong>
+                <button id={this.addButtonId} className={"btn btn-primary pull-right"} type={"button"} onClick={this.handleButtonClick}>New Outcome</button>
+                <br className={"outcomesClearBoth"} />
+                <table id={this.tableId} className={"outcomesTable"}>
                     <tbody>
                         {this.state.rows}
                     </tbody>
@@ -105,11 +116,11 @@ class OutcomesFormset extends Component {
             if (event.target.id === this.addButtonId) {
                 // The element clicked upon is the "Add A New Outcome" button, add a new stream to this.outcomes and this.outcomeReferences
 
-                // Get values that will be used within props for the new inference row
+                // Get values that will be used within props for the new outcome row
                 let newRowIndex = Math.max(...this.outcomes.map(outcome => outcome.row.props.index)) + 1;
                 let outcomeIndex = this.outcomes.length;
 
-                // Push a new, empty inference into this.inferences
+                // Push a new, empty outcome into this.outcome
                 this.outcomes.push(
                     {
                         outcome: {
@@ -121,7 +132,24 @@ class OutcomesFormset extends Component {
                     }
                 );
 
-                // Create the new CrossStreamInferenceRow component object
+                // Create the new CrossStreamInferenceCaption component object for this new empty inference
+                this.outcomes[outcomeIndex].caption = <OutcomeCaption
+                    key={(newRowIndex + 0.5)}
+                    ref={
+                        (input) => {
+                            this.outcomeReferences["caption_" + newRowIndex] = input;
+                        }
+                    }
+                    index={newRowIndex}
+                    maxIndex={newRowIndex}
+                    order={(newRowIndex + 1)}
+                    title={this.outcomes[outcomeIndex].outcome.title}
+                    idPrefix={this.outcomeIdPrefix}
+                    buttonSetPrefix={this.buttonSetPrefix}
+                    handleButtonClick={this.handleButtonClick}
+                />;
+
+                // Create the new OutcomeRow component object
                 this.outcomes[outcomeIndex].row = <OutcomeRow
                     key={newRowIndex}
                     ref={
@@ -144,15 +172,15 @@ class OutcomesFormset extends Component {
                     handleButtonClick={this.handleButtonClick}
                 />;
 
-                // Set this.state.rows to the new inference rows array (inclding the new inference added to the end)
+                // Set this.state.rows to the new outcome rows array (inclding the new outcome added to the end)
                 this.setState(
                     {
-                        rows: this.outcomes.map(outcome => outcome.row),
+                        rows: this.buildRows(),
                     }
                 );
             }
             else if (event.target.id.match(this.props.config.buttonSetRegEx)) {
-                // The element clicked upon is either a "Move Up," "Move Down" or "Remove" button from a row within the formset, attempt
+                // The element clicked upon is either a "Move Up," "Move Down", "Remove", "Show" or "Hide" button from a row within the formset, attempt
                 // to handle it
 
                 let countOutcomes = this.outcomes.length;
@@ -179,7 +207,7 @@ class OutcomesFormset extends Component {
 
                                 this.setState(
                                     {
-                                        rows: this.outcomes.map(outcome => outcome.row),
+                                        rows: this.buildRows(),
                                     }
                                 );
                             }
@@ -193,19 +221,30 @@ class OutcomesFormset extends Component {
 
                                 this.setState(
                                     {
-                                        rows: this.outcomes.map(outcome => outcome.row),
+                                        rows: this.buildRows(),
                                     }
                                 );
                             }
                             else if (buttonDetails[2] === "remove") {
                                 // The user clicked on the "Remove" button, remove the <tr>
-
                                 this.outcomes.splice(outcomeIndex, 1);
                                 this.setState(
                                     {
-                                        rows: this.outcomes.map(outcome => outcome.row),
+                                        rows: this.buildRows(),
                                     }
                                 );
+                            }
+                            else if (buttonDetails[2] === "showoutcome") {
+                                // The clicked-upon element is a "Show" button, change the "display" styles for this outcome's caption and
+                                // detail rows accordingly
+                                this.outcomeReferences["caption_" + this.outcomes[outcomeIndex].row.props.index].captionReference.style.display = "none";
+                                this.outcomeReferences["row_" + this.outcomes[outcomeIndex].row.props.index].outcomeReference.style.display = "table-row";
+                            }
+                            else if (buttonDetails[2] === "hideoutcome") {
+                                // The clicked-upon element is a "Hide" button, change the "display" styles for this outcome's caption and
+                                // detail rows accordingly
+                                this.outcomeReferences["caption_" + this.outcomes[outcomeIndex].row.props.index].captionReference.style.display = "table-row";
+                                this.outcomeReferences["row_" + this.outcomes[outcomeIndex].row.props.index].outcomeReference.style.display = "none";
                             }
                         }
                     }
@@ -223,7 +262,7 @@ class OutcomesFormset extends Component {
             let reference = this.outcomeReferences["row_" + this.outcomes[i].row.props.index];
 
             // Alternate the <div> color on streams
-            reference.outcomeReference.style.backgroundColor = ((i % 2) === 1) ? "#EEEEEE" : "#FFFFFF";
+            reference.outcomeReference.style.backgroundColor = ((i % 2) === 1) ? shade2 : shade1;
 
             // Only make the "Move Up" button visible whenever it is not in the first stream
             reference.moveUpReference.style.visibility = (i === 0) ? "hidden" : "visible";
@@ -277,6 +316,73 @@ class OutcomesFormset extends Component {
 
         return returnValue;
     }
+
+    // This method iterates over this.inferences and builds an array containing each inference's caption and detail rows
+    buildRows() {
+        let returnValue = [];
+        let iTo = this.outcomes.length;
+
+        for (let i=0; i<iTo; i++) {
+            returnValue.push(this.outcomes[i].caption);
+            returnValue.push(this.outcomes[i].row);
+        }
+
+        return returnValue;
+    }
+}
+
+
+// This Component class is used to manage a single Outcome's caption row in the formset
+class OutcomeCaption extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor
+        super(props);
+
+        this.state = {
+            title: this.props.title,
+        }
+    }
+
+    // This method generates the HTML for the table row that replaces this object's JSX representation
+    render() {
+        let plusOne = this.props.index + 1;
+        let buttonSetPrefix = this.props.buttonSetPrefix + "_" + plusOne;
+
+        return(
+            <tr
+                ref={
+                    (input) => {
+                        this.captionReference = input;
+                    }
+                }
+                id={this.props.idPrefix + "_" + plusOne + "_caption"}
+                style={
+                    {
+                        display: ((this.props.index < this.props.maxIndex) ? "table-row" : "none"),
+                    }
+                }
+            >
+                <td colSpan={4} className={"outcomeCaptionCell"}>
+                    <button
+                        ref={
+                            (input) => {
+                                this.showOutomeReference = input;
+                            }
+                        }
+                        className={"btn btn-mini showOutcomeButton"}
+                        title={"show outcome"}
+                        type={"button"}
+                        onClick={
+                            (e) => this.props.handleButtonClick(e)
+                        }
+                     >
+                        <i id={buttonSetPrefix + "_showoutcome"} className={"icon-plus"} />
+                    </button>
+                    {(this.state.title !== "") ? <strong><em>{this.state.title}</em></strong> : "[No Title Yet]"}
+                </td>
+            </tr>
+        );
+    }
 }
 
 
@@ -304,11 +410,29 @@ class OutcomeRow extends Component {
                 className="outcomesBodyRow"
                 style={
                     {
-                        backgroundColor: ((this.props.index % 2) === 1) ? "#EEEEEE" : "#FFFFFF",
+                        backgroundColor: ((this.props.index % 2) === 1) ? shade2 : shade1,
+                        display: ((this.props.index < this.props.maxIndex) ? "none" : "table-row"),
                     }
                 }
             >
-                <td className="outcomesBodyCell">
+                <td className={"outcomesBodyCell outcomeColumn_leftButton"}>
+                    <button
+                        ref={
+                            (input) => {
+                                this.hideOutcomeReference = input;
+                            }
+                        }
+                        className={"btn btn-mini"}
+                        title={"hide outcome"}
+                        type={"button"}
+                        onClick={
+                            (e) => this.props.handleButtonClick(e)
+                        }
+                    >
+                        <i id={this.buttonSetPrefix + "_hideoutcome"} className="icon-minus" />
+                    </button>
+                </td>
+                <td className={"outcomesBodyCell outcomeColumn_title"}>
                     <InputOrder
                         ref={
                             (input) => {
@@ -348,7 +472,7 @@ class OutcomeRow extends Component {
                         />
                     </div>
                 </td>
-                <td className="outcomesBodyCell">
+                <td className={"outcomesBodyCell outcomeColumn_explanation"}>
                     <label htmlFor={this.fieldPrefix + "_explanation"} className="control-label">Explanation</label>
                     <div className="controls">
                         <TextAreaExplanation
@@ -362,7 +486,7 @@ class OutcomeRow extends Component {
                         />
                     </div>
                 </td>
-                <td className="outcomesBodyCell">
+                <td className={"outcomesBodyCell outcomeColumn_rightButtons"}>
                     <button
                         ref={
                             (input) => {
