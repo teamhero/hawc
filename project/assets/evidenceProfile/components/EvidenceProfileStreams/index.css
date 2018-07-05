@@ -13,3 +13,48 @@
 .streamPartDiv {
 	margin: 0 2px 0 2px;
 }
+
+.streamPart_streamType {
+    width: 42%;
+    float: left;
+    margin: 0 4px 0 0;
+}
+
+.streamPart_title {
+    width: 48%;
+    float: left;
+    margin: 0 4px 0 0;
+}
+
+.streamPart_rightButtons {
+    width: 7%;
+    float: left;
+    margin: 0 4px 0 0;
+    text-align: right;
+}
+
+.streamPart_leftConfidenceJudgement {
+    width: 49%;
+    float: left;
+    margin: 0 4px 4px 0;
+}
+
+.streamPart_rightConfidenceJudgement {
+    width: 49%;
+    float: left;
+    margin: 0 4px 4px 0;
+}
+
+.streamPart_outcomes {
+	width: 674px;
+    margin: 12px 0 0 0;
+    padding: 8px 49px 0 0;
+    background-color: #E9FFE9;
+}
+
+.streamPart_scenarios {
+	width: 674px;
+    margin: -18px 0 0 0;
+    padding: 8px 49px 0 0;
+    background-color: #DFDFFF;
+}

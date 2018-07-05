@@ -7,7 +7,8 @@ import "./index.css";
 import {renderOutcomesFormset} from "./Outcomes";
 import {renderEvidenceProfileScenariosFormset} from "../EvidenceProfileScenarios";
 
-let shade1 = "#EEEEEE";
+// Set the colors to be used as shades for the alternating streams
+let shade1 = "#F9F9F9";
 let shade2 = "#FFFFFF";
 
 // This Component object is the container for the entire Evidence Profile Stream formset
@@ -74,10 +75,10 @@ class EvidenceProfileStreamsFormset extends Component {
     // This method generates the HTML that replaces this object's JSX representation
     render() {
         return (
-            <div className="streamsDiv">
-                <strong className="control-label">Profile Streams</strong>
-                <button id={this.props.config.addButtonId} className="btn btn-primary pull-right" type="button" onClick={this.handleButtonClick}>New Stream</button>
-                <br className="streamsClearBoth" />
+            <div className={"streamsDiv"}>
+                <strong className={"control-label"}>Profile Streams</strong>
+                <button id={this.props.config.addButtonId} className={"btn btn-primary pull-right"} type={"button"} onClick={this.handleButtonClick}>New Stream</button>
+                <br className={"streamsClearBoth"} />
                 {this.state.divs}
             </div>
         );
@@ -262,53 +263,6 @@ class EvidenceProfileStreamsFormset extends Component {
 
 // This object is a single Evidence Profile Stream form fragment
 class StreamDiv extends Component {
-    streamRows = [
-        [
-            {
-                width: "42%",
-                float: "left",
-                margin: "0 4px 0 0",
-            },
-            {
-                width: "48%",
-                float: "left",
-                margin: "0 4px 0 0",
-            },
-            {
-                width: "7%",
-                float: "left",
-                margin: "0 4px 0 0",
-                textAlign: "right",
-            },
-        ],
-        [
-            {
-                width: "49%",
-                float: "left",
-                margin: "0 4px 4px 0",
-            },
-            {
-                width: "49%",
-                float: "left",
-                margin: "0 4px 4px 0",
-            },
-        ],
-        [
-            {
-                width: "100%",
-                float: "left",
-                margin: "12px 0 0 0",
-            }
-        ],
-        [
-            {
-                width: "100%",
-                float: "left",
-                margin: "12px 0 0 0",
-            }
-        ],
-    ];
-
     constructor(props) {
        // First, call the super-class's constructor
         super(props);
@@ -345,7 +299,7 @@ class StreamDiv extends Component {
                     }
                 }
                 id={this.props.idPrefix + "_" + this.props.order}
-                className="streamDiv"
+                className={"streamDiv"}
                 style={{backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1)}}
             >
                 <InputOrder
@@ -360,10 +314,10 @@ class StreamDiv extends Component {
 
                 <input type={"hidden"} id={this.fieldPrefix + "_pk"} name={this.fieldPrefix + "_pk"} value={this.pk} />
 
-                <div className="streamPartDiv">
-                    <div style={this.streamRows[0][0]}>
-                        <label htmlFor={this.fieldPrefix + "_stream_type"} className="control-label">Type</label>
-                        <div className="controls">
+                <div className={"streamPartDiv"}>
+                    <div className={"streamPart_streamType"}>
+                        <label htmlFor={this.fieldPrefix + "_stream_type"} className={"control-label"}>Type</label>
+                        <div className={"controls"}>
                             <SelectStreamType
                                 ref={
                                     (input) => {
@@ -376,9 +330,9 @@ class StreamDiv extends Component {
                             />
                         </div>
                     </div>
-                    <div style={this.streamRows[0][1]}>
-                        <label htmlFor={this.fieldPrefix + "_stream_title"} className="control-label">Title</label>
-                        <div className="controls">
+                    <div className={"streamPart_title"}>
+                        <label htmlFor={this.fieldPrefix + "_stream_title"} className={"control-label"}>Title</label>
+                        <div className={"controls"}>
                             <InputStreamTitle
                                 ref={
                                     (input) => {
@@ -390,16 +344,16 @@ class StreamDiv extends Component {
                             />
                         </div>
                     </div>
-                    <div style={this.streamRows[0][2]}>
+                    <div className={"streamPart_rightButtons"}>
                         <button
                             ref={
                                 (input) => {
                                     this.moveUpReference = input;
                                 }
                             }
-                            className="btn btn-mini"
-                            title="move up"
-                            type="button"
+                            className={"btn btn-mini"}
+                            title={"move up"}
+                            type={"button"}
                             style={
                                 {
                                     visibility: ((this.props.index > 0) ? "visible" : "hidden")
@@ -409,7 +363,7 @@ class StreamDiv extends Component {
                                 (e) => this.props.handleButtonClick(e)
                             }
                         >
-                            <i id={this.buttonSetPrefix + "_moveup"} className="icon-arrow-up" />
+                            <i id={this.buttonSetPrefix + "_moveup"} className={"icon-arrow-up"} />
                         </button>
                         <br />
 
@@ -419,9 +373,9 @@ class StreamDiv extends Component {
                                     this.moveDownReference = input;
                                 }
                             }
-                            className="btn btn-mini"
-                            title="move down"
-                            type="button"
+                            className={"btn btn-mini"}
+                            title={"move down"}
+                            type={"button"}
                             style={
                                 {
                                     visibility: ((this.props.index < this.props.maxIndex) ? "visible" : "hidden")
@@ -431,7 +385,7 @@ class StreamDiv extends Component {
                                 (e) => this.props.handleButtonClick(e)
                             }
                         >
-                            <i id={this.buttonSetPrefix + "_movedown"} className="icon-arrow-down" />
+                            <i id={this.buttonSetPrefix + "_movedown"} className={"icon-arrow-down"} />
                         </button>
                         <br />
 
@@ -441,25 +395,25 @@ class StreamDiv extends Component {
                                     this.removeReference = input;
                                 }
                             }
-                            className="btn btn-mini"
-                            title="remove"
-                            type="button"
+                            className={"btn btn-mini"}
+                            title={"remove"}
+                            type={"button"}
                             onClick={
                                 (e) => this.props.handleButtonClick(e)
                             }
                         >
-                            <i id={this.buttonSetPrefix + "_remove"} className="icon-remove" />
+                            <i id={this.buttonSetPrefix + "_remove"} className={"icon-remove"} />
                         </button>
                         <br />
                     </div>
                 </div>
 
-                <br className="streamsClearBoth" />
+                <br className={"streamsClearBoth"} />
 
-                <div className="streamPartDiv">
-                    <div style={this.streamRows[1][0]}>
-                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_title"} className="control-label">Within-Stream Confidence Judgement<br /><span style={{fontSize:"0.8em",}}>Title</span></label>
-                        <div className="controls">
+                <div className={"streamPartDiv"}>
+                    <div className={"streamPart_leftConfidenceJudgement"}>
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_title"} className={"control-label"}>Within-Stream Confidence Judgement<br /><span style={{fontSize:"0.8em",}}>Title</span></label>
+                        <div className={"controls"}>
                             <InputConfidenceJudgementTitle
                                 ref={
                                     (input) => {
@@ -471,8 +425,8 @@ class StreamDiv extends Component {
                             />
                         </div>
 
-                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_score"} className="control-label"><span style={{fontSize:"0.8em",}}>Score</span></label>
-                        <div className="controls">
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_score"} className={"control-label"}><span style={{fontSize:"0.8em",}}>Score</span></label>
+                        <div className={"controls"}>
                             <SelectConfidenceJudgementScore
                                 ref={
                                     (input) => {
@@ -485,9 +439,9 @@ class StreamDiv extends Component {
                             />
                         </div>
                     </div>
-                    <div style={this.streamRows[1][0]}>
-                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_explanation"} className="control-label"><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
-                        <div className="controls">
+                    <div className={"streamPart_rightConfidenceJudgement"}>
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_explanation"} className={"control-label"}><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
+                        <div className={"controls"}>
                             <TextAreaConfidenceJudgementExplanation
                                 ref={
                                     (input) => {
@@ -501,10 +455,10 @@ class StreamDiv extends Component {
                     </div>
                 </div>
 
-                <br className="streamsClearBoth" />
+                <br className={"streamsClearBoth"} />
 
-                <div className="streamPartDiv">
-                    <div style={this.streamRows[2][0]}>
+                <div className={"streamPartDiv"}>
+                    <div className={"streamPart_outcomes"}>
                         <div
                             ref={
                                 (input) => {
@@ -517,10 +471,10 @@ class StreamDiv extends Component {
                     </div>
                 </div>
 
-                <br className="streamsClearBoth" />
+                <br className={"streamsClearBoth"} />
 
-                <div className="streamPartDiv">
-                    <div style={this.streamRows[3][0]}>
+                <div className={"streamPartDiv"}>
+                    <div className={"streamPart_scenarios"}>
                         <div
                             ref={
                                 (input) => {
@@ -533,7 +487,7 @@ class StreamDiv extends Component {
                     </div>
                 </div>
 
-                <br className="streamsClearBoth" />
+                <br className={"streamsClearBoth"} />
             </div>
         );
     }
@@ -674,10 +628,10 @@ class InputStreamTitle extends Component {
         return (
             <input
                 id={this.props.id}
-                className="span12 textinput textInput"
-                type="text"
-                maxLength="50"
-                required="required"
+                className={"span12 textinput textInput"}
+                type={"text"}
+                maxLength={"50"}
+                required={"required"}
                 name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
@@ -713,10 +667,10 @@ class InputConfidenceJudgementTitle extends Component {
         return (
             <input
                 id={this.props.id}
-                className="span12 textinput textInput"
-                type="text"
-                maxLength="50"
-                required="required"
+                className={"span12 textinput textInput"}
+                type={"text"}
+                maxLength={"50"}
+                required={"required"}
                 name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
@@ -804,10 +758,10 @@ class TextAreaConfidenceJudgementExplanation extends Component {
         return (
             <textarea
                 id={this.props.id}
-                className="span12"
-                cols="40"
-                rows="4"
-                required="required"
+                className={"span12"}
+                cols={"40"}
+                rows={"4"}
+                required={"required"}
                 name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}

@@ -1,5 +1,5 @@
 .inferencesTable {
-	table-layout: fixed;
+	width: 678px;
 }
 
 .inferencesClearBoth {
@@ -16,13 +16,34 @@
 	background-color: #000000;
 	color: #FFFFFF;
 	text-align: left;
-    padding: 2px 5px 2px 5px;
+    padding: 0 5px 3px 5px;
+    display: table-cell;
 }
 
 .inferencesBodyCell {
 	border: 0;
     vertical-align: top;
     padding: 5px 5px 2px 5px;
+}
+
+.inferencesColumn_leftButton {
+    width: 39px;
+    display: table-cell;
+}
+
+.inferencesColumn_title {
+    width: 193px;
+    display: table-cell;
+}
+
+.inferencesColumn_description {
+    width: 407px;
+    display: table-cell;
+}
+
+.inferencesColumn_rightButtons {
+    width: 39px;
+    display: table-cell;
 }
 
 .showInferenceButton {
