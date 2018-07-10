@@ -130,13 +130,13 @@ class EvidenceProfileStreamsFormset extends Component {
                         key={(newDivIndex + 0.5)}
                         ref={
                             (input) => {
-                                this.streamReferences["caption_" + i] = input;
+                                this.streamReferences["caption_" + newDivIndex] = input;
                             }
                         }
                         index={newDivIndex}
                         maxIndex={newDivIndex}
                         order={(newDivIndex + 1)}
-                        stream_title={this.streams[newDivIndex].stream.object.stream_name}
+                        stream_title={this.streams[newDivIndex].stream.object.stream_title}
                         divId={this.divId}
                         idPrefix={this.props.config.streamIdPrefix}
                         buttonSetPrefix={this.props.config.buttonSetPrefix}
