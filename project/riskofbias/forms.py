@@ -99,11 +99,11 @@ class RoBMetricAnswersForm(forms.ModelForm):
                                   args=[self.instance.metric.domain.assessment.pk])
         }
         if self.instance.id:
-            inputs['legend_text'] = 'Update risk of bias metric answers'
+            inputs['legend_text'] = 'Update Study Evaluation metric answers'
             inputs['help_text'] = 'Update an existing metric answer.'
         else:
-            inputs['legend_text'] = 'Create new risk of bias metric per answers'
-            inputs['help_text'] = 'Create a new risk of bias metric answer.'
+            inputs['legend_text'] = 'Create new Study Evaluation metric per answers'
+            inputs['help_text'] = 'Create a new Study Evaluation metric answer.'
 
         helper = BaseFormHelper(self, **inputs)
         helper['name'].wrap(cfl.Field, css_class='span12')
@@ -122,7 +122,7 @@ class RoBMetricAnswersForm(forms.ModelForm):
                             Q(answer_score=answer_score) | 
                             Q(order=answer_order)).count()
         if occurances > 0:
-            raise forms.ValidationError('Metric Answer already exists in metric.')
+            raise forms.ValidationError('Answer already exists in metric.')
 
         return self.cleaned_data
 

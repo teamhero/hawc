@@ -239,7 +239,7 @@ class RoBMetricAnswersCreate(BaseCreate):
 class RoBMetricAnswersUpdate(BaseUpdate):
     model = models.RiskOfBiasMetricAnswers
     form_class = forms.RoBMetricAnswersForm
-    success_message = 'Study Evaluation metric answers updated.'
+    success_message = 'Study Evaluation metric answer updated.'
 
     def get_success_url(self):
         return reverse_lazy('riskofbias:arob_update',
@@ -247,7 +247,7 @@ class RoBMetricAnswersUpdate(BaseUpdate):
 
 
 class RoBMetricAnswersDelete(BaseDelete):
-    success_message = 'Study Evaluation metric answers deleted.'
+    success_message = 'Study Evaluation metric answer deleted.'
     model = models.RiskOfBiasMetricAnswers
 
     def get_success_url(self):
