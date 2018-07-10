@@ -12,8 +12,9 @@
 }
 
 .inferencesCaptionCell {
-	border: 1px solid #FFFFFF;
-	background-color: #000000;
+	border-width: 0 0 5px 0;
+    border-color: #FFFFFF;
+	background-color: #600000;
 	color: #FFFFFF;
 	text-align: left;
     padding: 0 5px 3px 5px;

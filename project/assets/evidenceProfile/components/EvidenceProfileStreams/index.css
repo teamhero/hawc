@@ -5,13 +5,46 @@
 .streamsDiv {
 }
 
+.streamCaptionDiv {
+    background-color: #000000;
+    color: #FFFFFF;
+    text-align: left;
+    margin: 5px 0 0 0;
+    padding: 2px 3px 3px 3px;
+}
+
+.streamCaption_button {
+    float: left;
+    margin: 0 0 0 0;
+    padding: 0 5px 0 0;
+}
+
+.streamCaption_name {
+    float: left;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+}
+
 .streamDiv {
 	border: 1px solid #000000;
-	margin: 2px 0 6px 0;
+    margin: 4px 0 5px 0;
+    padding: 2px 3px 0 2px;
 }
 
 .streamPartDiv {
 	margin: 0 2px 0 2px;
+}
+
+.streamPart_header {
+    float: right;
+    text-align: right;
+    font-size: 1.5em;
+}
+
+.streamPart_leftButton {
+    float: left;
+    text-align: left;
+    vertical-align: top;
 }
 
 .streamPart_streamType {
@@ -47,14 +80,14 @@
 
 .streamPart_outcomes {
 	width: 674px;
-    margin: 12px 0 0 0;
+    margin: 12px 0 0 -3px;
     padding: 8px 49px 0 0;
     background-color: #E9FFE9;
 }
 
 .streamPart_scenarios {
 	width: 674px;
-    margin: -18px 0 0 0;
+    margin: -18px 0 0 -3px;
     padding: 8px 49px 0 0;
-    background-color: #DFDFFF;
+    background-color: #E9E9FF;
 }

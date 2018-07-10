@@ -4,6 +4,10 @@ import EvidenceProfileScenario from "../../EvidenceProfileScenario";
 
 import "./index.css";
 
+// Set the colors to be used as shades for the alternating outcomes within this stream
+let shade1 = "#E9E9FF";
+let shade2 = "#CFCFFF";
+
 // This Component object is the container for this entire Outcomes formset
 class EvidenceProfileScenariosFormset extends Component {
     scenarios = [];
@@ -25,21 +29,42 @@ class EvidenceProfileScenariosFormset extends Component {
         // First, look for a "streams" object in the incoming props -- defaulting to an empty array if none is found
         let iterateOverScenarios = (("scenarios" in props) && (typeof(props.scenarios) === "object") && (props.scenarios !== null)) ? props.scenarios : [];
 
-        // Iterate over the incoming streams and use them to build the object level "streams" and "streamReferences" attribures
+        // Iterate over the incoming cenarios and use them to build the object level "scenarios" and "scenarioReferences" attributes
         let iTo = iterateOverScenarios.length;
         for (let i=0; i<=iTo; i++) {
             this.scenarios.push(
                 {
                     scenario: (i < iTo) ? iterateOverScenarios[i] : (new EvidenceProfileScenario()),
+                    caption: null,
                     div: null,
                 }
             );
         }
 
-        // Now iterate through this.streams and build each div and reference
+        // Iterate through this.scenarios to create the caption and detail <div>s
         for (let i=0; i<=iTo; i++) {
+            // Create a new ScenarioCaption for this scenario and place it into the scenario's "caption" attribute
+            this.scenarios[i].caption = <ScenarioCaption
+                key={(i + 0.5)}
+                ref={
+                    (input) => {
+                        this.scenarioReferences["caption_" + i] = input;
+                    }
+                }
+                index={i}
+                maxIndex={iTo}
+                order={(i + 1)}
+                scenario_name={this.scenarios[i].scenario.object.scenario_name}
+                divId={this.divId}
+                idPrefix={this.props.config.scenarioIdPrefix}
+                buttonSetPrefix={this.buttonSetPrefix}
+                handleButtonClick={this.handleButtonClick}
+            />;
+
+            // Set the simple, pipe-delimited value for the outcome form field based on the scenario's JSON-formatted outcome object attribute
             let outcome = ((i < iTo) && ("title" in this.scenarios[i].scenario.object.outcome)) ? this.scenarios[i].scenario.object.outcome.title + "|" + this.scenarios[i].scenario.object.outcome.score : "";
 
+            // Create a new ScenarioDiv for this scenario and place it into the scenario's "div" attribute
             this.scenarios[i].div = <ScenarioDiv
                 key={i}
                 ref={
@@ -67,12 +92,13 @@ class EvidenceProfileScenariosFormset extends Component {
                 fieldPrefix={this.fieldPrefix}
                 buttonSetPrefix={this.buttonSetPrefix}
                 handleButtonClick={this.handleButtonClick}
+                scenarioReferences={this.scenarioReferences}
             />;
         }
 
         // Initialize this object state's "div" to the initial set of divs from this.streams
         this.state = {
-            divs: this.scenarios.map(scenario => scenario.div),
+            divs: this.buildDivs(),
         };
     }
 
@@ -94,21 +120,40 @@ class EvidenceProfileScenariosFormset extends Component {
             // The click event's details were passed in, and the clicked-upon element has a non-empty ID attribute, continue checking
 
             if (event.target.id === this.addButtonId) {
-                // The element clicked upon is the "Add A New Scenario" button, add a new stream to this.scenarios and this.scenarioReferences
+                // The element clicked upon is the "Add A New Scenario" button, add a new scenario to this.scenarios and this.scenarioReferences
 
-                // Get values that will be used within props for the new inference row
+                // Get values that will be used within props for the new scenario <div>
                 let newDivIndex = Math.max(...this.scenarios.map(scenario => scenario.div.props.index)) + 1;
                 let scenarioIndex = this.scenarios.length;
 
-                // Push a new, empty inference into this.inferences
+                // Push a new, empty scenario into this.scenarios
                 this.scenarios.push(
                     {
                         scenario: new EvidenceProfileScenario(),
-                        div: null
+                        caption: null,
+                        div: null,
                     }
                 );
 
-                // Create the new CrossStreamInferenceRow component object
+                // Create the new ScenarioCaption component object
+                this.scenarios[scenarioIndex].caption = <ScenarioCaption
+                    key={(newDivIndex + 0.5)}
+                    ref={
+                        (input) => {
+                            this.scenarioReferences["caption_" + newDivIndex] = input;
+                        }
+                    }
+                    index={newDivIndex}
+                    maxIndex={newDivIndex}
+                    order={(newDivIndex + 1)}
+                    scenario_name={this.scenarios[scenarioIndex].scenario.object.scenario_name}
+                    divId={this.divId}
+                    idPrefix={this.props.config.scenarioIdPrefix}
+                    buttonSetPrefix={this.buttonSetPrefix}
+                    handleButtonClick={this.handleButtonClick}
+                />;
+
+                // Create the new ScenarioDiv component object
                 this.scenarios[scenarioIndex].div = <ScenarioDiv
                     key={newDivIndex}
                     ref={
@@ -135,12 +180,13 @@ class EvidenceProfileScenariosFormset extends Component {
                     fieldPrefix={this.fieldPrefix}
                     buttonSetPrefix={this.buttonSetPrefix}
                     handleButtonClick={this.handleButtonClick}
+                    scenarioReferences={this.scenarioReferences}
                 />;
 
                 // Set this.state.rows to the new inference rows array (inclding the new inference added to the end)
                 this.setState(
                     {
-                        divs: this.scenarios.map(scenario => scenario.div),
+                        divs: this.buildDivs(),
                     }
                 );
             }
@@ -172,7 +218,7 @@ class EvidenceProfileScenariosFormset extends Component {
 
                                 this.setState(
                                     {
-                                        divs: this.scenarios.map(scenario => scenario.div),
+                                        divs: this.buildDivs(),
                                     }
                                 );
                             }
@@ -186,7 +232,7 @@ class EvidenceProfileScenariosFormset extends Component {
 
                                 this.setState(
                                     {
-                                        divs: this.scenarios.map(scenario => scenario.div),
+                                        divs: this.buildDivs(),
                                     }
                                 );
                             }
@@ -196,9 +242,21 @@ class EvidenceProfileScenariosFormset extends Component {
                                 this.scenarios.splice(scenarioIndex, 1);
                                 this.setState(
                                     {
-                                        divs: this.scenarios.map(scenario => scenario.div),
+                                        divs: this.buildDivs(),
                                     }
                                 );
+                            }
+                            else if (buttonDetails[2] === "showscenario") {
+                                // The clicked-upon element is a "Show" button, change the "display" styles for this scenario's caption and
+                                // detail <div>s accordingly
+                                this.scenarioReferences["caption_" + this.scenarios[scenarioIndex].div.props.index].captionReference.style.display = "none";
+                                this.scenarioReferences["div_" + this.scenarios[scenarioIndex].div.props.index].scenarioReference.style.display = "block";
+                            }
+                            else if (buttonDetails[2] === "hidescenario") {
+                                // The clicked-upon element is a "Hide" button, change the "display" styles for this scenario's caption and
+                                // detail <div>s accordingly
+                                this.scenarioReferences["caption_" + this.scenarios[scenarioIndex].div.props.index].captionReference.style.display = "block";
+                                this.scenarioReferences["div_" + this.scenarios[scenarioIndex].div.props.index].scenarioReference.style.display = "none";
                             }
                         }
                     }
@@ -212,11 +270,12 @@ class EvidenceProfileScenariosFormset extends Component {
     componentDidUpdate() {
         let iTo = this.scenarios.length;
         let iMax = iTo - 1;
+
         for (let i=0; i<iTo; i++) {
             let reference = this.scenarioReferences["div_" + this.scenarios[i].div.props.index];
 
             // Alternate the <div> color on streams
-            reference.scenarioReference.style.backgroundColor = ((i % 2) === 0) ? "#EEEEEE" : "#FFFFFF";
+            reference.scenarioReference.style.backgroundColor = ((i % 2) === 0) ? shade1 : shade2;
 
             // Only make the "Move Up" button visible whenever it is not in the first stream
             reference.moveUpReference.style.visibility = (i === 0) ? "hidden" : "visible";
@@ -267,50 +326,77 @@ class EvidenceProfileScenariosFormset extends Component {
 
         return returnValue;
     }
+
+    // This method iterates over this.scenarios and builds an array containing each outcome's caption and detail <div>s
+    buildDivs() {
+        let returnValue = [];
+        let iTo = this.scenarios.length;
+
+        for (let i=0; i<iTo; i++) {
+            returnValue.push(this.scenarios[i].caption);
+            returnValue.push(this.scenarios[i].div);
+        }
+
+        return returnValue;
+    }
 }
+
+
+// This object is a single Evidence Profile Scenario caption
+class ScenarioCaption extends Component {
+    constructor(props) {
+       // First, call the super-class's constructor
+        super(props);
+
+        this.state = {
+            name: (this.props.scenario_name !== null) ? this.props.scenario_name : "",
+        }
+    }
+
+    render() {
+        return(
+            <div
+                ref={
+                    (input) => {
+                        this.captionReference = input;
+                    }
+                }
+                id={this.props.idPrefix + "_" + this.props.order + "_caption"}
+                style={
+                    {
+                        display: ((this.props.index < this.props.maxIndex) ? "block" : "none"),
+                    }
+                }
+                className={"scenarioCaptionDiv"}
+            >
+                <div className={"scenarioCaption_button"}>
+                    <button
+                        ref={
+                            (input) => {
+                                this.showScenarioReference = input;
+                            }
+                        }
+                        className={"btn btn-mini showScenarioButton"}
+                        title={"show scenario"}
+                        type={"button"}
+                        onClick={
+                            (e) => this.props.handleButtonClick(e)
+                        }
+                     >
+                        <i id={this.props.buttonSetPrefix + "_" + (this.props.index + 1) + "_showscenario"} className={"icon-plus"} />
+                    </button>
+                </div>
+                <div className={"scenarioCaption_name"}>
+                    {(this.state.name !== "") ? <strong><em>{this.state.name}</em></strong> : "[No Name Yet]"}
+                </div>
+            </div>
+        );
+    }
+}
+
 
 // This object is a single Evidence Profile Scenario form fragment
 class ScenarioDiv extends Component {
-    scenarioRows = [
-        [
-            {
-                width: "42%",
-                float: "left",
-                margin: "0 4px 0 0",
-            },
-            {
-                width: "48%",
-                float: "left",
-                margin: "0 4px 0 0",
-            },
-            {
-                width: "7%",
-                float: "left",
-                margin: "0 4px 0 0",
-                textAlign: "right",
-            },
-        ],
-        [
-            {
-                width: "100%",
-                float: "left",
-                margin: "12px 0 0 0",
-            }
-        ],
-        [
-            {
-                width: "49%",
-                float: "left",
-                margin: "0 4px 4px 0",
-            },
-            {
-                width: "49%",
-                float: "left",
-                margin: "0 4px 4px 0",
-            },
-        ],
-    ];
-
     constructor(props) {
        // First, call the super-class's constructor
 
@@ -346,7 +432,12 @@ class ScenarioDiv extends Component {
                 }
                 id={this.props.idPrefix + "_" + this.props.order}
                 className="scenarioDiv"
-                style={{backgroundColor:(((this.plusOne % 2) === 0) ? "#FFFFFF" : "#EEEEEE")}}
+                style={
+                    {
+                        backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1),
+                        display: ((this.props.index < this.props.maxIndex) ? "none" : "block"),
+                    }
+                }
             >
                 <InputOrder
                     ref={
@@ -360,8 +451,26 @@ class ScenarioDiv extends Component {
 
                 <input type={"hidden"} id={this.fieldPrefix + "_pk"} name={this.fieldPrefix + "_pk"} value={this.pk} />
 
-                <div className="scenarioPartDiv">
-                    <div style={this.scenarioRows[0][0]}>
+                <div className={"scenarioDivRow"}>
+                    <div className={"scenarioDiv_leftButton"}>
+                        <button
+                            ref={
+                                (input) => {
+                                    this.hideScenarioReference = input;
+                                }
+                            }
+                            className={"btn btn-mini"}
+                            title={"hide scenario"}
+                            type={"button"}
+                            onClick={
+                                (e) => this.props.handleButtonClick(e)
+                            }
+                        >
+                            <i id={this.buttonSetPrefix + "_hidescenario"} className="icon-minus" />
+                        </button>
+                    </div>
+
+                    <div className={"scenarioDiv_name"}>
                         <label htmlFor={this.fieldPrefix + "_scenario_name"} className="control-label">Name</label>
                         <div className="controls">
                             <InputScenarioName
@@ -372,10 +481,13 @@ class ScenarioDiv extends Component {
                                 }
                                 id={this.fieldPrefix + "_scenario_name"}
                                 value={this.scenario_name}
+                                index={this.props.index}
+                                scenarioReferences={this.props.scenarioReferences}
                             />
                         </div>
                     </div>
-                    <div style={this.scenarioRows[0][1]}>
+
+                    <div className={"scenarioDiv_outcome"}>
                         <label htmlFor={this.fieldPrefix + "_outcome"} className="control-label">Outcome</label>
                         <div className="controls">
                             <SelectOutcome
@@ -390,7 +502,8 @@ class ScenarioDiv extends Component {
                             />
                         </div>
                     </div>
-                    <div style={this.scenarioRows[0][2]}>
+
+                    <div className={"scenarioDiv_rightButtons"}>
                         <button
                             ref={
                                 (input) => {
@@ -454,10 +567,12 @@ class ScenarioDiv extends Component {
                     </div>
                 </div>
 
-                <br className="scenariosClearBoth" />
+                <br className={"scenariosClearBoth"} />
 
-                <div className="scenarioPartDiv">
-                    <div style={this.scenarioRows[2][0]}>
+                <div className={"scenarioPartDiv"}>
+                    <div className={"scenarioDiv_leftButton"}>&nbsp;</div>
+
+                    <div className={"scenarioDiv_summaryScore"}>
                         <label htmlFor={this.fieldPrefix + "_summary_of_findings_score"} className="control-label">Summary of Findings<br /><span style={{fontSize:"0.8em",}}>Score</span></label>
                         <div className="controls">
                             <SelectSummaryOfFindingsScore
@@ -472,7 +587,8 @@ class ScenarioDiv extends Component {
                             />
                         </div>
                     </div>
-                    <div style={this.scenarioRows[2][0]}>
+
+                    <div className={"scenarioDiv_summaryExplanation"}>
                         <label htmlFor={this.fieldPrefix + "_summary_of_findings_explanation"} className="control-label"><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
                         <div className="controls">
                             <TextAreaSummaryOfFindingsExplanation
@@ -544,6 +660,21 @@ class InputScenarioName extends Component {
                 value: event.target.value
             }
         );
+
+        // Look for a reference to this parent scenario's companion caption object
+        let referenceKey = "caption_" + this.props.index;
+        if (
+            (typeof(this.props.scenarioReferences) === "object")
+            && (referenceKey in this.props.scenarioReferences)
+            && (typeof(this.props.scenarioReferences[referenceKey]) === "object")
+        ) {
+            // The companion caption was found update its state with the value of this title
+            this.props.scenarioReferences[referenceKey].setState(
+                {
+                    name: event.target.value,
+                }
+            );
+        }
     }
 
     // This method generates the HTML code for this Component

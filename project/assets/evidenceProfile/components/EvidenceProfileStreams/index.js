@@ -26,19 +26,39 @@ class EvidenceProfileStreamsFormset extends Component {
         // First, look for a "streams" object in the incoming props -- defaulting to an empty array if none is found
         let iterateOverStreams = (("streams" in props) && (typeof(props.streams) === "object") && (props.streams !== null)) ? props.streams : [];
 
-        // Iterate over the incoming streams and use them to build the object level "streams" and "streamReferences" attribures
+        // Iterate over the incoming streams and use them to build the object level "streams" and "streamReferences" attributes
         let iTo = iterateOverStreams.length;
         for (let i=0; i<=iTo; i++) {
             this.streams.push(
                 {
                     stream: (i < iTo) ? iterateOverStreams[i] : (new EvidenceProfileStream()),
+                    caption: null,
                     div: null,
                 }
             );
         }
 
-        // Now iterate through this.streams and build each div and reference
+        // Now iterate through this.streams and build each div, caption and reference
         for (let i=0; i<=iTo; i++) {
+            // Create a new StreamCaption for this stream and place it into the stream's "caption" attribute
+            this.streams[i].caption = <StreamCaption
+                key={(i + 0.5)}
+                ref={
+                    (input) => {
+                        this.streamReferences["caption_" + i] = input;
+                    }
+                }
+                index={i}
+                maxIndex={iTo}
+                order={(i + 1)}
+                stream_title={this.streams[i].stream.object.stream_title}
+                divId={this.divId}
+                idPrefix={this.props.config.streamIdPrefix}
+                buttonSetPrefix={this.props.config.buttonSetPrefix}
+                handleButtonClick={this.handleButtonClick}
+            />;
+
+            // Create a new StreamDiv for this stream and place it into the stream's "div" attribute
             this.streams[i].div = <StreamDiv
                 key={i}
                 ref={
@@ -63,12 +83,13 @@ class EvidenceProfileStreamsFormset extends Component {
                 outcomesFormsetConfig={this.props.config.outcomesFormset}
                 scenariosFormsetConfig={this.props.config.scenariosFormset}
                 handleButtonClick={this.handleButtonClick}
+                streamReferences={this.streamReferences}
             />;
         }
 
         // Initialize this object state's "div" to the initial set of divs from this.streams
         this.state = {
-            divs: this.streams.map(stream => stream.div),
+            divs: this.buildDivs(),
         };
     }
 
@@ -104,6 +125,24 @@ class EvidenceProfileStreamsFormset extends Component {
                         }
                     );
 
+                    // Create a new StreamCaption for this stream and place it into the stream's "caption" attribute
+                    this.streams[newDivIndex].caption = <StreamCaption
+                        key={(newDivIndex + 0.5)}
+                        ref={
+                            (input) => {
+                                this.streamReferences["caption_" + i] = input;
+                            }
+                        }
+                        index={newDivIndex}
+                        maxIndex={newDivIndex}
+                        order={(newDivIndex + 1)}
+                        stream_title={this.streams[newDivIndex].stream.object.stream_name}
+                        divId={this.divId}
+                        idPrefix={this.props.config.streamIdPrefix}
+                        buttonSetPrefix={this.props.config.buttonSetPrefix}
+                        handleButtonClick={this.handleButtonClick}
+                    />;
+
                     this.streams[streamIndex].div = <StreamDiv
                         key={newDivIndex}
                         ref={
@@ -127,11 +166,12 @@ class EvidenceProfileStreamsFormset extends Component {
                         outcomesFormsetConfig={this.props.config.outcomesFormset}
                         scenariosFormsetConfig={this.props.config.scenariosFormset}
                         handleButtonClick={this.handleButtonClick}
+                        streamReferences={this.streamReferences}
                     />;
 
                     this.setState(
                         {
-                            divs: this.streams.map(stream => stream.div),
+                            divs: this.buildDivs(),
                         }
                     ); 
                 }
@@ -142,6 +182,7 @@ class EvidenceProfileStreamsFormset extends Component {
 
                 let countStreams = this.streams.length;
                 let buttonDetails = event.target.id.replace(this.props.config.buttonSetRegEx, "$1,$2").split(",");
+                console.log(buttonDetails);
                 if ((buttonDetails.length == 2) && (buttonDetails[0] !== "") && (buttonDetails[1] !== "")) {
                     // Two non-empty details were extracted from the clicked-up element's ID, continue
 
@@ -163,7 +204,7 @@ class EvidenceProfileStreamsFormset extends Component {
 
                                 this.setState(
                                     {
-                                        divs: this.streams.map(stream => stream.div),
+                                        divs: this.buildDivs(),
                                     }
                                 );
                             }
@@ -177,7 +218,7 @@ class EvidenceProfileStreamsFormset extends Component {
 
                                 this.setState(
                                     {
-                                        divs: this.streams.map(stream => stream.div),
+                                        divs: this.buildDivs(),
                                     }
                                 );
                             }
@@ -187,9 +228,21 @@ class EvidenceProfileStreamsFormset extends Component {
                                 this.streams.splice(streamIndex, 1);
                                 this.setState(
                                     {
-                                        divs: this.streams.map(stream => stream.div),
+                                        divs: this.buildDivs(),
                                     }
                                 );
+                            }
+                            else if (buttonDetails[1] === "showstream") {
+                                // The clicked-upon element is a "Show" button, change the "display" styles for this stream's caption and
+                                // detail <div>s accordingly
+                                this.streamReferences["caption_" + this.streams[streamIndex].div.props.index].captionReference.style.display = "none";
+                                this.streamReferences["div_" + this.streams[streamIndex].div.props.index].divReference.style.display = "block";
+                            }
+                            else if (buttonDetails[1] === "hidestream") {
+                                // The clicked-upon element is a "Hide" button, change the "display" styles for this stream's caption and
+                                // detail <div>s accordingly
+                                this.streamReferences["caption_" + this.streams[streamIndex].div.props.index].captionReference.style.display = "block";
+                                this.streamReferences["div_" + this.streams[streamIndex].div.props.index].divReference.style.display = "none";
                             }
                         }
                     }
@@ -221,6 +274,9 @@ class EvidenceProfileStreamsFormset extends Component {
                     value: (i + 1),
                 }
             );
+
+            // Set the HTML text of the stream's caption
+            reference.headerReference.innerHTML = "Stream #" + (i + 1);
         }
     }
 
@@ -257,6 +313,72 @@ class EvidenceProfileStreamsFormset extends Component {
         }
 
         return returnValue;
+    }
+
+    // This method iterates over this.streams and builds an array containing each outcome's caption and detail <div>s
+    buildDivs() {
+        let returnValue = [];
+        let iTo = this.streams.length;
+
+        for (let i=0; i<iTo; i++) {
+            returnValue.push(this.streams[i].caption);
+            returnValue.push(this.streams[i].div);
+        }
+
+        return returnValue;
+    }
+}
+
+
+// This object is a single Evidence Profile Stream form fragment
+class StreamCaption extends Component {
+    constructor(props) {
+       // First, call the super-class's constructor
+        super(props);
+
+        this.state = {
+            title: (this.props.stream_title !== null) ? this.props.stream_title : "",
+        }
+    }
+
+    render() {
+        return(
+            <div
+                ref={
+                    (input) => {
+                        this.captionReference = input;
+                    }
+                }
+                id={this.props.idPrefix + "_" + this.props.order + "_caption"}
+                style={
+                    {
+                        display: ((this.props.index < this.props.maxIndex) ? "block" : "none"),
+                    }
+                }
+                className={"streamCaptionDiv"}
+            >
+                <div className={"streamCaption_button"}>
+                    <button
+                        ref={
+                            (input) => {
+                                this.showStreamReference = input;
+                            }
+                        }
+                        className={"btn btn-mini showStreamButton"}
+                        title={"show stream"}
+                        type={"button"}
+                        onClick={
+                            (e) => this.props.handleButtonClick(e)
+                        }
+                     >
+                        <i id={this.props.buttonSetPrefix + "_" + (this.props.index + 1) + "_showstream"} className={"icon-plus"} />
+                    </button>
+                </div>
+                <div className={"scenarioStream_name"}>
+                    {(this.state.title !== "") ? <strong><em>{this.state.title}</em></strong> : "[No Title Yet]"}
+                </div>
+            </div>
+        );
     }
 }
 
@@ -300,8 +422,44 @@ class StreamDiv extends Component {
                 }
                 id={this.props.idPrefix + "_" + this.props.order}
                 className={"streamDiv"}
-                style={{backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1)}}
+                style={
+                    {
+                        backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1),
+                        display: ((this.props.index < this.props.maxIndex) ? "none" : "block"),
+                    }
+                }
             >
+                <div className={"streamPart_leftButton"}>
+                    <button
+                        ref={
+                            (input) => {
+                                this.hideStreamReference = input;
+                            }
+                        }
+                        className={"btn btn-mini"}
+                        title={"hide stream"}
+                        type={"button"}
+                        onClick={
+                            (e) => this.props.handleButtonClick(e)
+                        }
+                    >
+                        <i id={this.buttonSetPrefix + "_hidestream"} className="icon-minus" />
+                    </button>
+                </div>
+
+                <div
+                    ref={
+                        (input) => {
+                            this.headerReference = input;
+                        }
+                    }
+                    className={"streamPart_header"}
+                >
+                    Stream #{this.props.order}
+                </div>
+
+                <br className={"streamsClearBoth"} />
+
                 <InputOrder
                     ref={
                         (input) => {
@@ -341,6 +499,8 @@ class StreamDiv extends Component {
                                 }
                                 id={this.fieldPrefix + "_stream_title"}
                                 value={this.stream_title}
+                                index={this.props.index}
+                                streamReferences={this.props.streamReferences}
                             />
                         </div>
                     </div>
@@ -486,8 +646,6 @@ class StreamDiv extends Component {
                         </div>
                     </div>
                 </div>
-
-                <br className={"streamsClearBoth"} />
             </div>
         );
     }
