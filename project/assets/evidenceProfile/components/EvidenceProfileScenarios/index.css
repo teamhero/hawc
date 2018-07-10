@@ -5,11 +5,75 @@
 .scenariosDiv {
 }
 
-.scenarioDiv {
-	border: 1px solid #000000;
-	margin: 2px 0 6px 0;
+.scenarioCaptionDiv {
+	background-color: #000060;
+	color: #FFFFFF;
+	text-align: left;
+    margin: 5px 0 0 0;
+    padding: 2px 3px 3px 3px;
 }
 
-.scenarioPartDiv {
-	margin: 0 2px 0 2px;
+.scenarioCaption_button {
+	float: left;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.senarioCaption_name {
+	float: left;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+
+.scenarioDiv {
+	margin: 4px 0 5px 0;
+	padding: 2px 3px 0 2px;
+}
+
+.scenarioDivRow {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+
+.scenarioDiv_leftButton {
+	float: left;
+	width: 33px;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.scenarioDiv_name {
+	float: left;
+	width: 240px;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.scenarioDiv_outcome {
+	float: left;
+	width: 280px;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.scenarioDiv_rightButtons {
+	float: right;
+	width: 33px;
+	margin: 0 0 0 0;
+	padding: 0 0 0 5px;
+}
+
+.scenarioDiv_summaryScore {
+	float: left;
+	width: 240px;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.scenarioDiv_summaryExplanation {
+	float: left;
+	width: 300px;
+	margin: 0 0 0 0;
+	padding: 0 0 0 5px;
+
 }

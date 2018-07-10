@@ -397,9 +397,9 @@ class CrossStreamInferenceCaption extends Component {
                                 this.showInferenceReference = input;
                             }
                         }
-                        className="btn btn-mini showInferenceButton"
-                        title="show inference"
-                        type="button"
+                        className={"btn btn-mini showInferenceButton"}
+                        title={"show inference"}
+                        type={"button"}
                         onClick={
                             (e) => this.props.handleButtonClick(e)
                         }

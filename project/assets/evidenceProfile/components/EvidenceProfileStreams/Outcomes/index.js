@@ -317,7 +317,7 @@ class OutcomesFormset extends Component {
         return returnValue;
     }
 
-    // This method iterates over this.inferences and builds an array containing each inference's caption and detail rows
+    // This method iterates over this.outcomes and builds an array containing each outcome's caption and detail rows
     buildRows() {
         let returnValue = [];
         let iTo = this.outcomes.length;
@@ -454,6 +454,8 @@ class OutcomeRow extends Component {
                             id={this.fieldPrefix + "_title"}
                             value={this.props.title}
                             streamIndex={this.props.streamIndex}
+                            index={this.props.index}
+                            outcomeReferences={this.props.outcomeReferences}
                         />
                     </div>
 
@@ -605,7 +607,22 @@ class InputTitle extends Component {
             }
         );
 
-        // Update the set of outcom <option>s available with this parent stream
+        // Look for a reference to this parent outome's companion caption object
+        let referenceKey = "caption_" + this.props.index;
+        if (
+            (typeof(this.props.outcomeReferences) === "object")
+            && (referenceKey in this.props.outcomeReferences)
+            && (typeof(this.props.outcomeReferences[referenceKey]) === "object")
+        ) {
+            // The companion caption was found update its state with the value of this title
+            this.props.outcomeReferences[referenceKey].setState(
+                {
+                    title: event.target.value,
+                }
+            );
+        }
+
+        // Update the set of outcome <option>s available within this parent stream
         updateOutcomesOptionSet(this.props.streamIndex);
     }
 
