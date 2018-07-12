@@ -29,6 +29,37 @@
 
   <script type="text/javascript">
     // Run the assessmentStartup() method for this app
+
+    // Attempt to modify the width of the main content <div> to allow for a wider form
+    let mainContent = document.getElementById("main-content");
+    if (mainContent !== null) {
+      // The desired main content <div> was found, set its width
+      mainContent.style.width = "1200px";
+
+      // Now look for a <div> element within mainContent that has an ID of "content" and a class of "span9"
+      let content = mainContent.querySelector("#content .span9");
+      if (content !== null) {
+        // The desired <div> was found, look for the first <div> element within its child nodes
+
+        let i = 0;
+        let iTo = content.childNodes.length;
+        let divElement = null;
+        while ((divElement === null) && (i < iTo)) {
+          if (content.childNodes[i].tagName === "DIV") {
+            // This element is a <div> element, copy a reference of it to divNode
+            divElement = content.childNodes[i];
+          }
+
+          i++;
+        }
+
+        if (divElement !== null) {
+          // The desired <div> element was found, set it to the desired width
+          divElement.style.width = "678px";
+        }
+      }
+    }
+
     window.app.assessmentStartup(
       function(assessment) {
         {% if crud == "Create" %}
@@ -68,22 +99,13 @@
                   actionsClass: "form-actions",
                   confidenceJudgements: evidenceProfile.Library.setConfidenceJudgements({{confidence_judgements|safe}}),
                 },
-                crossStreamInferences: {
-                  divId: "div_id_inferences",
-                  tableId: "table_inferences",
-                  addButtonId: "add_inference_row",
-                  rowIdPrefix: "row_inference",
-                  fieldPrefix: "inference",
-                  buttonSetPrefix: "btn_inference",
-                  buttonSetRegEx: new RegExp("^btn_inference_(\\d+)_(moveup|movedown|remove)$", "gi"),
-                },
                 streams: {
                   divId: "div_id_streams",
                   addButtonId: "add_stream_div",
                   streamIdPrefix: "div_stream",
                   fieldPrefix: "stream",
                   buttonSetPrefix: "btn_stream",
-                  buttonSetRegEx: new RegExp("^btn_stream_(\\d+)_(moveup|movedown|remove)$", "gi"),
+                  buttonSetRegEx: new RegExp("^btn_stream_(\\d+)_(moveup|movedown|remove|showstream|hidestream)$", "gi"),
                   streamTypes: evidenceProfile.Library.setStreamTypes({{stream_types|safe}}),
                   outcomesFormset: {
                     tableIdPattern: "table_outcomes_<<streamIndex>>",
@@ -91,7 +113,7 @@
                     fieldPrefixPattern: "stream_<<streamIndex>>",
                     addButtonIdPattern: "add_outcome_row_<<streamIndex>>",
                     buttonSetPrefixPattern: "btn_outcome_<<streamIndex>>",
-                    buttonSetRegEx: new RegExp("^btn_outcome_(\\d)_(\\d)_(moveup|movedown|remove)$", "gi"),
+                    buttonSetRegEx: new RegExp("^btn_outcome_(\\d)_(\\d)_(moveup|movedown|remove|showoutcome|hideoutcome)$", "gi"),
                     scenariosFormFragmentClass: "div_scenario",
                   },
                   scenariosFormset: {
@@ -99,11 +121,20 @@
                     addButtonIdPattern: "add_scenario_div_<<streamIndex>>",
                     buttonSetPrefixPattern: "btn_scenario_<<streamIndex>>",
                     fieldPrefixPattern: "stream_<<streamIndex>>",
-                    buttonSetRegEx: new RegExp("^btn_scenario_(\\d)_(\\d)_(moveup|movedown|remove)$", "gi"),
+                    buttonSetRegEx: new RegExp("^btn_scenario_(\\d)_(\\d)_(moveup|movedown|remove|showscenario|hidescenario)$", "gi"),
                     scenarioIdPrefix: "div_scenario",
                     confidenceFactorsIncrease: evidenceProfile.Library.setConfidenceFactors({{confidence_factors_increase|safe}}),
                     confidenceFactorsDecrease: evidenceProfile.Library.setConfidenceFactors({{confidence_factors_decrease|safe}}),
                   },
+                },
+                crossStreamInferences: {
+                  divId: "div_id_inferences",
+                  tableId: "table_inferences",
+                  addButtonId: "add_inference_row",
+                  rowIdPrefix: "row_inference",
+                  fieldPrefix: "inference",
+                  buttonSetPrefix: "btn_inference",
+                  buttonSetRegEx: new RegExp("^btn_inference_(\\d+)_(moveup|movedown|remove|showinference|hideinference)$", "gi"),
                 },
               },
               {{evidenceProfile|safe}},

@@ -1,3 +1,7 @@
+.inferencesTable {
+	width: 678px;
+}
+
 .inferencesClearBoth {
 	clear: both;
 }
@@ -7,7 +11,42 @@
     font-size: 0.9em;
 }
 
+.inferencesCaptionCell {
+	border-width: 0 0 5px 0;
+    border-color: #FFFFFF;
+	background-color: #600000;
+	color: #FFFFFF;
+	text-align: left;
+    padding: 0 5px 3px 5px;
+    display: table-cell;
+}
+
 .inferencesBodyCell {
-    border: 0;
+	border: 0;
     vertical-align: top;
+    padding: 5px 5px 2px 5px;
+}
+
+.inferencesColumn_leftButton {
+    width: 39px;
+    display: table-cell;
+}
+
+.inferencesColumn_title {
+    width: 193px;
+    display: table-cell;
+}
+
+.inferencesColumn_description {
+    width: 407px;
+    display: table-cell;
+}
+
+.inferencesColumn_rightButtons {
+    width: 39px;
+    display: table-cell;
+}
+
+.showInferenceButton {
+	margin: 0 10px 0 0;
 }
