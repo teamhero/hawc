@@ -503,13 +503,11 @@ class D3Plot {
     }
 
     _hide_show_plot(){
-        if ($('#bmd_ds_plot').find('svg').css('visibility') == 'hidden') {
-            $('#bmd_ds_plot').find('svg').css('visibility', 'visible');
-            $('#close').show();
+        if ($('#bmd_ds_plot').find('g.plot_legend').css('visibility') == 'hidden') {
+            $('#bmd_ds_plot').find('g.plot_legend').css('visibility', 'visible');
         }
         else {
-            $('#bmd_ds_plot').find('svg').css('visibility', 'hidden');
-            $('#close').hide();
+            $('#bmd_ds_plot').find('g.plot_legend').css('visibility', 'hidden');
         }
     }
 
