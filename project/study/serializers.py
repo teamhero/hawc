@@ -72,4 +72,13 @@ class StudyCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializ
         fields = ('id', 'short_citation', ) + cleanup_fields
 
 
+class StudyPredictiveLookup(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return ret
+
+    class Meta:
+        model = models.Study
+        fields = ('id', 'short_citation', 'full_citation', )
+
 SerializerHelper.add_serializer(models.Study, VerboseStudySerializer)

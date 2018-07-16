@@ -9,6 +9,7 @@ router = DefaultRouter()
 router.register(r'study', api.Study, base_name="study")
 router.register(r'final', api.FinalRobStudy, base_name="final")
 router.register(r'study-cleanup', api.StudyCleanupFieldsView, base_name='study-cleanup')
+router.register(r'study-search', api.StudySearch, base_name='study-search')
 
 urlpatterns = [
     url(r'^api/', include(router.urls, namespace='api')),
