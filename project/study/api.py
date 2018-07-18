@@ -151,7 +151,7 @@ class StudySearch(viewsets.ReadOnlyModelViewSet):
             term = (self.request.GET.get('term')) if ('term' in self.request.GET) else ((self.request.POST.get('term')) if ('term' in self.request.POST) else (''))
             if (term != ''):
                 # A non-empty term was found, search the studies within the assessment, searching in the short_citation and full_citation fields
-                queryset = self.model.objects.get_qs(assessment_id).filter(short_citation__icontains=term) | self.model.objects.get_qs(assessment_id).filter(full_citation__icontains=term)
+                queryset = self.model.objects.get_qs(assessment_id).filter(short_citation__icontains=term.lower()) | self.model.objects.get_qs(assessment_id).filter(full_citation__icontains=term)
 
                 try:
                     # Try to treat term like an integer and OR the current queryset with a search for this specific Study HAWC primary key
