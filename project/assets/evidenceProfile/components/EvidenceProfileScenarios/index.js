@@ -1,6 +1,10 @@
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import EvidenceProfileScenario from "../../EvidenceProfileScenario";
+import AutoSuggest from 'react-autosuggest';
+
+import fetch from 'isomorphic-fetch';
+import h from 'shared/utils/helpers';
 
 import "./index.css";
 
@@ -92,6 +96,8 @@ class EvidenceProfileScenariosFormset extends Component {
                 fieldPrefix={this.fieldPrefix}
                 buttonSetPrefix={this.buttonSetPrefix}
                 handleButtonClick={this.handleButtonClick}
+                handleStudySelection={this.handleStudySelection}
+                studySearchURL={this.props.config.studySearchURL}
                 scenarioReferences={this.scenarioReferences}
             />;
         }
@@ -180,6 +186,8 @@ class EvidenceProfileScenariosFormset extends Component {
                     fieldPrefix={this.fieldPrefix}
                     buttonSetPrefix={this.buttonSetPrefix}
                     handleButtonClick={this.handleButtonClick}
+                    handleStudySelection={this.handleStudySelection}
+                    studySearchURL={this.props.config.studySearchURL}
                     scenarioReferences={this.scenarioReferences}
                 />;
 
@@ -338,6 +346,21 @@ class EvidenceProfileScenariosFormset extends Component {
         }
 
         return returnValue;
+    }
+
+    // This method is called when a study is selected within this formset
+    handleStudySelection(id, study) {
+        let idMatcher = new RegExp("^(stream_\\d+_\\d_scenario_study)_suggest$", "gi");
+        if ((typeof(id) === "string") && (id !== "") && (id.match(idMatcher)) && (typeof(study) === "object") && (typeof(study.id) !== "undefined") && (study.id != "")) {
+            // The id argument is a non-empty string that matches the expected naming convention, and the study argument is an object with a
+            // non-empty attribute; attempt to find a similarly-named DOM element that holds a Study's ID value
+
+            let studyIdField = document.getElementById(id.replace(idMatcher, "$1_id"));
+            if (studyIdField != null) {
+                // The expected DOM element was found, set its value to the value of study.id
+                studyIdField.value = study.id;
+            }
+        }
     }
 }
 
@@ -605,6 +628,32 @@ class ScenarioDiv extends Component {
                 </div>
 
                 <br className="scenariosClearBoth" />
+
+                <div className={"scenarioPartDiv"}>
+                    <div className={"scenarioDiv_leftButton"}>&nbsp;</div>
+                    <div className={"scenaioDiv_testStudy"}>
+                        <input
+                            ref={
+                                (input) => {
+                                    this.studyIdReference = input;
+                                }
+                            }
+                            type={"hidden"}
+                            id={this.fieldPrefix + "_study_id"}
+                            name={this.fieldPrefix + "_study_id"}
+                            value={""}
+                        />
+
+                        <label htmlFor={this.fieldPrefix + "_study_suggest"} className="control-label"><br />Study</label>
+                        <StudyAutoSuggest
+                            id={this.fieldPrefix + "_study_suggest"}
+                            placeholder={"Study..."}
+                            url={this.props.studySearchURL}
+                            handleStudySelection={this.props.handleStudySelection}
+                            value={""}
+                        />
+                    </div>
+                </div>
             </div>
         )
     }
@@ -823,6 +872,104 @@ class TextAreaSummaryOfFindingsExplanation extends Component {
                 onChange={(e) => this.updateField(e)}
             >
             </textarea>
+        );
+    }
+}
+
+
+// This Component class is used to create an auto-suggest field for looking up an Assessment Study
+class StudyAutoSuggest extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor and properly bind its necessary methods
+        super(props);
+        this.onChange = this.onChange.bind(this);
+        this.onSuggestionsFetchRequested = this.onSuggestionsFetchRequested.bind(this);
+        this.onSuggestionsClearRequested = this.onSuggestionsClearRequested.bind(this);
+        this.onSuggestionSelected = this.onSuggestionSelected.bind(this);
+        this.getSuggestionValue = this.getSuggestionValue.bind(this);
+        this.renderSuggestion = this.renderSuggestion.bind(this);
+
+        this.state = {
+                value: this.props.value,
+                suggestions: [],
+        };
+    }
+
+    // This method is called whenever the value in the contained <input /> field is changed
+    onChange(event, {newValue, method}) {
+        this.setState(
+            {
+                value: newValue,
+            }
+        );
+    }
+
+    setSuggestions(suggestions) {
+        this.setState(
+            {
+                suggestions: suggestions,
+            }
+        );
+    }
+
+    // This method is called whenever the component needs to update is list of suggestions
+    onSuggestionsFetchRequested(term) {
+        if (term.value != "") {
+            // The value in the contained <input /> field is not empty, call the appropriate HAWC Study API to get suggested Studies
+            // The API call returns a JSON-formatted array of objects with 'id' and 'value' keys
+
+            fetch(`${this.props.url}&term=${term.value}`, h.fetchGet)
+            .then(response => response.json())
+            .then(data => this.setSuggestions(data));
+        }
+    }
+
+    // This method is called whenever the component needs to clear its displayed list of suggestions
+    onSuggestionsClearRequested() {
+        this.setState(
+            {
+                suggestions: []
+            }
+        );
+    }
+
+    // This method is called whenever a Study is selected
+    // It is just a pass-thru that calls the injected method for handling the selected Study within the context of the overall Scenario object
+    onSuggestionSelected(event, selectedObject) {
+        this.onSuggestionsClearRequested();
+        this.props.handleStudySelection(this.props.id, selectedObject.suggestion);
+    }
+
+    // This method is called whenever a suggestion's value is needed
+    getSuggestionValue(suggestion) {
+        return suggestion.value;
+    }
+
+    // This method renders a suggestion element within the list of options
+    renderSuggestion(suggestion) {
+        return (
+            <span>{suggestion.value}</span>
+        );
+    }
+
+    render() {
+        return(
+            <AutoSuggest
+                id={this.props.id}
+                suggestions={this.state.suggestions}
+                onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+                onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+                onSuggestionSelected={this.onSuggestionSelected}
+                getSuggestionValue={this.getSuggestionValue}
+                renderSuggestion={this.renderSuggestion}
+                inputProps={
+                    {
+                        placeholder: "Lookup study",
+                        value: this.state.value,
+                        onChange: this.onChange,
+                    }
+                }
+            />
         );
     }
 }
