@@ -779,7 +779,6 @@ class EvidenceProfileStream(models.Model):
     stream_title = models.CharField(max_length=128, help_text="Enter the title of this profile streaam (spaces and special-characters allowed).")
     summary_of_findings = JSONField(default={})
     confidence_judgement = models.TextField(default="{}")
-    outcomes = models.TextField(default="[]")
 
     # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
@@ -827,10 +826,9 @@ class EvidenceProfileScenario(models.Model):
     outcome = models.TextField(default="{}")
     summary_of_findings = JSONField(default={})
     scenario_name = models.CharField(max_length=128, help_text="(optional) If a stream only has one scenario, there is no reason to give it a name", blank=True)
-    studies = models.TextField(default="{}")
+    studies = models.TextField(default="[]")
     confidencefactors_increase = models.TextField(default="[]")
     confidencefactors_decrease = models.TextField(default="[]")
-    summary_of_findings = models.TextField(default="{}")
 
     # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)

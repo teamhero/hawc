@@ -4,7 +4,6 @@ import EvidenceProfileStream from "../../EvidenceProfileStream";
 
 import "./index.css";
 
-import {renderOutcomesFormset} from "./Outcomes";
 import {renderEvidenceProfileScenariosFormset} from "../EvidenceProfileScenarios";
 
 // Set the colors to be used as shades for the alternating streams
@@ -29,10 +28,10 @@ class EvidenceProfileStreamsFormset extends Component {
 
         // Iterate over the incoming streams and use them to build the object level "streams" and "streamReferences" attributes
         let iTo = iterateOverStreams.length;
-        for (let i=0; i<=iTo; i++) {
+        for (let i=0; i<iTo; i++) {
             this.streams.push(
                 {
-                    stream: (i < iTo) ? iterateOverStreams[i] : (new EvidenceProfileStream()),
+                    stream: iterateOverStreams[i],
                     caption: null,
                     div: null,
                 }
@@ -54,7 +53,7 @@ class EvidenceProfileStreamsFormset extends Component {
         }
 
         // Now iterate through this.streams and build each div, caption and reference
-        for (let i=0; i<=iTo; i++) {
+        for (let i=0; i<iTo; i++) {
             // Create a new StreamCaption for this stream and place it into the stream's "caption" attribute
             this.streams[i].caption = <StreamCaption
                 key={(i + 0.5)}
@@ -97,7 +96,6 @@ class EvidenceProfileStreamsFormset extends Component {
                 idPrefix={this.props.config.streamIdPrefix}
                 fieldPrefix={this.props.config.fieldPrefix}
                 buttonSetPrefix={this.props.config.buttonSetPrefix}
-                outcomesFormsetConfig={this.props.config.outcomesFormset}
                 scenariosFormsetConfig={this.props.config.scenariosFormset}
                 handleButtonClick={this.handleButtonClick}
                 streamReferences={this.streamReferences}
@@ -182,7 +180,6 @@ class EvidenceProfileStreamsFormset extends Component {
                         idPrefix={this.props.config.streamIdPrefix}
                         fieldPrefix={this.props.config.fieldPrefix}
                         buttonSetPrefix={this.props.config.buttonSetPrefix}
-                        outcomesFormsetConfig={this.props.config.outcomesFormset}
                         scenariosFormsetConfig={this.props.config.scenariosFormset}
                         handleButtonClick={this.handleButtonClick}
                         streamReferences={this.streamReferences}
@@ -202,7 +199,6 @@ class EvidenceProfileStreamsFormset extends Component {
 
                 let countStreams = this.streams.length;
                 let buttonDetails = event.target.id.replace(this.props.config.buttonSetRegEx, "$1,$2").split(",");
-                console.log(buttonDetails);
                 if ((buttonDetails.length == 2) && (buttonDetails[0] !== "") && (buttonDetails[1] !== "")) {
                     // Two non-empty details were extracted from the clicked-up element's ID, continue
 
@@ -335,7 +331,7 @@ class EvidenceProfileStreamsFormset extends Component {
         return returnValue;
     }
 
-    // This method iterates over this.streams and builds an array containing each outcome's caption and detail <div>s
+    // This method iterates over this.streams and builds an array containing each stream's caption and detail <div>s
     buildDivs() {
         let returnValue = [];
         let iTo = this.streams.length;
@@ -372,7 +368,7 @@ class StreamCaption extends Component {
                 id={this.props.idPrefix + "_" + this.props.order + "_caption"}
                 style={
                     {
-                        display: ((this.props.index < this.props.maxIndex) ? "block" : "none"),
+                        display: "block",
                     }
                 }
                 className={"streamCaptionDiv"}
@@ -419,8 +415,8 @@ class StreamDiv extends Component {
 
         // Copy a syntactically-valid this.props.confidence_judgement to this object, defaulting to to an empty judgement if the version in props is missing or invalid
         this.confidence_judgement = (("confidence_judgement" in props) && (props.confidence_judgement !== null) && (typeof(props.confidence_judgement) === "object")) ? props.confidence_judgement : {
-            title: "",
             score: "",
+            title: "",
             explanation: "",
         };
 
@@ -462,7 +458,7 @@ class StreamDiv extends Component {
                 style={
                     {
                         backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1),
-                        display: ((this.props.index < this.props.maxIndex) ? "none" : "block"),
+                        display: "none",
                     }
                 }
             >
@@ -669,8 +665,8 @@ class StreamDiv extends Component {
                             />
                         </div>
                     </div>
-                    <div className={"streamPart_rightConfidenceJudgement"}>
-                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_explanation"} className={"control-label"}><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
+                    <div className={"streamPart_rightConfidenceJudgement streamsClearBoth"}>
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_explanation"} className={"control-label"}><br /><span style={{fontSize:"0.8em",}}>Full Explanation</span></label>
                         <div className={"controls"}>
                             <TextAreaConfidenceJudgementExplanation
                                 ref={
@@ -685,26 +681,8 @@ class StreamDiv extends Component {
                     </div>
                 </div>
 
-                <br className={"streamsClearBoth"} />
-
-                <div className={"streamPartDiv"}>
-                    <div className={"streamPart_outcomes"}>
-                        <div
-                            ref={
-                                (input) => {
-                                    this.outcomesFormsetReference = input;
-                                }
-                            }
-                            id={this.fieldPrefix + "_outcomesFormset"}
-                        >
-                        </div>
-                    </div>
-                </div>
-
-                <br className={"streamsClearBoth"} />
-
-                <div className={"streamPartDiv"}>
-                    <div className={"streamPart_scenarios"}>
+                <div className={"streamPartDiv streamsClearBoth"}>
+                    <div className={"streamPart_scenarios streamsClearBoth"}>
                         <div
                             ref={
                                 (input) => {

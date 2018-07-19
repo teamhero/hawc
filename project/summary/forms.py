@@ -759,17 +759,12 @@ class EvidenceProfileForm(forms.ModelForm):
             # A parent Assessment object was found, copy a reference to it into this object's instance
             self.instance.assessment = assessment
 
-        # Get the initial values for the fields related to cross-stream conclusions
-        initial_confidence_judgement_score = ""
-        initial_confidence_judgement_explanation = ""
-        if (self.instance.cross_stream_conclusions != ""):
-            # This Evidence Profile object has a non-empty cross_stream_conclusions field, set initial values from it
-            try:
-                conclusionsJSON = json.loads(self.instance.cross_stream_conclusions)
-                initial_confidence_judgement_score = conclusionsJSON["confidence_judgement"]["score"]
-                initial_confidence_judgement_explanation = conclusionsJSON["confidence_judgement"]["explanation"]
-            except:
-                pass
+        # Get the initial values for the fields related to cross-stream confidence judgements
+        initial_confidence_judgement = {}
+        try:
+            initial_confidence_judgement = json.loads(self.instance.cross_stream_confidence_judgement)
+        except:
+            pass
 
         # Create a list of confidence judgement options from the appropriate lookup table
         confidenceJudgementChoices = [(confidenceJudgement.value, confidenceJudgement.name) for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value")]
@@ -945,32 +940,6 @@ class EvidenceProfileForm(forms.ModelForm):
                     }
                 },
             },
-            "stream_outcomes": {
-                "parent_object_type": "evidence_profile_streams",
-                "parent_field": "outcomes",
-                "ordering_field": "order",
-                "retain_ordering_field": False,
-                "re_match": r"^stream_(\d+)_(\d+)_outcome_(title|score|explanation|order)$",
-                "re_replace_with": r"\1,\2,\3",
-                "field_validation": {
-                    "title": {
-                        "required": True,
-                        "type": "string",
-                        "can_be_empty": False,
-                    },
-                    "score": {
-                        "required": True,
-                        "type": "integer",
-                        "valid_options": confidence_judgement_value_list,
-                        "can_be_empty": False,
-                    },
-                    "explanation": {
-                        "required": True,
-                        "type": "string",
-                        "can_be_empty": True,
-                    },
-                },
-            },
             "stream_scenarios": {
                 "parent_object_type": "evidence_profile_streams",
                 "parent_field": "scenarios",
@@ -989,18 +958,17 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "string",
                         "can_be_empty": True,
                     },
-                    "scenario_name": {
+                     "outcome_title": {
                         "required": True,
                         "type": "string",
                         "can_be_empty": True,
                     },
-                    "summary_of_findings_score": {
+                     "outcome_explanation": {
                         "required": True,
-                        "type": "integer",
-                        "valid_options": confidence_judgement_value_list,
-                        "can_be_empty": False,
+                        "type": "string",
+                        "can_be_empty": True,
                     },
-                    "summary_of_findings_explanation": {
+                    "scenario_name": {
                         "required": True,
                         "type": "string",
                         "can_be_empty": False,
@@ -1426,11 +1394,6 @@ class EvidenceProfileForm(forms.ModelForm):
             in enumerate(unordered_types["evidence_profile_streams"]["desired_order"])
         ]
 
-        # Now iterate through each outcome within each evidence profile stream and add the appropriate name attribute to it
-        for stream in unordered_types["evidence_profile_streams"]["desired_order"]:
-            for outcome in stream["outcomes"]:
-                outcome["name"] = confidence_judgement_dict[outcome["score"]]
-
         cleaned_data["scenarios"] = {}
 
         # Now iterate through each evidence profile stream and set each scenario's full outcome attribute from its submitted value and then move the
@@ -1440,14 +1403,16 @@ class EvidenceProfileForm(forms.ModelForm):
             # Move this stream's scenario objects out to an object named cleaned_data["scenarios"] and remove it from this stream object
             cleaned_data["scenarios"][index] = stream["scenarios"]
             del stream["scenarios"]
+            '''
 
         # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
         cleaned_data["streams"] = unordered_types["evidence_profile_streams"]["desired_order"]
 
         # Create an object in the cleaned data that is made up of data related to inferences and judgements across all streams
         # within this evidence profile
-        confidence_judgement = {
+        cleaned_data["cross_stream_confidence_judgement"] = {
             "score": cleaned_data.get("confidence_judgement_score"),
+            "title": cleaned_data.get("confidence_judgement_title"),
             "explanation": cleaned_data.get("confidence_judgement_explanation"),
         }
 
