@@ -418,11 +418,11 @@ class EvidenceProfileNew(BaseCreate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-        # Set the form instance's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
-        # related form fields
-        form.instance.cross_stream_conclusions = form.cleaned_data.get("cross_stream_conclusions")
+        # Set the object model's cross-stream related fields based on the cleaned data from the submitted form
+        form.instance.cross_stream_confidence_judgement = json.dumps(form.cleaned_data.get("cross_stream_confidence_judgement"))
+        form.instance.cross_stream_inferences = json.dumps(form.cleaned_data.get("cross_stream_inferences"))
 
-        # Set the object model's hawcuser object to the logged-in user before calling the suer-class's form_valid() method
+        # Set the object model's hawcuser object to the logged-in user before calling the super-class's form_valid() method
         form.instance.hawcuser = self.request.user
 
         return super().form_valid(form)
@@ -438,9 +438,8 @@ class EvidenceProfileNew(BaseCreate):
                 hawcuser = self.request.user,
                 stream_type = stream["stream_type"],
                 stream_title = stream["stream_title"],
-                order = stream["order"],
                 confidence_judgement = json.dumps(stream["confidence_judgement"]),
-                outcomes = json.dumps(stream["outcomes"]),
+                order = stream["order"],
             )
 
             streamToSave.save()
@@ -454,8 +453,7 @@ class EvidenceProfileNew(BaseCreate):
                         hawcuser = self.request.user,
                         scenario_name = scenario["scenario_name"],
                         outcome = json.dumps(scenario["outcome"]),
-                        summary_of_findings = json.dumps(scenario["summary_of_findings"]),
-                        studies = "{}",
+                        studies = "[]",
                         confidencefactors_increase = "[]",
                         confidencefactors_decrease = "[]",
                         order = scenario["order"],
@@ -486,11 +484,11 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-        # Set the form instance's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
-        # related form fields
-        form.instance.cross_stream_conclusions = form.cleaned_data.get("cross_stream_conclusions")
+        # Set the object model's cross-stream related fields based on the cleaned data from the submitted form
+        form.instance.cross_stream_confidence_judgement = json.dumps(form.cleaned_data.get("cross_stream_confidence_judgement"))
+        form.instance.cross_stream_inferences = json.dumps(form.cleaned_data.get("cross_stream_inferences"))
 
-        return super().form_valid(form)
+        # return super().form_valid(form)
 
     # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
     # of all of the child Streams and grandchild Scenarios
@@ -520,9 +518,8 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
             streamToSave.hawcuser = self.request.user
             streamToSave.stream_type = stream["stream_type"]
             streamToSave.stream_title = stream["stream_title"]
-            streamToSave.order = stream["order"]
             streamToSave.confidence_judgement = json.dumps(stream["confidence_judgement"])
-            streamToSave.outcomes = json.dumps(stream["outcomes"])
+            streamToSave.order = stream["order"]
 
             streamToSave.save()
 
@@ -551,7 +548,6 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
                     scenarioToSave.hawcuser = self.request.user
                     scenarioToSave.scenario_name = scenario["scenario_name"]
                     scenarioToSave.outcome = json.dumps(scenario["outcome"])
-                    scenarioToSave.summary_of_findings = json.dumps(scenario["summary_of_findings"])
                     scenarioToSave.studies = "{}"
                     scenarioToSave.confidencefactors_increase = "[]"
                     scenarioToSave.confidencefactors_decrease = "[]"
@@ -629,27 +625,12 @@ def getEvidenceProfileContextData(object):
         evidenceProfile = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
         evidenceProfile["streams"] = []
 
+    evidenceProfile["cross_stream_confidence_judgement"] = json.loads(evidenceProfile["cross_stream_confidence_judgement"])
+    evidenceProfile["cross_stream_inferences"] = json.loads(evidenceProfile["cross_stream_inferences"])
+
     # Any existing stream objects loaded from the database will have the actual data fields stored within a "fields" attribute; extract
     # that data from the fields attribute and retain only that portion of the original stream object
     evidenceProfile["streams"][:] = [stream["fields"] for stream in evidenceProfile["streams"] if (stream)]
-
-    #Attempt to de-serialize the profile's "cross_stream_conclusions" attribute
-    try:
-        evidenceProfile["cross_stream_conclusions"] = json.loads(evidenceProfile["cross_stream_conclusions"])
-    except:
-        evidenceProfile["cross_stream_conclusions"] = {}
-
-    # Make sure that the profile's cross_stream_conclusions attribute includes a confidence_judgement attribute of its own
-    if ("confidence_judgement" not in evidenceProfile["cross_stream_conclusions"]):
-        evidenceProfile["cross_stream_conclusions"]["confidence_judgement"] = {
-            "score": "",
-            "name": "",
-            "explanation": "",
-        }
-
-    # Make sure that the profile's cross_stream_conclusions attribute includes an inferences attribute of its own
-    if ("inferences" not in evidenceProfile["cross_stream_conclusions"]):
-        evidenceProfile["cross_stream_conclusions"]["inferences"] = []
 
     # Attempt to de-serialize each stream's "confidence_judgement" and "outcome" attributes
     for stream in evidenceProfile["streams"]:

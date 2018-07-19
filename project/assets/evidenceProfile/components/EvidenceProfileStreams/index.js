@@ -4,7 +4,6 @@ import EvidenceProfileStream from "../../EvidenceProfileStream";
 
 import "./index.css";
 
-import {renderOutcomesFormset} from "./Outcomes";
 import {renderEvidenceProfileScenariosFormset} from "../EvidenceProfileScenarios";
 
 // Set the colors to be used as shades for the alternating streams
@@ -28,18 +27,32 @@ class EvidenceProfileStreamsFormset extends Component {
 
         // Iterate over the incoming streams and use them to build the object level "streams" and "streamReferences" attributes
         let iTo = iterateOverStreams.length;
-        for (let i=0; i<=iTo; i++) {
+        for (let i=0; i<iTo; i++) {
             this.streams.push(
                 {
-                    stream: (i < iTo) ? iterateOverStreams[i] : (new EvidenceProfileStream()),
+                    stream: iterateOverStreams[i],
                     caption: null,
                     div: null,
                 }
             );
         }
 
+        if (iTo == 0) {
+            // This Evidence Profile has no Streams yet, push an empty one onto the end of this.streams and increment iTo
+
+            this.streams.push(
+                {
+                    stream: (new EvidenceProfileStream()),
+                    caption: null,
+                    div: null,
+                }
+            );
+
+            iTo++;
+        }
+
         // Now iterate through this.streams and build each div, caption and reference
-        for (let i=0; i<=iTo; i++) {
+        for (let i=0; i<iTo; i++) {
             // Create a new StreamCaption for this stream and place it into the stream's "caption" attribute
             this.streams[i].caption = <StreamCaption
                 key={(i + 0.5)}
@@ -74,13 +87,11 @@ class EvidenceProfileStreamsFormset extends Component {
                 stream_type_optionSet={this.props.config.streamTypes}
                 stream_title={this.streams[i].stream.object.stream_title}
                 confidence_judgement={this.streams[i].stream.object.confidence_judgement}
-                outcomes={this.streams[i].stream.object.outcomes}
                 scenarios={this.streams[i].stream.object.scenarios}
                 confidenceJudgements={this.props.confidenceJudgements}
                 idPrefix={this.props.config.streamIdPrefix}
                 fieldPrefix={this.props.config.fieldPrefix}
                 buttonSetPrefix={this.props.config.buttonSetPrefix}
-                outcomesFormsetConfig={this.props.config.outcomesFormset}
                 scenariosFormsetConfig={this.props.config.scenariosFormset}
                 handleButtonClick={this.handleButtonClick}
                 streamReferences={this.streamReferences}
@@ -157,13 +168,11 @@ class EvidenceProfileStreamsFormset extends Component {
                         stream_type_optionSet={this.props.config.streamTypes}
                         stream_title={this.streams[streamIndex].stream.object.stream_title}
                         confidence_judgement={this.streams[streamIndex].stream.object.confidence_judgement}
-                        outcomes={this.streams[streamIndex].stream.object.outcomes}
                         scenarios={this.streams[streamIndex].stream.object.scenarios}
                         confidenceJudgements={this.props.confidenceJudgements}
                         idPrefix={this.props.config.streamIdPrefix}
                         fieldPrefix={this.props.config.fieldPrefix}
                         buttonSetPrefix={this.props.config.buttonSetPrefix}
-                        outcomesFormsetConfig={this.props.config.outcomesFormset}
                         scenariosFormsetConfig={this.props.config.scenariosFormset}
                         handleButtonClick={this.handleButtonClick}
                         streamReferences={this.streamReferences}
@@ -182,7 +191,6 @@ class EvidenceProfileStreamsFormset extends Component {
 
                 let countStreams = this.streams.length;
                 let buttonDetails = event.target.id.replace(this.props.config.buttonSetRegEx, "$1,$2").split(",");
-                console.log(buttonDetails);
                 if ((buttonDetails.length == 2) && (buttonDetails[0] !== "") && (buttonDetails[1] !== "")) {
                     // Two non-empty details were extracted from the clicked-up element's ID, continue
 
@@ -315,7 +323,7 @@ class EvidenceProfileStreamsFormset extends Component {
         return returnValue;
     }
 
-    // This method iterates over this.streams and builds an array containing each outcome's caption and detail <div>s
+    // This method iterates over this.streams and builds an array containing each stream's caption and detail <div>s
     buildDivs() {
         let returnValue = [];
         let iTo = this.streams.length;
@@ -352,7 +360,7 @@ class StreamCaption extends Component {
                 id={this.props.idPrefix + "_" + this.props.order + "_caption"}
                 style={
                     {
-                        display: ((this.props.index < this.props.maxIndex) ? "block" : "none"),
+                        display: "block",
                     }
                 }
                 className={"streamCaptionDiv"}
@@ -394,22 +402,17 @@ class StreamDiv extends Component {
         this.stream_title = (("stream_title" in props) && (props.stream_title !== null)) ? props.stream_title : "";
 
         this.confidence_judgement = (("confidence_judgement" in props) && (props.confidence_judgement !== null) && (typeof(props.confidence_judgement) === "object")) ? props.confidence_judgement : {
-            title: "",
             score: "",
+            title: "",
             explanation: "",
         }
 
-        this.outcomes = (("outcomes" in props) && (props.outcomes !== null) && (typeof(props.outcomes) === "object") && (Array.isArray(props.outcomes))) ? props.outcomes : [];
         this.scenarios = (("scenarios" in props) && (props.scenarios !== null) && (typeof(props.scenarios) === "object") && (Array.isArray(props.scenarios))) ? props.scenarios : [];
 
         // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
         this.plusOne = this.props.index + 1;
         this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne;
         this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
-
-        // This field contains the set of <option>s for each outcome within this stream
-        // this field should get re-built any time that an outcome is modified, moved or removed
-        this.outcomesOptionSet = this.buildOutcomesOptionSet();
     }
 
     render() {
@@ -425,7 +428,7 @@ class StreamDiv extends Component {
                 style={
                     {
                         backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1),
-                        display: ((this.props.index < this.props.maxIndex) ? "none" : "block"),
+                        display: "none",
                     }
                 }
             >
@@ -570,9 +573,9 @@ class StreamDiv extends Component {
 
                 <br className={"streamsClearBoth"} />
 
-                <div className={"streamPartDiv"}>
-                    <div className={"streamPart_leftConfidenceJudgement"}>
-                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_title"} className={"control-label"}>Within-Stream Confidence Judgement<br /><span style={{fontSize:"0.8em",}}>Title</span></label>
+                <div className={"streamPartDiv streamsClearBoth"}>
+                    <div className={"streamPart_leftConfidenceJudgement streamsClearBoth"}>
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_title"} className={"control-label"}>Within-Stream Confidence Judgement<br /><span style={{fontSize:"0.8em",}}>Title/Short Explanation</span></label>
                         <div className={"controls"}>
                             <InputConfidenceJudgementTitle
                                 ref={
@@ -599,8 +602,8 @@ class StreamDiv extends Component {
                             />
                         </div>
                     </div>
-                    <div className={"streamPart_rightConfidenceJudgement"}>
-                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_explanation"} className={"control-label"}><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
+                    <div className={"streamPart_rightConfidenceJudgement streamsClearBoth"}>
+                        <label htmlFor={this.fieldPrefix + "_confidence_judgement_explanation"} className={"control-label"}><br /><span style={{fontSize:"0.8em",}}>Full Explanation</span></label>
                         <div className={"controls"}>
                             <TextAreaConfidenceJudgementExplanation
                                 ref={
@@ -615,26 +618,8 @@ class StreamDiv extends Component {
                     </div>
                 </div>
 
-                <br className={"streamsClearBoth"} />
-
-                <div className={"streamPartDiv"}>
-                    <div className={"streamPart_outcomes"}>
-                        <div
-                            ref={
-                                (input) => {
-                                    this.outcomesFormsetReference = input;
-                                }
-                            }
-                            id={this.fieldPrefix + "_outcomesFormset"}
-                        >
-                        </div>
-                    </div>
-                </div>
-
-                <br className={"streamsClearBoth"} />
-
-                <div className={"streamPartDiv"}>
-                    <div className={"streamPart_scenarios"}>
+                <div className={"streamPartDiv streamsClearBoth"}>
+                    <div className={"streamPart_scenarios streamsClearBoth"}>
                         <div
                             ref={
                                 (input) => {
@@ -650,30 +635,8 @@ class StreamDiv extends Component {
         );
     }
 
-    buildOutcomesOptionSet() {
-        let returnValue = [<option key={0} value={""}>Select Outcome</option>];
-
-        if ((typeof(this.outcomes) === "object") && (Array.isArray(this.outcomes)) && (this.outcomes.length > 0)) {
-            let iTo = this.outcomes.length;
-            for (let i=0; i<iTo; i++) {
-                if ((typeof(this.outcomes[i].title) !== "undefined") && (typeof(this.outcomes[i].score) !== "undefined")) {
-                    // Look for the score name corresponding to the score value in this.outcomes[i].score, defaulting to the score value if no
-                    // name was found
-                    let scoreValueIndex = this.props.confidenceJudgements.values.indexOf(this.outcomes[i].score);
-                    let scoreName = (scoreValueIndex >= 0) ? this.props.confidenceJudgements.judgements[scoreValueIndex].name : this.outcomes[i].score;
-
-                    // Push an <option> for this outcome
-                    returnValue.push(<option key={i + 1} value={this.outcomes[i].title + "|" + this.outcomes[i].score}>{"title: " + this.outcomes[i].title + ", score: " + scoreName}</option>);
-                }
-            }
-        }
-
-        return returnValue;
-    }
-
     componentDidMount() {
-        renderOutcomesFormset(this.outcomes, this.fieldPrefix + "_outcomesFormset", this.props.outcomesFormsetConfig, this.props.confidenceJudgements, this.scenariosFormsetReference, this.updateOutcomesOptionSet);
-        renderEvidenceProfileScenariosFormset(this.scenarios, this.fieldPrefix + "_scenariosFormset", this.props.scenariosFormsetConfig, this.props.confidenceJudgements, this.divReference, this.outcomesOptionSet, this.updateOutcomesOptionSet);
+        // renderEvidenceProfileScenariosFormset(this.scenarios, this.fieldPrefix + "_scenariosFormset", this.props.scenariosFormsetConfig, this.props.confidenceJudgements, this.divReference);
     }
 }
 
