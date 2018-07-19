@@ -665,7 +665,7 @@ class StreamDiv extends Component {
                             />
                         </div>
                     </div>
-                    <div className={"streamPart_rightConfidenceJudgement streamsClearBoth"}>
+                    <div className={"streamPart_rightConfidenceJudgement"}>
                         <label htmlFor={this.fieldPrefix + "_confidence_judgement_explanation"} className={"control-label"}><br /><span style={{fontSize:"0.8em",}}>Full Explanation</span></label>
                         <div className={"controls"}>
                             <TextAreaConfidenceJudgementExplanation
@@ -682,7 +682,7 @@ class StreamDiv extends Component {
                 </div>
 
                 <div className={"streamPartDiv streamsClearBoth"}>
-                    <div className={"streamPart_scenarios streamsClearBoth"}>
+                    <div className={"streamPart_scenarios"}>
                         <div
                             ref={
                                 (input) => {
