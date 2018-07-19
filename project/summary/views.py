@@ -488,7 +488,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
         form.instance.cross_stream_confidence_judgement = json.dumps(form.cleaned_data.get("cross_stream_confidence_judgement"))
         form.instance.cross_stream_inferences = json.dumps(form.cleaned_data.get("cross_stream_inferences"))
 
-        # return super().form_valid(form)
+        return super().form_valid(form)
 
     # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
     # of all of the child Streams and grandchild Scenarios
