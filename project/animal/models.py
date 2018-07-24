@@ -70,21 +70,25 @@ class Experiment(models.Model):
         related_name='experiments')
     name = models.CharField(
         max_length=80,
-        help_text="Short-text used to describe the experiment "
-                  "(i.e. 2-year cancer bioassay, 28-day inhalation, etc.).")
+        help_text = "Short-text used to describe the experiment "
+                    "(i.e. 2-Year Cancer Bioassay, 10-Day Oral, 28-Day Inhalation, etc.) "
+                    "using title style (all words capitalized). If study contains more "
+                    "than one chemical, then also include the chemical name (e.g. 28-Day Oral PFBS).")
     type = models.CharField(
         max_length=2,
         choices=EXPERIMENT_TYPE_CHOICES,
-        help_text="Type of study being performed; be as specific as-possible")
+        help_text="Type of study being performed; be as specific as possible")
     chemical = models.CharField(
         max_length=128,
         verbose_name="Chemical name",
-        blank=True)
+        blank=True,
+        help_text="This field may get displayed in visualizations, "
+                    "so consider using a common acronym, e.g., BPA instead of Bisphenol A")
     cas = models.CharField(
         max_length=40,
         blank=True,
         verbose_name="Chemical identifier (CAS)",
-        help_text="CAS number for chemical-tested, if available.")
+        help_text="CAS number for chemical-tested. Use N/A if not applicable")
     chemical_source = models.CharField(
         max_length=128,
         verbose_name="Source of chemical",
@@ -106,17 +110,21 @@ class Experiment(models.Model):
     vehicle = models.CharField(
         max_length=64,
         verbose_name="Chemical vehicle",
-        help_text="If a vehicle was used, vehicle common-name",
+        help_text="Describe vehicle (use name as described in methods "
+                    "but also add the common name if the vehicle was "
+                    "described in a non-standard way)",
         blank=True)
     diet = models.TextField(
-        help_text="Description of animal-feed, if relevant",
+        help_text="Description of animal-feed (use diet as described in methods)",
         blank=True)
     guideline_compliance = models.CharField(
         max_length=128,
         blank=True,
-        help_text="""Description of any compliance methods used (i.e. use of EPA
-            OECD, NTP, or other guidelines; conducted under GLP guideline
-            conditions, non-GLP but consistent with guideline study, etc.)""")
+        help_text="""Description of any compliance methods used (i.e. use of EPA 
+                    OECD, NTP, or other guidelines; conducted under GLP guideline 
+                    conditions, non-GLP but consistent with guideline study, 
+                    etc.). This field response should match any description used 
+                    in study evaluation in the reporting quality domain.""")
     litter_effects = models.CharField(
         max_length=2,
         choices=LITTER_EFFECT_CHOICES,
@@ -129,10 +137,9 @@ class Experiment(models.Model):
     description = models.TextField(
         blank=True,
         verbose_name="Comments",
-        help_text="Text-description of the experimental protocol used. "
-                  "May also include information such as animal husbandry. "
-                  "Note that dosing-regime information and animal details are "
-                  "captured in other fields.")
+        help_text="Add additional comments. In most cases, this field will "
+                    "be blank. Note that dosing-regime information and animal "
+                    "details are captured in the Animal Group extraction module.")
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
