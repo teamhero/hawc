@@ -103,7 +103,7 @@ class DataPivotEndpoint(FlatFileExporter):
 
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
-            study_id = ser['protocol']['study']['id']
+            study_id = ser['experiment']['study']['id']
             fROB = Study.objects.get(pk=study_id).get_overall_confidence()
             if fROB == -1:
                 finalROB = 'N/A'
