@@ -862,6 +862,7 @@ CrossviewPlot._filters = {
     'effect_subtype': 'Effect subtype',
     'monotonicity': 'Monotonicity',
     'chemical': 'Chemical',
+    'endpoint_name': 'Endpoint Name',
 };
 
 CrossviewPlot._cw_filter_process = {
@@ -879,6 +880,7 @@ CrossviewPlot._cw_filter_process = {
     effect_subtype(d){return d.data.effect_subtype; },
     monotonicity(d){return d.data.monotonicity; },
     chemical(d){return d.data.animal_group.experiment.chemical;},
+    endpoint_name(d){return d.data.name;},
 };
 
 export default CrossviewPlot;
