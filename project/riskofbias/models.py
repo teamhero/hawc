@@ -28,7 +28,8 @@ class RiskOfBiasDomain(models.Model):
         related_name='rob_domains')
     name = models.CharField(
         max_length=128)
-    description = models.TextField()
+    description = models.TextField(
+        blank=True)
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
