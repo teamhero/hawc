@@ -171,7 +171,8 @@ class DataPivotEndpoint(FlatFileExporter):
                 ser['trend_test'],
                 doseRange[0],
                 doseRange[1],
-                number_doses
+                number_doses,
+                finalROB
             ]
 
             # extend rows to include blank placeholders, and apply
@@ -191,7 +192,6 @@ class DataPivotEndpoint(FlatFileExporter):
             row.extend(cytotoxes)
             row.extend(bm_types)
             row.extend(bm_values)
-            row.append(finalROB)
 
             rows.append(row)
 
