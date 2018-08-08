@@ -920,25 +920,25 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "integer",
                         "can_be_empty": True,
                     },
-                     "outcome_score": {
-                        "required": False,
-                        "type": "integer",
-                        "can_be_empty": True,
-                    },
-                     "outcome_title": {
-                        "required": True,
-                        "type": "string",
-                        "can_be_empty": False,
-                    },
-                     "outcome_explanation": {
-                        "required": True,
-                        "type": "string",
-                        "can_be_empty": True,
-                    },
                     "scenario_name": {
                         "required": True,
                         "type": "string",
                         "can_be_empty": False,
+                    },
+                    "outcome_title": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": False,
+                    },
+                    "outcome_score": {
+                        "required": False,
+                        "type": "integer",
+                        "can_be_empty": True,
+                    },
+                    "outcome_explanation": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": True,
                     },
                 },
             },
@@ -1194,27 +1194,27 @@ class EvidenceProfileForm(forms.ModelForm):
         # stream's set of scenarios out to cleaned_data["scenarios"]
         # The scenarios are moved because they are child objects stored in a separate, related database table
         for index, stream in enumerate(unordered_types["evidence_profile_streams"]["desired_order"]):
-            pass
-            '''
             for scenario in stream["scenarios"]:
-                scenario["summary_of_findings"] = {
-                    "title": scenario["summary_of_findings_title"],
-                    "explanation": scenario["summary_of_findings_explanation"],
-                    "score": scenario["summary_of_findings_score"],
-                    "name": confidence_judgement_dict[scenario["summary_of_findings_score"]],
+                # Create an "outcome" attribute object that holds the outcome-related fields from the cleaned submitted data
+                scenario["outcome"] = {
+                    "title": scenario["outcome_title"],
+                    "explanation": scenario["outcome_explanation"],
+                    "score": scenario["outcome_score"],
+                    "name": confidence_judgement_dict[scenario["outcome_score"]],
                 }
 
-                del scenario["summary_of_findings_score"]
-                del scenario["summary_of_findings_explanation"]
+                # Delete the individual outcome-related fields from the cleaned submitted data (they were just combined into a single "outcome" attribute)
+                del scenario["outcome_title"]
+                del scenario["outcome_explanation"]
+                del scenario["outcome_score"]
 
+            # Done iterating through the stream's secenario objects, now move this stream's scenario objects out to an object
+            # named cleaned_data["scenarios"] and remove it from this stream object
             cleaned_data["scenarios"][index] = stream["scenarios"]
             del stream["scenarios"]
-            '''
 
         # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
         cleaned_data["streams"] = unordered_types["evidence_profile_streams"]["desired_order"]
-
-        print(cleaned_data["streams"])
 
         # Create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
         # within this evidence profile

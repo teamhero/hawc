@@ -5,6 +5,10 @@
 .streamsDiv {
 }
 
+.streamsSectionTitle {
+    font-size: 2em;
+}
+
 .streamCaptionDiv {
     background-color: #000000;
     color: #FFFFFF;
