@@ -104,7 +104,7 @@ class Study(Reference):
         help_text="Details on correspondence between data-extractor and author, if needed. "
                   "Please include data and details of the correspondence. The files documenting "
                   "the correspondence can also be added to HAWC as attachments and HERO as a "
-                  "new record, but first it is important to redact confidence or personal "
+                  "new record, but first it is important to redact confidential or personal "
                   "information (e.g., email address).")
     published = models.BooleanField(
         default=False,
