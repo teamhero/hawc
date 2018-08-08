@@ -5,6 +5,10 @@
 .scenariosDiv {
 }
 
+.scenariosSectionTitle {
+    font-size: 1.3em;
+}
+
 .scenarioCaptionDiv {
 	background-color: #000060;
 	color: #FFFFFF;
@@ -44,7 +48,7 @@
 
 .scenarioDiv_name {
 	float: left;
-	width: 240px;
+	width: 520px;
 	margin: 0 0 0 0;
 	padding: 0 5px 0 0;
 }
@@ -88,7 +92,7 @@
 	padding: 0 5px 0 0;
 }
 
-.scenarioDiv_summaryExplanation {
+.scenarioDiv_outcomeExplanation {
 	float: left;
 	width: 300px;
 	margin: 0 0 0 0;

@@ -963,15 +963,20 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "string",
                         "can_be_empty": True,
                     },
-                     "outcome_explanation": {
-                        "required": True,
-                        "type": "string",
-                        "can_be_empty": True,
-                    },
-                    "scenario_name": {
+                    "outcome_title": {
                         "required": True,
                         "type": "string",
                         "can_be_empty": False,
+                    },
+                    "outcome_score": {
+                        "required": False,
+                        "type": "integer",
+                        "can_be_empty": True,
+                    },
+                    "outcome_explanation": {
+                        "required": True,
+                        "type": "string",
+                        "can_be_empty": True,
                     },
                     "summary_of_findings_title": {
                         "required": False,
@@ -1403,7 +1408,6 @@ class EvidenceProfileForm(forms.ModelForm):
             # Move this stream's scenario objects out to an object named cleaned_data["scenarios"] and remove it from this stream object
             cleaned_data["scenarios"][index] = stream["scenarios"]
             del stream["scenarios"]
-            '''
 
         # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
         cleaned_data["streams"] = unordered_types["evidence_profile_streams"]["desired_order"]

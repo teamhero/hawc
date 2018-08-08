@@ -81,7 +81,7 @@ class EvidenceProfileStreamsFormset extends Component {
                     }
                 }
                 index={i}
-                maxIndex={iTo}
+                maxIndex={(iTo - 1)}
                 order={(i + 1)}
                 profileId={this.props.profileId}
                 pk={this.streams[i].stream.object.pk}
@@ -113,7 +113,7 @@ class EvidenceProfileStreamsFormset extends Component {
     render() {
         return (
             <div className={"streamsDiv"}>
-                <strong className={"control-label"}>Profile Streams</strong>
+                <strong className={"control-label streamsSectionTitle"}>Profile Streams</strong>
                 <button id={this.props.config.addButtonId} className={"btn btn-primary pull-right"} type={"button"} onClick={this.handleButtonClick}>New Stream</button>
                 <br className={"streamsClearBoth"} />
                 {this.state.divs}
@@ -130,13 +130,14 @@ class EvidenceProfileStreamsFormset extends Component {
                 // The element clicked upon is the "Add A New Stream" button, add a new stream to this.streams and this.streamReferences
 
                 // Get the next index value for this new <div>
-                let newDivIndex = Math.max(...this.streams.map(stream => stream.div.props.index)) + 1;
+                let newDivIndex = (this.streams.length > 0) ? (Math.max(...this.streams.map(stream => stream.div.props.index)) + 1) : 0;
                 if (newDivIndex >= 0) {
                     let streamIndex = this.streams.length;
 
                     this.streams.push(
                         {
                             stream: new EvidenceProfileStream(),
+                            caption: null,
                             div: null,
                         }
                     );
@@ -185,6 +186,8 @@ class EvidenceProfileStreamsFormset extends Component {
                         streamReferences={this.streamReferences}
                         csrf_token={this.props.csrf_token}
                     />;
+
+                    console.log(this.streams);
 
                     this.setState(
                         {

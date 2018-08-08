@@ -58,15 +58,17 @@ class EvidenceProfileScenariosFormset extends Component {
 
             this.scenarios.push(
                 {
-                    scenario: (i < iTo) ? iterateOverScenarios[i] : (new EvidenceProfileScenario()),
+                    scenario: (new EvidenceProfileScenario()),
                     caption: null,
                     div: null,
                 }
             );
+
+            iTo++;
         }
 
         // Iterate through this.scenarios to create the caption and detail <div>s
-        for (let i=0; i<=iTo; i++) {
+        for (let i=0; i<iTo; i++) {
             // Create a new ScenarioCaption for this scenario and place it into the scenario's "caption" attribute
             this.scenarios[i].caption = <ScenarioCaption
                 key={(i + 0.5)}
@@ -85,9 +87,6 @@ class EvidenceProfileScenariosFormset extends Component {
                 handleButtonClick={this.handleButtonClick}
             />;
 
-            // Set the simple, pipe-delimited value for the outcome form field based on the scenario's JSON-formatted outcome object attribute
-            let outcome = ((i < iTo) && ("title" in this.scenarios[i].scenario.object.outcome)) ? this.scenarios[i].scenario.object.outcome.title + "|" + this.scenarios[i].scenario.object.outcome.score : "";
-
             // Create a new ScenarioDiv for this scenario and place it into the scenario's "div" attribute
             this.scenarios[i].div = <ScenarioDiv
                 key={i}
@@ -97,7 +96,7 @@ class EvidenceProfileScenariosFormset extends Component {
                     }
                 }
                 index={i}
-                maxIndex={iTo}
+                maxIndex={(iTo - 1)}
                 order={(i + 1)}
                 profileId={this.props.profileId}
                 pk={this.scenarios[i].scenario.object.pk}
@@ -428,7 +427,7 @@ class ScenarioCaption extends Component {
                 id={this.props.idPrefix + "_" + this.props.order + "_caption"}
                 style={
                     {
-                        display: ((this.props.index < this.props.maxIndex) ? "block" : "none"),
+                        display: "block",
                     }
                 }
                 className={"scenarioCaptionDiv"}
@@ -519,7 +518,7 @@ class ScenarioDiv extends Component {
                 style={
                     {
                         backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1),
-                        display: ((this.props.index < this.props.maxIndex) ? "none" : "block"),
+                        display: "none",
                     }
                 }
             >
@@ -567,22 +566,6 @@ class ScenarioDiv extends Component {
                                 value={this.scenario_name}
                                 index={this.props.index}
                                 scenarioReferences={this.props.scenarioReferences}
-                            />
-                        </div>
-                    </div>
-
-                    <div className={"scenarioDiv_outcome"}>
-                        <label htmlFor={this.fieldPrefix + "_outcome"} className="control-label">Outcome</label>
-                        <div className="controls">
-                            <SelectOutcome
-                                ref={
-                                    (input) => {
-                                        this.outcomeReference = input;
-                                    }
-                                }
-                                id={this.fieldPrefix + "_outcome"}
-                                value={this.props.outcome}
-                                optionSet={this.props.outcomes_optionSet}
                             />
                         </div>
                     </div>
@@ -653,36 +636,51 @@ class ScenarioDiv extends Component {
 
                 <br className={"scenariosClearBoth"} />
 
-                <div className={"scenarioPartDiv"}>
-                    <div className={"scenarioDiv_leftButton"}>&nbsp;</div>
+                <div className={"scenarioDivRow"}>
+                    <div className={"scenarioDiv_leftButton"}>
+                        <br />
+                    </div>
 
-                    <div className={"scenarioDiv_summaryScore"}>
-                        <label htmlFor={this.fieldPrefix + "_summary_of_findings_score"} className="control-label">Summary of Findings<br /><span style={{fontSize:"0.8em",}}>Score</span></label>
-                        <div className="controls">
-                            <SelectSummaryOfFindingsScore
+                    <div className={"scenarioDiv_leftOutcome"}>
+                        <label htmlFor={this.fieldPrefix + "_outcome_title"} className={"control-label"}>Scenario Outcome<br /><span style={{fontSize:"0.8em",}}>Title/Short Explanation</span></label>
+                        <div className={"controls"}>
+                            <InputOutcomeTitle
                                 ref={
                                     (input) => {
-                                        this.summaryOfFindingsScoreReference = input;
+                                        this.outcomeTitleReference = input;
                                     }
                                 }
-                                id={this.fieldPrefix + "_summary_of_findings_score"}
-                                value={this.summary_of_findings.score}
+                                id={this.fieldPrefix + "_outcome_title"}
+                                value={this.outcome.title}
+                            />
+                        </div>
+
+                        <label htmlFor={this.fieldPrefix + "_outcome_score"} className={"control-label"}><span style={{fontSize:"0.8em",}}>Score</span></label>
+                        <div className="controls">
+                            <SelectOutcomeScore
+                                ref={
+                                    (input) => {
+                                        this.scenarioOutcomeScoreReference = input;
+                                    }
+                                }
+                                id={this.fieldPrefix + "_outcome_score"}
+                                value={this.outcome.score}
                                 optionSet={this.props.confidenceJudgements}
                             />
                         </div>
                     </div>
 
-                    <div className={"scenarioDiv_summaryExplanation"}>
-                        <label htmlFor={this.fieldPrefix + "_summary_of_findings_explanation"} className="control-label"><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
+                    <div className={"scenarioDiv_rightOutcome"}>
+                        <label htmlFor={this.fieldPrefix + "_outcome_explanation"} className="control-label"><br /><span style={{fontSize:"0.8em",}}>Full Explanation</span></label>
                         <div className="controls">
-                            <TextAreaSummaryOfFindingsExplanation
+                            <TextAreaOutcomeExplanation
                                 ref={
                                     (input) => {
-                                        this.summaryOfFindingsExplanationReference = input;
+                                        this.outcomeExplanationReference = input;
                                     }
                                 }
-                                id={this.fieldPrefix + "_summary_of_findings_explanation"}
-                                value={this.summary_of_findings.explanation}
+                                id={this.fieldPrefix + "_outcome_explanation"}
+                                value={this.outcome.explanation}
                             />
                         </div>
                     </div>
@@ -949,14 +947,12 @@ class InputOutcomeTitle extends Component {
         super(props);
         this.updateField = this.updateField.bind(this);
 
-        // Set the initial state of this object to the incoming props.value, defaulting to an empty string if it isn't present
         this.state = {
-            optionSet: this.props.optionSet,
-            value: (("value" in props) && (props.value !== null)) ? props.value : "",
+            value: props.value
         };
     }
 
-    // This method updates the tag's state with the new value of the contained input
+    // This method update the tag's state with the new value of the contained input
     updateField(event) {
         this.setState(
             {
@@ -965,10 +961,10 @@ class InputOutcomeTitle extends Component {
         );
     }
 
-    // The method generates this <select> tag's HTML code for this Component
+    // This method generates the HTML code for this Component
     render() {
         return (
-            <select
+            <input
                 id={this.props.id}
                 className={"span12 textinput textInput"}
                 type={"text"}
@@ -976,18 +972,17 @@ class InputOutcomeTitle extends Component {
                 name={this.props.id}
                 className="scenarioOutcome"
                 required={"required"}
+                name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
-            >
-                {this.state.optionSet}
-            </select>
+            />
         );
     }
 }
 
 
-// This Component class is used to create a <select> field for a single Evidence Profile Scenario's summary of findings score
-class SelectSummaryOfFindingsScore extends Component {
+// This Component class is used to create a <select> field for a single Evidence Profile Scenario's outcome score
+class SelectOutcomeScore extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
         super(props);
@@ -1037,8 +1032,8 @@ class SelectSummaryOfFindingsScore extends Component {
 }
 
 
-// This Component class is used to create a textarea field for a scenario's summary of findings explanation
-class TextAreaSummaryOfFindingsExplanation extends Component {
+// This Component class is used to create a textarea field for a scenario's outcome explanation
+class TextAreaOutcomeExplanation extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
         super(props);
