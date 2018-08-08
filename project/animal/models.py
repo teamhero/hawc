@@ -275,7 +275,10 @@ class AnimalGroup(models.Model):
         related_name="animal_groups")
     name = models.CharField(
         max_length=80,
-        help_text="Short description of the animals (i.e. Male Fischer F344 rats, Female C57BL/6 mice)"
+        help_text="Name should be: sex, common strain name, species and use Title Style "
+                    "(e.g. Male Sprague Dawley Rat, Female C57BL/6 Mice). For developmental "
+                    "studies, include the generation before sex in title (e.g., F1 Male "
+                    "Sprague Dawley Rat or P0 Female C57 Mice)"
         )
     species = models.ForeignKey(
         'assessment.Species')
@@ -286,22 +289,32 @@ class AnimalGroup(models.Model):
         choices=SEX_CHOICES)
     animal_source = models.CharField(
         max_length=128,
-        help_text="Laboratory and/or breeding details where animals were acquired",
+        help_text="Source from where animals were acquired",
         blank=True)
     lifestage_exposed = models.CharField(
         max_length=32,
         blank=True,
-        help_text='Textual life-stage description when exposure occurred '
-                  '(examples include: "parental, PND18, juvenile, adult, '
-                  'continuous, multiple")')
+        verbose_name="Exposure lifestage",
+        help_text='Definitions: <strong>Developmental</strong>: Prenatal and perinatal exposure in dams '
+                    'or postnatal exposure in offspring until sexual maturity (~6 weeks '
+                    'in rats and mice). Include studies with pre-mating exposure <em>if the '
+                    'endpoint focus is developmental</em>. <strong>Adult</strong>: Exposure in sexually '
+                    'mature males or females. <strong>Adult (gestation)</strong>: Exposure in dams during'
+                    'pregnancy. <strong>Multi-lifestage</strong>: includes both developmental and adult '
+                    '(i.e., multi-generational studies, exposure that start before sexual '
+                    'maturity and continue to adulthood)'
+        )
     lifestage_assessed = models.CharField(
         max_length=32,
         blank=True,
         help_text='Textual life-stage description when endpoints were measured '
                   '(examples include: "parental, PND18, juvenile, adult, multiple")')
     duration_observation = models.FloatField(
-        verbose_name="Observation duration (days)",
-        help_text="Numeric length of observation period, in days (fractions allowed)",
+        verbose_name="Exposure-outcome duration",
+        help_text='Numeric length of time between start of exposure and outcome assessment, '
+                    'in days when &lt;7 (e.g., 5 days), weeks when &ge;7 days to 12 weeks (e.g., 1 '
+                    'week, 12 weeks), or months when &gt;12 weeks (e.g., 15 months). For '
+                    'repeated measures use descriptions such as "1, 2 and 3 weeks"',
         blank=True,
         null=True)
     siblings = models.ForeignKey(
@@ -327,7 +340,8 @@ class AnimalGroup(models.Model):
     comments = models.TextField(
         blank=True,
         verbose_name="Animal Husbandry",
-        help_text="Any addition notes for this animal-group.")
+        help_text="Copy paste animal husbandry information from materials and methods, "
+                    "use quotation marks around all text directly copy/pasted from paper.")
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
