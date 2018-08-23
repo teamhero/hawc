@@ -148,7 +148,7 @@ class AssessmentClone(forms.Form):
     Clones are complete and include most nested data.
     """
 
-    assessment = forms.ModelMultipleChoiceField(
+    assessment = forms.ModelChoiceField(
         queryset=models.Assessment.objects.all(),
         help_text="Select assessment to clone.")
 
@@ -163,7 +163,7 @@ class AssessmentClone(forms.Form):
     def setHelper(self, assessment):
 
         inputs = {
-            "legend_text": "Clone Assessment, {}".format(assessment),
+            "legend_text": "Clone Assessment, {} or any editable assessment available".format(assessment),
             "help_text": self.HELP_TEXT,
             "cancel_url": reverse("assessment:clone", args=[assessment.id])
         }
