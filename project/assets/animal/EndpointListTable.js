@@ -23,6 +23,8 @@ class EndpointListTable {
                 'Units',
                 'NOAEL',
                 'LOAEL',
+                'BMD',
+                'BMDLS',
             ];
         tbl.setColGroup([12, 16, 17, 31, 10, 7, 7]);
         tbl.addHeaderRow(headers);
