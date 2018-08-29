@@ -10,11 +10,11 @@ from django.utils import timezone
 from django.views.generic import TemplateView, FormView
 
 from assessment.models import Assessment
-from assessment.serializers import ConfidenceFactorSerializer, ConfidenceJudgementSerializer
+from assessment.serializers import ConfidenceFactorSerializer, ConfidenceJudgementSerializer, EffectTagSerializer
 from riskofbias.models import RiskOfBiasMetric
 from utils.helper import HAWCDjangoJSONEncoder
 from utils.views import BaseList, BaseCreate, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin
-from assessment.models import ConfidenceFactor, ConfidenceJudgement
+from assessment.models import ConfidenceFactor, ConfidenceJudgement, EffectTag
 
 from . import forms, models
 
@@ -576,6 +576,7 @@ def getEvidenceProfileContextData(object):
     # Get serializer objects that will be used to generate serialized objects from lookup tables
     confidenceFactorSerializer = ConfidenceFactorSerializer()
     confidenceJudgementSerializer = ConfidenceJudgementSerializer()
+    effectTagSerializer = EffectTagSerializer()
 
     # Get a JSON-friendly version of the available stream type options
     returnValue["stream_types"] = models.get_serialized_stream_types()
@@ -590,6 +591,9 @@ def getEvidenceProfileContextData(object):
 
     # Retrieve all the values from the confidence judgements lookup table and serialize them into a JSON-formatted string
     returnValue["confidence_judgements"] = json.dumps([confidenceJudgementSerializer.to_representation(confidenceJudgement) for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value")])
+
+    # Retrieve all the values from the effect tags lookup table and serialize them into a JSON-formatted string
+    returnValue["effect_tags"] = json.dumps([effectTagSerializer.to_representation(effectTag) for effectTag in EffectTag.objects.all().order_by("name")])
 
     # Initialize the evidenceProfile object to an empty dictionary
     evidenceProfile = {}
