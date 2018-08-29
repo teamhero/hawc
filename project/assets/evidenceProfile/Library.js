@@ -20,8 +20,8 @@ class Library {
     // valid primary key values
     static setStreamTypes(stream_types) {
     	var returnValue = {
-    		"types": stream_types
-    		,"values": []
+    		"types": stream_types,
+    		"values": [],
     	}
 
     	// Iterate through the incoming array and add each element's 'value' attribute to the list of values
@@ -36,8 +36,8 @@ class Library {
     // of that array and an array of valid primary key values
     static setConfidenceJudgements(confidence_judgements) {
     	var returnValue = {
-    		"judgements": []
-    		,"values": []
+    		"judgements": [],
+    		"values": [],
     	};
 
     	if (typeof(confidence_judgements) == "object") {
@@ -59,8 +59,8 @@ class Library {
     // of that array and an array of valid primary key values
     static setConfidenceFactors(confidence_factors) {
     	var returnValue = {
-    		"factors": []
-    		,"values": []
+    		"factors": [],
+    		"values": [],
     	};
 
     	if (typeof(confidence_factors) == "object") {
@@ -76,6 +76,30 @@ class Library {
     	}
 
     	return returnValue;
+    }
+
+    // This method taks in an array of valid effect tags and and return an object that includes it and an array of valid primary key values
+    static setEffectTags(effect_tags) {
+        var returnValue = {
+            "tags": [],
+            "values": [],
+            "index": {}
+        };
+
+        if (typeof(effect_tags) == "object") {
+            // The incomfing effect_tags arguments is of the expected type, iterate through its elements to build returnValue
+            for (var i=0; i<effect_tags.length; i++) {
+                returnValue.tags[i] = {
+                    "value": effect_tags[i].id,
+                    "name": effect_tags[i].name,
+                };
+
+                returnValue.values[i] = effect_tags[i].name;
+                returnValue.index[effect_tags[i].id] = effect_tags[i].name;
+            }
+        }
+
+        return returnValue;
     }
 
     // This function adds an <hr /> tag either above or below the form field named in the fieldName argument

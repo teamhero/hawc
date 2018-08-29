@@ -104,12 +104,20 @@ class AssessmentRootedSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class ConfidenceFactorSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ConfidenceFactor
         fields = ("id", "name", "description", "increases_confidence", "decreases_confidence")
 
+
 class ConfidenceJudgementSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ConfidenceJudgement
         fields = ("value", "name")
+
+
+class EffectTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.EffectTag
+        fields = ("id", "name")

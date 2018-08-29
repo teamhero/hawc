@@ -17,7 +17,6 @@
   <li class="active">{{crud}}<span class="divider">/</span></li>
 {% endblock %}
 
-
 {% block content %}
   {% crispy form %}
 
@@ -114,17 +113,25 @@
                     addButtonIdPattern: "add_outcome_row_<<streamIndex>>",
                     buttonSetPrefixPattern: "btn_outcome_<<streamIndex>>",
                     buttonSetRegEx: new RegExp("^btn_outcome_(\\d)_(\\d)_(moveup|movedown|remove|showoutcome|hideoutcome)$", "gi"),
-                    scenariosFormFragmentClass: "div_scenario",
                   },
                   scenariosFormset: {
                     divIdPattern: "div_scenarios_<<streamIndex>>",
                     addButtonIdPattern: "add_scenario_div_<<streamIndex>>",
                     buttonSetPrefixPattern: "btn_scenario_<<streamIndex>>",
                     fieldPrefixPattern: "stream_<<streamIndex>>",
+                    scenarioIdPrefixPattern: "div_scenario_<<streamIndex>>",
                     buttonSetRegEx: new RegExp("^btn_scenario_(\\d)_(\\d)_(moveup|movedown|remove|showscenario|hidescenario)$", "gi"),
-                    scenarioIdPrefix: "div_scenario",
                     confidenceFactorsIncrease: evidenceProfile.Library.setConfidenceFactors({{confidence_factors_increase|safe}}),
                     confidenceFactorsDecrease: evidenceProfile.Library.setConfidenceFactors({{confidence_factors_decrease|safe}}),
+                    effectTagsFormset: {
+                      divIdPattern: "div_effectTag_<<streamIndex>>_<<scenarioIndex>>",
+                      addButtonIdPattern: "add_effectTag_div_<<streamIndex>>_<<scenarioIndex>>",
+                      buttonSetPrefixPattern: "btn_effectTag_<<streamIndex>>_<<scenarioIndex>>",
+                      fieldPrefixPattern: "stream_<<streamIndex>>_<<scenarioIndex>>",
+                      effectTagIdPrefixPattern: "div_effectTag_<<streamIndex>>_<<scenarioIndex>>",
+                      buttonSetRegEx: new RegExp("^btn_effectTag_(\\d)_(\\d)_(\\d)_(moveup|movedown|remove|showeffecttag|hideeffecttag)$", "gi"),
+                      effectTags: evidenceProfile.Library.setEffectTags({{effect_tags|safe}}),
+                    },
                   },
                 },
                 crossStreamInferences: {
