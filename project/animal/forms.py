@@ -489,10 +489,6 @@ class EndpointForm(ModelForm):
     def clean_variance_type(self):
         data_type = self.cleaned_data.get("data_type")
         variance_type = self.cleaned_data.get("variance_type")
-        if data_type == "C" and variance_type == 0:
-            raise forms.ValidationError(
-                "If entering continuous data, the variance type must be SD"
-                "(standard-deviation) or SE (standard error)")
         return variance_type
 
     def clean_response_units(self):
@@ -525,8 +521,9 @@ class EndpointGroupForm(forms.ModelForm):
 
         if data_type == 'C':
             var = data.get("variance")
-            if var is not None and var_type in (0, 3):
-                msg = 'Variance must be numeric, or the endpoint-field "variance-type" should be "not reported"'
+            if var is not None and var_type == 3:
+                variance_name = models.Endpoint.VARIANCE_NAME[var_type]
+                msg = 'Variance data should not be provided if "' + variance_name + '" is the selected Variance Type.'
                 self.add_error('variance', msg)
         elif data_type == 'P':
             if data.get("lower_ci") is None and data.get("upper_ci") is not None:
