@@ -579,7 +579,10 @@ class EndpointFilterForm(forms.Form):
     
     ORDER_BY_CHOICES = (
         ('animal_group__experiment__study__short_citation', 'study'),
+        ('animal_group__experiment__name', 'experiment name'),
+        ('animal_group__name', 'animal group'),
         ('name', 'endpoint name'),
+        ('animal_group__dosing_regime__doses__dose_units_id', 'dose units'),
         ('system', 'system'),
         ('organ', 'organ'),
         ('effect', 'effect'),
