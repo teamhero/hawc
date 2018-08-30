@@ -479,7 +479,7 @@ class EvidenceProfileNew(BaseCreate):
                         scenario_name = scenario["scenario_name"],
                         outcome = json.dumps(scenario["outcome"]),
                         summary_of_findings = json.dumps(scenario["summary_of_findings"]),
-                        studies = "{}",
+                        studies = json.dumps(scenario["studies"]),
                         confidencefactors_increase = "[]",
                         confidencefactors_decrease = "[]",
                         order = scenario["order"],
@@ -576,7 +576,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
                     scenarioToSave.scenario_name = scenario["scenario_name"]
                     scenarioToSave.outcome = json.dumps(scenario["outcome"])
                     scenarioToSave.summary_of_findings = json.dumps(scenario["summary_of_findings"])
-                    scenarioToSave.studies = "{}"
+                    scenarioToSave.studies = json.dumps(scenario["studies"])
                     scenarioToSave.confidencefactors_increase = "[]"
                     scenarioToSave.confidencefactors_decrease = "[]"
                     scenarioToSave.order = scenario["order"]

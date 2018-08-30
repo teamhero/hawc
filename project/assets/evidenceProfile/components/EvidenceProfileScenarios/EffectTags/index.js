@@ -223,51 +223,39 @@ class EffectTagsFormset extends Component {
                             if ((buttonDetails[3] === "moveup") && (this.props.streamIndex > 0)) {
                                 // The user clicked on the "Move Up" button and the scenario is not at the top of the list, move it up in the list
 
-                                console.log("Move effectTag Up");
-
-                                /*
-                                let temp = this.scenarios[scenarioIndex];
-                                this.scenarios[scenarioIndex] = this.scenarios[scenarioIndex - 1];
-                                this.scenarios[scenarioIndex - 1] = temp;
+                                let temp = this.effectTags[effectTagIndex];
+                                this.effectTags[effectTagIndex] = this.effectTags[effectTagIndex - 1];
+                                this.effectTags[effectTagIndex - 1] = temp;
 
                                 this.setState(
                                     {
                                         divs: this.buildDivs(),
                                     }
                                 );
-                                */
                             }
-                            else if ((buttonDetails[3] === "movedown") && (scenarioIndex < (this.scenarios.length - 1))) {
+                            else if ((buttonDetails[3] === "movedown") && (effectTagIndex < (this.effectTags.length - 1))) {
                                 // The user clicked on the "Move Down" button and the scenario is not at the bottom of the list, move it down
                                 // in the list
 
-                                console.log("Move effectTag Down");
-
-                                /*
-                                let temp = this.scenarios[scenarioIndex];
-                                this.scenarios[scenarioIndex] = this.scenarios[scenarioIndex + 1];
-                                this.scenarios[scenarioIndex + 1] = temp;
+                                let temp = this.effectTags[effectTagIndex];
+                                this.effectTags[effectTagIndex] = this.effectTags[effectTagIndex + 1];
+                                this.effectTags[effectTagIndex + 1] = temp;
 
                                 this.setState(
                                     {
                                         divs: this.buildDivs(),
                                     }
                                 );
-                                */
                             }
                             else if (buttonDetails[3] === "remove") {
                                 // The user clicked on the "Remove" button, remove the <div>
 
-                                console.log("Remove effectTag");
-
-                                /*
-                                this.scenarios.splice(scenarioIndex, 1);
+                                this.effectTags.splice(effectTagIndex, 1);
                                 this.setState(
                                     {
                                         divs: this.buildDivs(),
                                     }
                                 );
-                                */
                             }
                             else if (buttonDetails[3] === "showeffecttag") {
                                 // The clicked-upon element is a "Show" button, change the "display" styles for this effectTag's caption and
@@ -286,6 +274,33 @@ class EffectTagsFormset extends Component {
                     }
                 }
             }
+        }
+    }
+
+    // After this Component has been updated (i.e. a <div> added, removed or moved up/down), this method runs to re-color the <div>s and set
+    // button visibility
+    componentDidUpdate() {
+        let iTo = this.effectTags.length;
+        let iMax = iTo - 1;
+
+        for (let i=0; i<iTo; i++) {
+            let reference = this.effectTagReferences["div_" + this.effectTags[i].div.props.index];
+
+            // Alternate the <div> color on streams
+            reference.effectTagReference.style.backgroundColor = ((i % 2) === 0) ? shade1 : shade2;
+
+            // Only make the "Move Up" button visible whenever it is not in the first stream
+            reference.moveUpReference.style.visibility = (i === 0) ? "hidden" : "visible";
+
+            // Only make the "Move Down" button visible whenever it is not in the last stream
+            reference.moveDownReference.style.visibility = (i === iMax) ? "hidden" : "visible";
+
+            // Set the value of the ordering <input />'s value for this stream's <div>
+            reference.orderReference.setState(
+                {
+                    value: (i + 1),
+                }
+            );
         }
     }
 
@@ -455,7 +470,7 @@ class EffectTagDiv extends Component {
                     </div>
 
                     <div className={"effectTagDiv_name"}>
-                        <label htmlFor={this.fieldPrefix + "_name"} className="control-label">Tag</label>
+                        <label htmlFor={this.fieldPrefix + "_pk"} className="control-label">Tag</label>
                         <div className="controls">
                             <SelectEffectTag
                                 ref={
@@ -463,7 +478,7 @@ class EffectTagDiv extends Component {
                                         this.effectTagNameReference = input;
                                     }
                                 }
-                                id={this.fieldPrefix + "_name"}
+                                id={this.fieldPrefix + "_pk"}
                                 value={this.name}
                                 index={this.props.index}
                                 optionSet={this.props.effectTags_optionSet}
@@ -633,7 +648,6 @@ class SelectEffectTag extends Component {
             <select
                 id={this.props.id}
                 name={this.props.id}
-                required={"required"}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
             >
