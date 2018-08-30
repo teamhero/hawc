@@ -453,7 +453,7 @@ class EvidenceProfileNew(BaseCreate):
                         hawcuser = self.request.user,
                         scenario_name = scenario["scenario_name"],
                         outcome = json.dumps(scenario["outcome"]),
-                        studies = "[]",
+                        studies = json.dumps(scenario["studies"]),
                         confidencefactors_increase = "[]",
                         confidencefactors_decrease = "[]",
                         order = scenario["order"],
@@ -548,7 +548,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
                     scenarioToSave.hawcuser = self.request.user
                     scenarioToSave.scenario_name = scenario["scenario_name"]
                     scenarioToSave.outcome = json.dumps(scenario["outcome"])
-                    scenarioToSave.studies = "[]"
+                    scenarioToSave.studies = json.dumps(scenario["studies"])
                     scenarioToSave.confidencefactors_increase = "[]"
                     scenarioToSave.confidencefactors_decrease = "[]"
                     scenarioToSave.order = scenario["order"]

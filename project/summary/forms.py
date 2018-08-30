@@ -942,6 +942,21 @@ class EvidenceProfileForm(forms.ModelForm):
                     },
                 },
             },
+            "effect_tags": {
+                "parent_object_type": "stream_scenarios",
+                "parent_field": "effectTags",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_(\d+)_effectTag_(order|pk)$",
+                "re_replace_with": r"\1,\2,\3,\4",
+                "field_validation": {
+                    "pk": {
+                        "required": True,
+                        "type": "integer",
+                        "can_be_empty": False,
+                    }
+                }
+            },
         }
 
         #Iterate over the sets of unordered object types and add some key/value attributes to each one that are common to all
@@ -1151,9 +1166,33 @@ class EvidenceProfileForm(forms.ModelForm):
 
                     if (not ordering_list[list_index]):
                         ordering_list[list_index] = {}
+                        ordering_list[list_index]["original_key"] = o_key
 
                     for field_key, field_value in o_dict.items():
                         ordering_list[list_index][field_key] = field_value
+
+        # Iterate through each of the stream objects in order to make an addition to each stream's scenarios
+        for stream_key, stream_dict in unordered_types["evidence_profile_streams"]["objects"].items():
+            if ("scenarios" in stream_dict):
+                # This stream has a set of scenarios, iterate over them and add a studies key to each one, initialized to an empty list
+                for scenario in stream_dict["scenarios"]:
+                    scenario["studies"] = []
+
+                    if (
+                        (scenario["original_key"] in unordered_types["stream_scenarios"]["objects"])
+                        and ("effectTags" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]])
+                    ):
+                        # This scenario has a set of effectTags, iterate over them to build the studies key's value
+                        for effectTag in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]["effectTags"]:
+                            scenario["studies"].append(
+                                {
+                                    "effecttag_id": effectTag["pk"],
+                                    "studies": [],
+                                }
+                            )
+
+                    # Remove the original_key since it is no longer needed and was only relevent within this instantiation
+                    del scenario["original_key"]
 
         # Finally, iterate through the unordered object types that have a desired_order attribute and make sure that it contains the same object that
         # is found in the objects attribute
@@ -1166,6 +1205,7 @@ class EvidenceProfileForm(forms.ModelForm):
                     # This object's ordering field does not need to be retained, get rid of it
                     unordered_types[ut_key]["desired_order"][o_dict[unordered_types[ut_key]["ordering_field"]] - 1].pop(unordered_types[ut_key]["ordering_field"])
 
+            # Get rid of any element in the desired order list that is empty
             unordered_types[ut_key]["desired_order"] = [object for object in unordered_types[ut_key]["desired_order"] if (object)]
 
         # Convert the evidence profile stream objects that were built from submitted form data into the format that matches the
@@ -1225,5 +1265,7 @@ class EvidenceProfileForm(forms.ModelForm):
         }
 
         cleaned_data["cross_stream_inferences"] = unordered_types["cross_stream_inferences"]["desired_order"]
+
+        print(cleaned_data["scenarios"])
 
         return cleaned_data
