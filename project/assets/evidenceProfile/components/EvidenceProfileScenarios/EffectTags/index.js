@@ -33,11 +33,13 @@ class EffectTagsFormset extends Component {
         // Iterate over the incoming studies and use them to build the object level "effectTags" and "effectTagReferences" attributes
         let iTo = iterateOverStudies.length;
         for (let i=0; i<iTo; i++) {
+            let effectTag = iterateOverStudies[i];
+
             this.effectTags.push(
                 {
-                    id: iterateOverStudies[i].effecttag_id,
-                    name: "",
-                    studies: [],
+                    id: effectTag.effecttag_id,
+                    name: (effectTag.effecttag_id in this.props.config.effectTags.index) ? this.props.config.effectTags.index[effectTag.effecttag_id] : "",
+                    studies: ("studies" in iterateOverStudies[i]) ? iterateOverStudies[i].studies : [],
                     caption: null,
                     div: null,
                 }
@@ -479,7 +481,7 @@ class EffectTagDiv extends Component {
                                     }
                                 }
                                 id={this.fieldPrefix + "_pk"}
-                                value={this.name}
+                                value={this.pk}
                                 index={this.props.index}
                                 optionSet={this.props.effectTags_optionSet}
                                 effectTagReferences={this.props.effectTagReferences}
