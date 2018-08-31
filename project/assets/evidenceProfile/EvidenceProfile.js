@@ -32,7 +32,8 @@ class EvidenceProfile {
             slug: "string",
             settings: "string",
             caption: "string",
-            cross_stream_conclusions: "object",
+            cross_stream_confidence_judgement: "object",
+            cross_stream_inferences: "array",
             streams: "array",
         };
 
@@ -111,7 +112,7 @@ class EvidenceProfile {
 
     // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
     static buildCrossStreamInferencesFormset() {
-        renderCrossStreamInferencesFormset(EvidenceProfile.object.cross_stream_conclusions.inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
+        renderCrossStreamInferencesFormset(EvidenceProfile.object.cross_stream_inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
     }
 }
 

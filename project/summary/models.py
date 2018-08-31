@@ -719,7 +719,9 @@ class EvidenceProfile(models.Model):
     slug = models.SlugField(verbose_name="URL Name", help_text="The URL (web address) used to describe this object (no spaces or special-characters).")
     settings = models.TextField(default="undefined", help_text="Paste content from a settings file from a different evidence profile, or keep set to \"undefined\".")
     caption = models.TextField(default="", blank=True)
-    cross_stream_conclusions = models.TextField(default="{}")
+    cross_stream_confidence_judgement = models.TextField(default="{}")
+    cross_stream_inferences = models.TextField(default="[]")
+    published = models.BooleanField(default=False)
 
     # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
@@ -780,7 +782,6 @@ class EvidenceProfileStream(models.Model):
     stream_type = models.PositiveSmallIntegerField(choices=STUDY_TYPE_CHOICES, default=BIOASSAY)
     stream_title = models.CharField(max_length=128, help_text="Enter the title of this profile streaam (spaces and special-characters allowed).")
     confidence_judgement = models.TextField(default="{}")
-    outcomes = models.TextField(default="[]")
 
     # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
@@ -825,12 +826,11 @@ class EvidenceProfileScenario(models.Model):
 
     # Declare the basic attributes for this object
     order = models.PositiveSmallIntegerField()
-    outcome = models.CharField(max_length=128, help_text="This must be one of the available \"outcome\" values listed in the parent envidence profile stream")
+    outcome = models.TextField(default="{}")
     scenario_name = models.CharField(max_length=128, help_text="(optional) If a stream only has one scenario, there is no reason to give it a name", blank=True)
-    studies = models.TextField(default="{}")
+    studies = models.TextField(default="[]")
     confidencefactors_increase = models.TextField(default="[]")
     confidencefactors_decrease = models.TextField(default="[]")
-    summary_of_findings = models.TextField(default="{}")
 
     # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)

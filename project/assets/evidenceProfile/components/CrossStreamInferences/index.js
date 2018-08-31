@@ -23,18 +23,24 @@ class CrossStreamInferencesFormset extends Component {
         this.inferences = (("inferences" in props) && (typeof(props.inferences) === "object") && (props.inferences !== null)) ? props.inferences : [];
         let iTo = this.inferences.length;
         for (let i=0; i<iTo; i++) {
+            this.inferences[i]["caption"] = null;
             this.inferences[i]["row"] = null;
         }
 
-        // Push an empty inference onto the end of the array
-        this.inferences.push(
-            {
-                title: "",
-                description: "",
-                caption: null,
-                row: null,
-            }
-        );
+        if (iTo == 0) {
+            // This Evidence Profile has no cross-stream inferences yet, push an empty one onto the end of this.inferences and increment iTo
+
+            this.inferences.push(
+                {
+                    title: "",
+                    description: "",
+                    caption: null,
+                    row: null,
+                }
+            );
+
+            iTo++;
+        }
 
         // Iterate through this.inferences to create the caption and detail rows
         iTo = this.inferences.length;
@@ -322,7 +328,7 @@ class CrossStreamInferencesFormset extends Component {
 
     // This method returns the value of the maximum index in the Cross-Stream Inference rows
     findMaximumIndex() {
-        return Math.max(...this.inferences.map(inference => inference.row.props.index));
+        return (this.inferences.length > 0) ? Math.max(...this.inferences.map(inference => inference.row.props.index)) : 0;
     }
 
     // This method iterates over this.inferences and builds an array containing each inference's caption and detail rows
@@ -386,7 +392,7 @@ class CrossStreamInferenceCaption extends Component {
                 id={this.props.idPrefix + "_" + plusOne + "_caption"}
                 style={
                     {
-                        display: ((this.props.index < this.props.maxIndex) ? "table-row" : "none"),
+                        display: "table-row",
                     }
                 }
             >
@@ -438,7 +444,7 @@ class CrossStreamInferenceRow extends Component {
                 style={
                     {
                         backgroundColor: ((this.props.index % 2) === 1) ? shade1 : shade2,
-                        display: ((this.props.index < this.props.maxIndex) ? "none" : "table-row"),
+                        display: "none",
                     }
                 }
             >

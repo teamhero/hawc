@@ -31,18 +31,32 @@ class EvidenceProfileScenariosFormset extends Component {
 
         // Iterate over the incoming cenarios and use them to build the object level "scenarios" and "scenarioReferences" attributes
         let iTo = iterateOverScenarios.length;
-        for (let i=0; i<=iTo; i++) {
+        for (let i=0; i<iTo; i++) {
             this.scenarios.push(
                 {
-                    scenario: (i < iTo) ? iterateOverScenarios[i] : (new EvidenceProfileScenario()),
+                    scenario: iterateOverScenarios[i],
                     caption: null,
                     div: null,
                 }
             );
         }
 
+        if (iTo == 0) {
+            // This Streams has no Scenarios yet, push an empty one onto the end of this.scenarios and increment iTo
+
+            this.scenarios.push(
+                {
+                    scenario: (new EvidenceProfileScenario()),
+                    caption: null,
+                    div: null,
+                }
+            );
+
+            iTo++;
+        }
+
         // Iterate through this.scenarios to create the caption and detail <div>s
-        for (let i=0; i<=iTo; i++) {
+        for (let i=0; i<iTo; i++) {
             // Create a new ScenarioCaption for this scenario and place it into the scenario's "caption" attribute
             this.scenarios[i].caption = <ScenarioCaption
                 key={(i + 0.5)}
@@ -61,9 +75,6 @@ class EvidenceProfileScenariosFormset extends Component {
                 handleButtonClick={this.handleButtonClick}
             />;
 
-            // Set the simple, pipe-delimited value for the outcome form field based on the scenario's JSON-formatted outcome object attribute
-            let outcome = ((i < iTo) && ("title" in this.scenarios[i].scenario.object.outcome)) ? this.scenarios[i].scenario.object.outcome.title + "|" + this.scenarios[i].scenario.object.outcome.score : "";
-
             // Create a new ScenarioDiv for this scenario and place it into the scenario's "div" attribute
             this.scenarios[i].div = <ScenarioDiv
                 key={i}
@@ -73,20 +84,18 @@ class EvidenceProfileScenariosFormset extends Component {
                     }
                 }
                 index={i}
-                maxIndex={iTo}
+                maxIndex={(iTo - 1)}
                 order={(i + 1)}
                 pk={this.scenarios[i].scenario.object.pk}
                 streamIndex={this.props.streamIndex}
                 scenario_name={this.scenarios[i].scenario.object.scenario_name}
-                outcome={outcome}
-                outcomes_optionSet={this.props.outcomesOptionSet}
+                outcome={this.scenarios[i].scenario.object.outcome}
+                confidenceJudgements={this.props.confidenceJudgements}
                 studies={this.scenarios[i].scenario.object.studies}
                 confidencefactors_increase={this.scenarios[i].scenario.object.confidencefactors_increase}
                 confidencefactors_increase_optionSet={this.props.config.confidenceFactorsIncrease}
                 confidenceFactors_decrease={this.scenarios[i].scenario.object.confidencefactors_decrease}
                 confidenceFactors_decrease_optionSet={this.props.config.confidenceFactorsDecrease}
-                summary_of_findings={this.scenarios[i].scenario.object.summary_of_findings}
-                confidenceJudgements={this.props.confidenceJudgements}
                 divId={this.divId}
                 idPrefix={this.props.config.scenarioIdPrefix}
                 fieldPrefix={this.fieldPrefix}
@@ -106,7 +115,7 @@ class EvidenceProfileScenariosFormset extends Component {
     render() {
         return(
             <div id={this.divId}>
-                <strong className="control-label">Profile Stream Scenarios</strong>
+                <strong className="control-label scenariosSectionTitle">Profile Stream Scenarios</strong>
                 <button id={this.addButtonId} className="btn btn-primary pull-right" type="button" onClick={this.handleButtonClick}>New Scenario</button>
                 <br className="scenariosClearBoth" />
                 {this.state.divs}
@@ -123,7 +132,7 @@ class EvidenceProfileScenariosFormset extends Component {
                 // The element clicked upon is the "Add A New Scenario" button, add a new scenario to this.scenarios and this.scenarioReferences
 
                 // Get values that will be used within props for the new scenario <div>
-                let newDivIndex = Math.max(...this.scenarios.map(scenario => scenario.div.props.index)) + 1;
+                let newDivIndex = (this.scenarios.length > 0) ? (Math.max(...this.scenarios.map(scenario => scenario.div.props.index)) + 1) : 0;
                 let scenarioIndex = this.scenarios.length;
 
                 // Push a new, empty scenario into this.scenarios
@@ -166,15 +175,13 @@ class EvidenceProfileScenariosFormset extends Component {
                     order={(newDivIndex + 1)}
                     streamIndex={this.props.streamIndex}
                     scenario_name={this.scenarios[scenarioIndex].scenario.object.scenario_name}
-                    outcome={""}
-                    outcomes_optionSet={this.props.outcomesOptionSet}
+                    outcome={this.scenarios[scenarioIndex].scenario.object.outcome}
+                    confidenceJudgements={this.props.confidenceJudgements}
                     studies={this.scenarios[scenarioIndex].scenario.object.studies}
                     confidencefactors_increase={this.scenarios[scenarioIndex].scenario.object.confidencefactors_increase}
                     confidencefactors_increase_optionSet={this.props.config.confidenceFactorsIncrease}
                     confidenceFactors_decrease={this.scenarios[scenarioIndex].scenario.object.confidencefactors_decrease}
                     confidenceFactors_decrease_optionSet={this.props.config.confidenceFactorsDecrease}
-                    summary_of_findings={this.scenarios[scenarioIndex].scenario.object.summary_of_findings}
-                    confidenceJudgements={this.props.confidenceJudgements}
                     divId={this.divId}
                     idPrefix={this.props.config.scenarioIdPrefix}
                     fieldPrefix={this.fieldPrefix}
@@ -183,7 +190,7 @@ class EvidenceProfileScenariosFormset extends Component {
                     scenarioReferences={this.scenarioReferences}
                 />;
 
-                // Set this.state.rows to the new inference rows array (inclding the new inference added to the end)
+                // Set this.state.divs to the new divs array (including the new scenario added to the end)
                 this.setState(
                     {
                         divs: this.buildDivs(),
@@ -364,7 +371,7 @@ class ScenarioCaption extends Component {
                 id={this.props.idPrefix + "_" + this.props.order + "_caption"}
                 style={
                     {
-                        display: ((this.props.index < this.props.maxIndex) ? "block" : "none"),
+                        display: "block",
                     }
                 }
                 className={"scenarioCaptionDiv"}
@@ -405,13 +412,15 @@ class ScenarioDiv extends Component {
         this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
         this.scenario_name = (("scenario_name" in this.props) && (this.props.scenario_name !== null)) ? this.props.scenario_name : "";
 
-        this.summary_of_findings = (
-            ("summary_of_findings" in this.props)
-            && (this.props.summary_of_findings !== null)
-            && (typeof(this.props.summary_of_findings) === "object")
-            && ("score" in this.props.summary_of_findings)
-            && ("explanation" in this.props.summary_of_findings)
-        ) ? this.props.summary_of_findings : {
+        this.outcome = (
+            ("outcome" in this.props)
+            && (this.props.outcome !== null)
+            && (typeof(this.props.outcome) === "object")
+            && ("title" in this.props.outcome)
+            && ("score" in this.props.outcome)
+            && ("explanation" in this.props.outcome)
+        ) ? this.props.outcome : {
+            title: "",
             score: "",
             explanation: "",
         };
@@ -435,7 +444,7 @@ class ScenarioDiv extends Component {
                 style={
                     {
                         backgroundColor:(((this.plusOne % 2) === 0) ? shade2 : shade1),
-                        display: ((this.props.index < this.props.maxIndex) ? "none" : "block"),
+                        display: "none",
                     }
                 }
             >
@@ -483,22 +492,6 @@ class ScenarioDiv extends Component {
                                 value={this.scenario_name}
                                 index={this.props.index}
                                 scenarioReferences={this.props.scenarioReferences}
-                            />
-                        </div>
-                    </div>
-
-                    <div className={"scenarioDiv_outcome"}>
-                        <label htmlFor={this.fieldPrefix + "_outcome"} className="control-label">Outcome</label>
-                        <div className="controls">
-                            <SelectOutcome
-                                ref={
-                                    (input) => {
-                                        this.outcomeReference = input;
-                                    }
-                                }
-                                id={this.fieldPrefix + "_outcome"}
-                                value={this.props.outcome}
-                                optionSet={this.props.outcomes_optionSet}
                             />
                         </div>
                     </div>
@@ -569,42 +562,57 @@ class ScenarioDiv extends Component {
 
                 <br className={"scenariosClearBoth"} />
 
-                <div className={"scenarioPartDiv"}>
-                    <div className={"scenarioDiv_leftButton"}>&nbsp;</div>
+                <div className={"scenarioDivRow"}>
+                    <div className={"scenarioDiv_leftButton"}>
+                        <br />
+                    </div>
 
-                    <div className={"scenarioDiv_summaryScore"}>
-                        <label htmlFor={this.fieldPrefix + "_summary_of_findings_score"} className="control-label">Summary of Findings<br /><span style={{fontSize:"0.8em",}}>Score</span></label>
-                        <div className="controls">
-                            <SelectSummaryOfFindingsScore
+                    <div className={"scenarioDiv_leftOutcome"}>
+                        <label htmlFor={this.fieldPrefix + "_outcome_title"} className={"control-label"}>Scenario Outcome<br /><span style={{fontSize:"0.8em",}}>Title/Short Explanation</span></label>
+                        <div className={"controls"}>
+                            <InputOutcomeTitle
                                 ref={
                                     (input) => {
-                                        this.summaryOfFindingsScoreReference = input;
+                                        this.outcomeTitleReference = input;
                                     }
                                 }
-                                id={this.fieldPrefix + "_summary_of_findings_score"}
-                                value={this.summary_of_findings.score}
+                                id={this.fieldPrefix + "_outcome_title"}
+                                value={this.outcome.title}
+                            />
+                        </div>
+
+                        <label htmlFor={this.fieldPrefix + "_outcome_score"} className={"control-label"}><span style={{fontSize:"0.8em",}}>Score</span></label>
+                        <div className="controls">
+                            <SelectOutcomeScore
+                                ref={
+                                    (input) => {
+                                        this.scenarioOutcomeScoreReference = input;
+                                    }
+                                }
+                                id={this.fieldPrefix + "_outcome_score"}
+                                value={this.outcome.score}
                                 optionSet={this.props.confidenceJudgements}
                             />
                         </div>
                     </div>
 
-                    <div className={"scenarioDiv_summaryExplanation"}>
-                        <label htmlFor={this.fieldPrefix + "_summary_of_findings_explanation"} className="control-label"><br /><span style={{fontSize:"0.8em",}}>Explanation</span></label>
+                    <div className={"scenarioDiv_rightOutcome"}>
+                        <label htmlFor={this.fieldPrefix + "_outcome_explanation"} className="control-label"><br /><span style={{fontSize:"0.8em",}}>Full Explanation</span></label>
                         <div className="controls">
-                            <TextAreaSummaryOfFindingsExplanation
+                            <TextAreaOutcomeExplanation
                                 ref={
                                     (input) => {
-                                        this.summaryOfFindingsExplanationReference = input;
+                                        this.outcomeExplanationReference = input;
                                     }
                                 }
-                                id={this.fieldPrefix + "_summary_of_findings_explanation"}
-                                value={this.summary_of_findings.explanation}
+                                id={this.fieldPrefix + "_outcome_explanation"}
+                                value={this.outcome.explanation}
                             />
                         </div>
                     </div>
                 </div>
 
-                <br className="scenariosClearBoth" />
+                <br className={"scenariosClearBoth"} />
             </div>
         )
     }
@@ -695,21 +703,19 @@ class InputScenarioName extends Component {
 }
 
 
-// This Component class is used to create a <select> field for a single Evidence Profile Stream's type
-class SelectOutcome extends Component {
+// This Component class is used to create an input field for the scenario's outcome
+class InputOutcomeTitle extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
         super(props);
         this.updateField = this.updateField.bind(this);
 
-        // Set the initial state of this object to the incoming props.value, defaulting to an empty string if it isn't present
         this.state = {
-            optionSet: this.props.optionSet,
-            value: (("value" in props) && (props.value !== null)) ? props.value : "",
+            value: props.value
         };
     }
 
-    // This method updates the tag's state with the new value of the contained input
+    // This method update the tag's state with the new value of the contained input
     updateField(event) {
         this.setState(
             {
@@ -718,26 +724,26 @@ class SelectOutcome extends Component {
         );
     }
 
-    // The method generates this <select> tag's HTML code for this Component
+    // This method generates the HTML code for this Component
     render() {
         return (
-            <select
+            <input
                 id={this.props.id}
-                name={this.props.id}
-                className="scenarioOutcome"
+                className={"span12 textinput textInput"}
+                type={"text"}
+                maxLength={"50"}
                 required={"required"}
+                name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
-            >
-                {this.state.optionSet}
-            </select>
+            />
         );
     }
 }
 
 
-// This Component class is used to create a <select> field for a single Evidence Profile Scenario's summary of findings score
-class SelectSummaryOfFindingsScore extends Component {
+// This Component class is used to create a <select> field for a single Evidence Profile Scenario's outcome score
+class SelectOutcomeScore extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
         super(props);
@@ -788,8 +794,8 @@ class SelectSummaryOfFindingsScore extends Component {
 }
 
 
-// This Component class is used to create a textarea field for a scenario's summary of findings explanation
-class TextAreaSummaryOfFindingsExplanation extends Component {
+// This Component class is used to create a textarea field for a scenario's outcome explanation
+class TextAreaOutcomeExplanation extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
         super(props);

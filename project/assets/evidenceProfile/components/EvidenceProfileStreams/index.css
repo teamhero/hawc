@@ -5,6 +5,10 @@
 .streamsDiv {
 }
 
+.streamsSectionTitle {
+    font-size: 2em;
+}
+
 .streamCaptionDiv {
     background-color: #000000;
     color: #FFFFFF;
@@ -76,13 +80,6 @@
     width: 49%;
     float: left;
     margin: 0 4px 4px 0;
-}
-
-.streamPart_outcomes {
-	width: 674px;
-    margin: 12px 0 0 -3px;
-    padding: 8px 49px 0 0;
-    background-color: #E9FFE9;
 }
 
 .streamPart_scenarios {

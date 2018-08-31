@@ -91,6 +91,7 @@
             //    * Cross-Stream Inferences formset
             //    * Profile Streams formset
             //    * <<others as needed in future development>>
+
             evidenceProfile.EvidenceProfile.configure(
               {
                 form: {
@@ -141,7 +142,7 @@
             );
 
             // Add an <hr /> tag just below the "caption" field in the form
-            evidenceProfile.Library.addHRTag("caption", "after");
+            // evidenceProfile.Library.addHRTag("caption", "after");
 
             // Create the Evidence Profile Streams formset and add it to the Evidence Profile form
             evidenceProfile.EvidenceProfile.buildEvidenceProfileStreamsFormset();
