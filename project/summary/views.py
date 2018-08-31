@@ -660,7 +660,7 @@ def getEvidenceProfileContextData(object):
                 try:
                     scenario["studies"] = json.loads(scenario["studies"])
                 except:
-                    scenario["studies"] = {}
+                    scenario["studies"] = []
 
                 try:
                     scenario["confidencefactors_increase"] = json.loads(scenario["confidencefactors_increase"])
