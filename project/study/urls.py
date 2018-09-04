@@ -1,4 +1,5 @@
 from django.conf.urls import url, include
+from django.contrib import admin
 
 from rest_framework.routers import DefaultRouter
 
@@ -9,6 +10,8 @@ router = DefaultRouter()
 router.register(r'study', api.Study, base_name="study")
 router.register(r'final', api.FinalRobStudy, base_name="final")
 router.register(r'study-cleanup', api.StudyCleanupFieldsView, base_name='study-cleanup')
+router.register(r'study-search', api.StudySearch, base_name='study-search')
+router.register(r'study-autosuggest', api.StudyAutoSuggest, base_name='study-autosuggest')
 
 urlpatterns = [
     url(r'^api/', include(router.urls, namespace='api')),
@@ -54,3 +57,5 @@ urlpatterns = [
         views.EditabilityUpdate.as_view(),
         name='editability_update'),
 ]
+
+admin.autodiscover()

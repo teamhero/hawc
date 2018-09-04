@@ -1,0 +1,57 @@
+.studiesClearBoth {
+	clear: both;
+}
+
+.studiesTable {
+	width: 100%;
+}
+
+.studyCell_pk {
+	width: 80%;
+	text-align: left;
+	vertical-align: top;
+	margin: 0 0 0 0;
+	padding: 0 0 0 3px;
+	border: 0;
+}
+
+.studyCell_rightButtons {
+	width: 20%;
+	text-align: right;
+	vertical-align: top;
+	margin: 0 0 0 0;
+	padding: 0 0 0 3px;
+	border: 0;
+}
+
+.studiesDiv {
+}
+
+.studiesSectionTitle {
+    font-size: 1.3em;
+}
+
+.studyDiv {
+	margin: 4px 0 5px 0;
+	padding: 2px 3px 0 2px;
+}
+
+.studyDivRow {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+	clear: left;
+}
+
+.studyDiv_pk {
+	float: left;
+	width: 550px;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.studyDiv_rightButtons {
+	float: right;
+	width: 33px;
+	margin: 0 0 0 0;
+	padding: 0 0 0 5px;
+}

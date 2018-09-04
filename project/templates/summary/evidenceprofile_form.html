@@ -131,6 +131,15 @@
                       effectTagIdPrefixPattern: "div_effectTag_<<streamIndex>>_<<scenarioIndex>>",
                       buttonSetRegEx: new RegExp("^btn_effectTag_(\\d)_(\\d)_(\\d)_(moveup|movedown|remove|showeffecttag|hideeffecttag)$", "gi"),
                       effectTags: evidenceProfile.Library.setEffectTags({{effect_tags|safe}}),
+                      studiesFormset: {
+                        tableIdPattern: "table_studies_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
+                        addButtonIdPattern: "add_study_row_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
+                        buttonSetPrefixPattern: "btn_study_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
+                        fieldPrefixPattern: "stream_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
+                        studyIdPrefixPattern: "tr_study_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
+                        buttonSetRegEx: new RegExp("^btn_study_(\\d)_(\\d)_(\\d)_(\\d)_(moveup|movedown|remove)$", "gi"),
+                        studySearchURL: "/study/api/study-autosuggest/?format=json&assessment_id={{assessment.id}}",
+                      }
                     },
                   },
                 },
