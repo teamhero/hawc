@@ -957,6 +957,21 @@ class EvidenceProfileForm(forms.ModelForm):
                     }
                 }
             },
+            "studies": {
+                "parent_object_type": "effect_tags",
+                "parent_field": "studies",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_(\d+)_(\d+)_study_(order|pk)$",
+                "re_replace_with": r"\1,\2,\3,\4,\5",
+                "field_validation": {
+                    "pk": {
+                        "required": True,
+                        "type": "integer",
+                        "can_be_empty": False,
+                    }
+                }
+            }
         }
 
         #Iterate over the sets of unordered object types and add some key/value attributes to each one that are common to all
@@ -1191,6 +1206,13 @@ class EvidenceProfileForm(forms.ModelForm):
                                 }
                             )
 
+                            if ((effectTag["original_key"] in unordered_types["effect_tags"]["objects"]) and ("studies" in unordered_types["effect_tags"]["objects"][effectTag["original_key"]])):
+                                # This effectTag object has a studies attribute, iterate through it to add each study's primary key to the studies[].studies array
+                                studyIndex = len(scenario["studies"]) - 1
+                                if (studyIndex >= 0):
+                                    for study in unordered_types["effect_tags"]["objects"][effectTag["original_key"]]["studies"]:
+                                        scenario["studies"][studyIndex]["studies"].append(study["pk"])
+
                     # Remove the original_key since it is no longer needed and was only relevent within this instantiation
                     del scenario["original_key"]
 
@@ -1265,7 +1287,5 @@ class EvidenceProfileForm(forms.ModelForm):
         }
 
         cleaned_data["cross_stream_inferences"] = unordered_types["cross_stream_inferences"]["desired_order"]
-
-        print(cleaned_data["scenarios"])
 
         return cleaned_data

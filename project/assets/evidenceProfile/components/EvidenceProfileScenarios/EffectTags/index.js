@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 
 import "./index.css";
 
+import {renderStudiesFormset} from "./Studies";
 
 // Set the colors to be used as shades for the alternating Effect Tags within this Scenario
 let shade1 = "#E9E9FF";
@@ -99,6 +100,7 @@ class EffectTagsFormset extends Component {
                 name={this.effectTags[i].name}
                 studies={this.effectTags[i].studies}
                 effectTags_optionSet={this.props.config.effectTags}
+                studies_config={this.props.config.studiesFormset}
                 divId={this.divId}
                 idPrefix={this.effectTagIdPrefix}
                 fieldPrefix={this.fieldPrefix}
@@ -222,7 +224,7 @@ class EffectTagsFormset extends Component {
                             // The <div> was found within this.effectTags, keep working with it
 
                             buttonDetails[3] = buttonDetails[3].toLowerCase();
-                            if ((buttonDetails[3] === "moveup") && (this.props.streamIndex > 0)) {
+                            if ((buttonDetails[3] === "moveup") && (effectTagIndex > 0)) {
                                 // The user clicked on the "Move Up" button and the scenario is not at the top of the list, move it up in the list
 
                                 let temp = this.effectTags[effectTagIndex];
@@ -288,16 +290,16 @@ class EffectTagsFormset extends Component {
         for (let i=0; i<iTo; i++) {
             let reference = this.effectTagReferences["div_" + this.effectTags[i].div.props.index];
 
-            // Alternate the <div> color on streams
+            // Alternate the <div> color on effectTags
             reference.effectTagReference.style.backgroundColor = ((i % 2) === 0) ? shade1 : shade2;
 
-            // Only make the "Move Up" button visible whenever it is not in the first stream
+            // Only make the "Move Up" button visible whenever it is not in the first effectTag
             reference.moveUpReference.style.visibility = (i === 0) ? "hidden" : "visible";
 
-            // Only make the "Move Down" button visible whenever it is not in the last stream
+            // Only make the "Move Down" button visible whenever it is not in the last effectTag
             reference.moveDownReference.style.visibility = (i === iMax) ? "hidden" : "visible";
 
-            // Set the value of the ordering <input />'s value for this stream's <div>
+            // Set the value of the ordering <input />'s value for this effectTag's <div>
             reference.orderReference.setState(
                 {
                     value: (i + 1),
@@ -413,7 +415,6 @@ class EffectTagCaption extends Component {
 class EffectTagDiv extends Component {
     constructor(props) {
        // First, call the super-class's constructor
-
         super(props);
 
         this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
@@ -554,12 +555,27 @@ class EffectTagDiv extends Component {
                 </div>
 
                 <br className={"effectTagsClearBoth"} />
+
+                <div className={"effectTagDivRow"}>
+                    <div
+                        ref={
+                            (input) => {
+                                this.scenariosFormsetReference = input;
+                            }
+                        }
+                        id={this.fieldPrefix + "_studiesFormset"}
+                        className={"effectTagDiv_studiesFormset"}
+                    >
+                    </div>
+                </div>
+
+                <br className={"effectTagsClearBoth"} />
             </div>
         )
     }
 
     componentDidMount() {
-        // renderEffectTagsFormset(this.studies, this.fieldPrefix + "_effectTagsFormset", this.props.effectTags_config);
+        renderStudiesFormset(this.props.studies, this.fieldPrefix + "_studiesFormset", this.props.studies_config);
     }
 }
 
@@ -663,7 +679,7 @@ class SelectEffectTag extends Component {
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the Effect Tags
 // within this Scenario
 export function renderEffectTagsFormset(studies, divId, config) {
-    // First, look for the <div> element in the Evidence Profile Stream that will hold the Effect Tags -- this formset will placed be within that element
+    // First, look for the <div> element in the Stream Scenario that will hold the Effect Tags -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
         // divId is not null and is not an empty string, continue checking it
@@ -680,7 +696,7 @@ export function renderEffectTagsFormset(studies, divId, config) {
         		indices[1] = parseInt(indices[1]);
 	            let effectTagsFormsetDiv = document.getElementById(divId);
 	            if (effectTagsFormsetDiv !== null) {
-	            	// The <div> element intended to hold this formset, render it
+	            	// The <div> element intended to hold this formset exists, render the formset
 
                 ReactDOM.render(
                     <EffectTagsFormset
