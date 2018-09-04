@@ -340,12 +340,15 @@ class IVEndpointFilterForm(forms.Form):
 
     ORDER_BY_CHOICES = (
         ('experiment__study__short_citation', 'study'),
+        ('experiment__name', 'experiment name'),
         ('name', 'endpoint name'),
         ('assay_type', 'assay type'),
         ('effect', 'effect'),
         ('chemical__name', 'chemical'),
         ('category__name', 'category'),
         ('observation_time', 'observation time'),
+        ('experiment__dose_units_id', 'dose units'),
+        ('response_units', 'response units'),
     )
 
     studies = selectable.AutoCompleteSelectMultipleField(
