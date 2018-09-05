@@ -46,7 +46,7 @@ class StudiesFormset extends Component {
             this.studies.push(
                 {
                     id: iterateOverStudies[i],
-                    title: "",
+                    title: (iterateOverStudies[i] in this.props.studyTitles) ? this.props.studyTitles[iterateOverStudies[i]] : "",
                     tr: null,
                 }
             );
@@ -344,7 +344,7 @@ class StudyRow extends Component {
        // First, call the super-class's constructor
         super(props);
 
-        this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
+        this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : "";
         this.title = (("title" in this.props) && (this.props.title !== null)) ? this.props.title : "";
 
         // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
@@ -379,10 +379,10 @@ class StudyRow extends Component {
                         value={this.props.order}
                     />
 
-                    <input id={this.fieldPrefix + "_pk"} type="hidden" name={this.fieldPrefix + "_pk"} value={(this.props.pk !== null) ? this.props.pk : ""} />
-                    <span id={this.fieldPrefix + "_title"}></span>
+                    <input id={this.fieldPrefix + "_pk"} type="hidden" name={this.fieldPrefix + "_pk"} value={this.pk} />
+                    <span id={this.fieldPrefix + "_title"}>{this.title}</span>
 
-                    <label htmlFor={this.fieldPrefix + "_suggest"} className="control-label">Study</label>
+                    <label htmlFor={this.fieldPrefix + "_suggest"} className="control-label">{(this.pk !== "") ? "Change Study" : "Study"}</label>
                     <StudyAutoSuggest
                         id={this.fieldPrefix + "_suggest"}
                         placeholder={"Study..."}
@@ -623,7 +623,7 @@ class StudyAutoSuggest extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the Studies
 // within this EffectTag
-export function renderStudiesFormset(studies, divId, config) {
+export function renderStudiesFormset(studies, studyTitles, divId, config) {
     // First, look for the <div> element in the Scenario Effect Tag that will hold the Effect Tags -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
@@ -641,6 +641,7 @@ export function renderStudiesFormset(studies, divId, config) {
                 ReactDOM.render(
                     <StudiesFormset
                         studies={studies}
+                        studyTitles={studyTitles}
                         streamIndex={indices[0]}
                         scenarioIndex={indices[1]}
                         effectTagIndex={indices[2]}

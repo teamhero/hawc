@@ -41,6 +41,7 @@ class EffectTagsFormset extends Component {
                     id: effectTag.effecttag_id,
                     name: (effectTag.effecttag_id in this.props.config.effectTags.index) ? this.props.config.effectTags.index[effectTag.effecttag_id] : "",
                     studies: ("studies" in iterateOverStudies[i]) ? iterateOverStudies[i].studies : [],
+                    studyTitles: ("studyTitles" in iterateOverStudies[i]) ? iterateOverStudies[i].studyTitles : {},
                     caption: null,
                     div: null,
                 }
@@ -55,6 +56,7 @@ class EffectTagsFormset extends Component {
                     id: null,
                     name: null,
                     studies: [],
+                    studyTitles: {},
                     caption: null,
                     div: null,
                 }
@@ -99,6 +101,7 @@ class EffectTagsFormset extends Component {
                 scenarioIndex={this.props.scenarioIndex}
                 name={this.effectTags[i].name}
                 studies={this.effectTags[i].studies}
+                studyTitles={this.effectTags[i].studyTitles}
                 effectTags_optionSet={this.props.config.effectTags}
                 studies_config={this.props.config.studiesFormset}
                 divId={this.divId}
@@ -146,6 +149,7 @@ class EffectTagsFormset extends Component {
                     	id: null,
                     	name: null,
                     	studies: [],
+                        studyTitles: {},
                         caption: null,
                         div: null,
                     }
@@ -575,7 +579,7 @@ class EffectTagDiv extends Component {
     }
 
     componentDidMount() {
-        renderStudiesFormset(this.props.studies, this.fieldPrefix + "_studiesFormset", this.props.studies_config);
+        renderStudiesFormset(this.props.studies, this.props.studyTitles, this.fieldPrefix + "_studiesFormset", this.props.studies_config);
     }
 }
 

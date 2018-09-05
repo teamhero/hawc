@@ -9,12 +9,12 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.generic import TemplateView, FormView
 
-from assessment.models import Assessment
+from assessment.models import Assessment, ConfidenceFactor, ConfidenceJudgement, EffectTag
 from assessment.serializers import ConfidenceFactorSerializer, ConfidenceJudgementSerializer, EffectTagSerializer
 from riskofbias.models import RiskOfBiasMetric
+from study.models import Study
 from utils.helper import HAWCDjangoJSONEncoder
 from utils.views import BaseList, BaseCreate, BaseDetail, BaseUpdate, BaseDelete, TeamMemberOrHigherMixin
-from assessment.models import ConfidenceFactor, ConfidenceJudgement, EffectTag
 
 from . import forms, models
 
@@ -636,6 +636,9 @@ def getEvidenceProfileContextData(object):
     # that data from the fields attribute and retain only that portion of the original stream object
     evidenceProfile["streams"][:] = [stream["fields"] for stream in evidenceProfile["streams"] if (stream)]
 
+    # Initialize a list to hold the primary keys of all the studies in the evidence profile
+    study_id_list = []
+
     # Attempt to de-serialize each stream's "confidence_judgement" and "outcome" attributes
     for stream in evidenceProfile["streams"]:
         try:
@@ -662,6 +665,14 @@ def getEvidenceProfileContextData(object):
                 except:
                     scenario["studies"] = []
 
+                # Iterate over the scenario's studies
+                # Studies are grouped by "effect tags," so you have do two iterations
+                for effectTag in scenario["studies"]:
+                    for study_id in effectTag["studies"]:
+                        if (study_id not in study_id_list):
+                            # This study_id is not yet in study_id_list, add it now
+                            study_id_list.append(study_id)
+
                 try:
                     scenario["confidencefactors_increase"] = json.loads(scenario["confidencefactors_increase"])
                 except:
@@ -676,6 +687,25 @@ def getEvidenceProfileContextData(object):
                     scenario["summary_of_findings"] = json.loads(scenario["summary_of_findings"])
                 except:
                     scenario["summary_of_findings"] = {}
+
+    if ((evidenceProfile["assessment"] is not None) and (len(study_id_list) > 0)):
+        # This is an existing evidence profile and at least one study_id is part of the evidence profile, get each study's title and short citation
+
+            # First, query the database and build a set of matching study objects
+            studies = {study[0]:(study[1] + " (" + study[2] + ")") for study in Study.objects.filter(assessment=evidenceProfile["assessment"]).filter(id__in=study_id_list).values_list("id", "title", "short_citation")}
+
+            # Next, add the study titles/citations to each effect tag grouping within the evidence profile
+            for stream in evidenceProfile["streams"]:
+                if ("scenarios" in stream):
+                    for scenario in stream["scenarios"]:
+                        for effectTag in scenario["studies"]:
+                            # Initialize a dictionary within this effect tag grouping that will map study titles/citations to the studies within this effect tag
+                            effectTag["studyTitles"] = {}
+
+                            # Iterate through the studies within this effect tag
+                            for study_id in effectTag["studies"]:
+                                if (study_id in studies):
+                                    effectTag["studyTitles"][study_id] = studies[study_id]
 
     # Serialize the evnidenceProfile into a JSON-formatted string version for inclusion in the request context (the JavaScript in the
     # template will pick up all of the objects and datatypes as desired)
