@@ -6,8 +6,8 @@ import "./index.css";
 import {renderStudiesFormset} from "./Studies";
 
 // Set the colors to be used as shades for the alternating Effect Tags within this Scenario
-let shade1 = "#E9E9FF";
-let shade2 = "#CFCFFF";
+let shade1 = "#E9FFE9";
+let shade2 = "#CFFFCF";
 
 // This Component object is the container for this entire Effect Tags formset
 class EffectTagsFormset extends Component {
