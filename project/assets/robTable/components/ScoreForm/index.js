@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import ReactQuill from 'react-quill';
 
 import ScoreIcon from 'robTable/components/ScoreIcon';
+import EndpointScoreForm from 'robTable/components/EndpointScoreForm';
 import Select from 'shared/components/Select';
 import './ScoreForm.css';
 
@@ -59,6 +60,7 @@ class ScoreForm extends Component {
         
         this.handleEditorInput = this.handleEditorInput.bind(this);
         this.selectScore = this.selectScore.bind(this);
+        this.selectEndpoint = this.selectEndpoint.bind(this);
     }
 
     componentWillMount(){
@@ -107,10 +109,58 @@ class ScoreForm extends Component {
         }
     }
 
+    selectEndpoint(endpoint){
+		console.log('selected:'+endpoint+':'+this.state.endpointChoices[endpoint]);
+		this.setState({
+			endpointID: this.state.endpointChoices[endpoint],
+			endpointText: this.state.endpointChoices[endpoint],
+			numEndpointScores: this.state.numEndpointScores + 1,
+		});
+    }
+
     render() {
+		const endpointScores = [];
+		//const EPButton = this.props.showEPButton;
+		
+		for (var i=0;i<this.state.numEndpointScores; i++) {
+			endpointScores.push(<EndpointScoreForm key={i} updateNotesLeft={this.props.updateNotesLeft} endpointID={this.state.endpointID} endpointText={this.state.endpointText} />);
+		};
+		
         let { name } = this.props.score.metric,
-            { scoreChoices, score, notes, selectedSymbol, selectedShade } = this.state;
+            { scoreChoices, score, notes, selectedSymbol, selectedShade, endpointChoices } = this.state;
+	
+		if (this.props.showEPButton)
         return (
+			<div>
+            <div className='score-form'>
+                <div>
+                    <Select choices={scoreChoices}
+                          id={name}
+                          value={score}
+                          handleSelect={this.selectScore}/>
+                    <br/><br/>
+                    <ScoreIcon shade={selectedShade}
+                             symbol={selectedSymbol}/>
+					<br/>
+					Add unique notes for:<br/>
+					<button>Endpoints</button>
+					<br/>
+                    <Select choices={endpointChoices} id={name+'_ep'} handleSelect={this.selectEndpoint} />
+					<br/>
+                </div>
+                <ReactQuill id={name}
+                         value={notes}
+                         onChange={this.handleEditorInput}
+                         toolbar={false}
+                         theme='snow'
+                         className='score-editor' />
+            </div>
+			<div>{endpointScores}</div>
+			</div>
+        );
+		else
+        return (
+			<div>
             <div className='score-form'>
                 <div>
                     <Select choices={scoreChoices}
@@ -128,9 +178,15 @@ class ScoreForm extends Component {
                          theme='snow'
                          className='score-editor' />
             </div>
+			<div>{endpointScores}</div>
+			</div>
         );
     }
 }
+
+ScoreForm.defaultProps = {
+	showEPButton: true,
+};
 
 ScoreForm.propTypes = {
     score: PropTypes.shape({
@@ -142,6 +198,7 @@ ScoreForm.propTypes = {
         }).isRequired,
     }).isRequired,
     updateNotesLeft: PropTypes.func.isRequired,
+	showEPButton: PropTypes.bool,
 };
 
 export default ScoreForm;
