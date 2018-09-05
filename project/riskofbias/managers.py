@@ -43,6 +43,21 @@ class RiskOfBiasManager(BaseManager):
 class RiskOfBiasScoreManager(BaseManager):
     assessment_relation = 'riskofbias__study__assessment'
 
+class RiskOfBiasPerEndpointManager(BaseManager):
+    assessment_relation = 'baseendpoint__assessment'
 
+    def all_active(self, assessment=None):
+        return self.get_qs(assessment).filter(active=True)
+
+    def active(self, assessment=None):
+        return self.get_qs(assessment).filter(active=True, final=False)
+
+    def final(self, assessment=None):
+        return self.get_qs(assessment).filter(final=True)
+
+
+class RiskOfBiasScorePerEndpointManager(BaseManager):
+    assessment_relation = 'riskofbiasperendpoint__baseendpoint__assessment'
+	
 class RiskOfBiasAssessmentManager(BaseManager):
     assessment_relation = 'assessment'
