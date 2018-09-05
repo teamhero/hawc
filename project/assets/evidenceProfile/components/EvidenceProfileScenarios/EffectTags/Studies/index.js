@@ -8,8 +8,8 @@ import fetch from 'isomorphic-fetch';
 import h from 'shared/utils/helpers';
 
 // Set the colors to be used as shades for the alternating Effect Tags within this Scenario
-let shade1 = "#E9E9FF";
-let shade2 = "#CFCFFF";
+let shade1 = "#FFFFE9";
+let shade2 = "#FFFFCF";
 
 // This Component object is the container for this entire Effect Tags formset
 class StudiesFormset extends Component {
