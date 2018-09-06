@@ -213,26 +213,37 @@ class ComparisonSetSerializer(serializers.ModelSerializer):
 
 
 class OutcomeCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    study_short_citation = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Outcome
-        cleanup_fields = model.TEXT_CLEANUP_FIELDS
+        cleanup_fields = ('study_short_citation',) + model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
 
+    def get_study_short_citation(self, obj):
+        return obj.study_population.study.short_citation
 
 class StudyPopulationCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    study_short_citation = serializers.SerializerMethodField()
 
     class Meta:
         model = models.StudyPopulation
-        cleanup_fields = model.TEXT_CLEANUP_FIELDS
+        cleanup_fields = ('study_short_citation',) + model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
+
+    def get_study_short_citation(self, obj):
+        return obj.study.short_citation
 
 
 class ExposureCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    study_short_citation = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Exposure
-        cleanup_fields = model.TEXT_CLEANUP_FIELDS
+        cleanup_fields = ('study_short_citation',) + model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
+
+    def get_study_short_citation(self, obj):
+        return obj.study_population.study.short_citation
 
 SerializerHelper.add_serializer(models.Outcome, OutcomeSerializer)
