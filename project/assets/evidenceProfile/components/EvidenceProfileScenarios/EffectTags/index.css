@@ -1,0 +1,68 @@
+.effectTagsClearBoth {
+	clear: both;
+}
+
+.effectTagsDiv {
+}
+
+.effectTagsSectionTitle {
+    font-size: 1.3em;
+}
+
+.effectTagCaptionDiv {
+	background-color: #006000;
+	color: #FFFFFF;
+	text-align: left;
+    margin: 5px 0 0 0;
+    padding: 2px 3px 3px 3px;
+    clear: both;
+}
+
+.effectTagCaption_button {
+	float: left;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.efectTagCaption_name {
+	float: left;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+
+.effectTagDiv {
+	margin: 4px 0 5px 0;
+	padding: 2px 3px 0 2px;
+}
+
+.effectTagDivRow {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+
+.effectTagDiv_leftButton {
+	float: left;
+	width: 33px;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.effectTagDiv_name {
+	float: left;
+	width: 400px;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.effectTagDiv_rightButtons {
+	float: right;
+	width: 33px;
+	margin: 0 0 0 0;
+	padding: 0 0 0 5px;
+}
+
+.effectTagDiv_studiesFormset {
+	width: 100%;
+	margin: 0 0 0 0;
+	padding: 3px 0 0 5px;
+}
