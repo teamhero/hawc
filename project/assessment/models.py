@@ -133,6 +133,9 @@ class Assessment(models.Model):
         help_text="Describe the funding-source(s) for this assessment.")
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    cloned = models.BooleanField(
+        default=False
+    )
 
     COPY_NAME = 'assessments'
 
@@ -220,6 +223,24 @@ class Assessment(models.Model):
 
     def get_crumbs(self):
         return get_crumbs(self)
+
+    def clone_assessment(self, assessment):
+        """Imports to not cause circular dependencies."""
+        from animal.models import Experiment, AnimalGroup, DoseGroup, Endpoint, EndpointGroup
+        from bmd.models import AssessmentSettings, LogicField, Session, Model, SelectedModel
+        from epi.models import Criteria, Country, AdjustmentFactor, Ethnicity, StudyPopulationCriteria, StudyPopulation, Outcome, ComparisonSet, Group, Exposure, GroupNumericalDescriptions, ResultMetric, ResultAdjustmentFactor, Result, GroupResult
+        from epimeta.models import MetaProtocol, MetaResult, SingleResult
+        from invitro.models import IVChemical, IVCellType, IVExperiment, IVEndpointCategory, IVEndpoint, IVEndpointGroup, IVBenchmark
+        from lit.models import Search, PubMedQuery, ReferenceTags, Reference
+        from mgmt.models import Task
+        from riskofbias.models import RiskOfBiasDomain, RiskOfBiasMetric, RiskOfBias, RiskOfBiasScore
+        from study.models import Study, Attachment
+        from summary.models import SummaryText, Visual, DataPivot, EvidenceProfile, EvidenceProfileStream, EvidenceProfileScenario
+        
+        """Copying selected assessment from the form."""
+        assessment_clone = assessment
+
+        return assessment_clone
 
 
 class Attachment(models.Model):
