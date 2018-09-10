@@ -296,7 +296,9 @@ class AnimalGroup(models.Model):
     species = models.ForeignKey(
         'assessment.Species')
     strain = models.ForeignKey(
-        'assessment.Strain')
+        'assessment.Strain',
+        help_text='When adding a new strain, put the stock in parenthesis, e.g., ' +
+                    '\"Sprague-Dawley (Harlan).\"')
     sex = models.CharField(
         max_length=1,
         choices=SEX_CHOICES)
@@ -329,10 +331,8 @@ class AnimalGroup(models.Model):
                     'before sexual maturity and continue to adulthood)')
     duration_observation = models.FloatField(
         verbose_name="Exposure-outcome duration",
-        help_text='Numeric length of time between start of exposure and outcome assessment, '
-                    'in days when &lt;7 (e.g., 5 days), weeks when &ge;7 days to 12 weeks (e.g., 1 '
-                    'week, 12 weeks), or months when &gt;12 weeks (e.g., 15 months). For '
-                    'repeated measures use descriptions such as "1, 2 and 3 weeks"',
+        help_text='Optional: Numeric length of time between start of exposure and outcome assessment in days. ' +
+                    'This field may be used to sort studies which is why days are used as a common metric.',
         blank=True,
         null=True)
     siblings = models.ForeignKey(
@@ -357,7 +357,7 @@ class AnimalGroup(models.Model):
         null=True)  # not enforced in db, but enforced in views
     comments = models.TextField(
         blank=True,
-        verbose_name="Animal Husbandry",
+        verbose_name="Animal Source and Husbandry",
         help_text="Copy paste animal husbandry information from materials and methods, "
                     "use quotation marks around all text directly copy/pasted from paper.")
     created = models.DateTimeField(
