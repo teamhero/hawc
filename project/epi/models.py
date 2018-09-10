@@ -19,6 +19,14 @@ from utils.helper import SerializerHelper, HAWCDjangoJSONEncoder
 
 from . import managers
 
+# version with no special formatting exists as sometimes it is used in a tag title attribute, e.g. for tooltips
+HAWC_VIS_NOTE_UNSTYLED = "This field is commonly used in HAWC visualizations"
+HAWC_VIS_NOTE = "<span class='important-note'>" + HAWC_VIS_NOTE_UNSTYLED + "</span>"
+OPTIONAL_NOTE = "<span class='help-text-notes optional'>Optional</span>"
+
+def formatHelpTextNotes(s):
+    return "<span class='help-text-notes'>%s</span>" % s
+
 
 class Criteria(models.Model):
     objects = managers.CriteriaManager()
@@ -143,6 +151,12 @@ class StudyPopulationCriteria(models.Model):
 class StudyPopulation(models.Model):
     objects = managers.StudyPopulationManager()
 
+    CRITERIA_HELP_TEXTS = {
+        "inclusion_criteria": "What criteria were used to determine an individual’s eligibility? Ex. at least 18 years old; born in the country of study; singleton pregnancy",
+        "exclusion_criteria": "What criteria were used to exclude an individual from participation?  Ex. pre-existing medical conditions, pregnancy, use of medication",
+        "confounding_criteria": OPTIONAL_NOTE
+    }
+
     TEXT_CLEANUP_FIELDS = (
         'name',
         'age_profile',
@@ -170,47 +184,81 @@ class StudyPopulation(models.Model):
         'study.Study',
         related_name="study_populations")
     name = models.CharField(
-        max_length=256)
+        max_length=256,
+        help_text="Name the population associated with the study, following the format <b>Study name (years study conducted), Country, number participants " +
+                    "(number male, number female, if relevant).</b> Ex. INUENDO (2002-2004), Greenland/Poland/Ukraine, 1,321 mother-infant pairs; " +
+                    "NHANES (2007-2010), U.S., 1,181 adults (672 men, 509 women). " +
+                    formatHelpTextNotes("Use men/women for adults (>=18), boys/girls for children (<18).") +
+                    formatHelpTextNotes("Note pregnant women if applicable.") +
+                    formatHelpTextNotes("There may be multiple study populations within a single study, though this is typically unlikely.") +
+                    HAWC_VIS_NOTE
+
+        )
     design = models.CharField(
         max_length=2,
-        choices=DESIGN_CHOICES)
+        choices=DESIGN_CHOICES,
+        help_text="Choose the most specific description of study design. See “Epidemiology Terms Appendix” for additional guidance: " +
+                    "<a target='_new' href='https://hawcprd.epa.gov/assessment/100000039/'>https://hawcprd.epa.gov/assessment/100000039/</a>. " +
+                    HAWC_VIS_NOTE
+        )
     age_profile = models.CharField(
         max_length=128,
         blank=True,
-        help_text="Age profile of population (ex: adults, children, "
-                  "pregnant women, etc.)")
+        help_text="State study population’s age category, with quantitative information (mean, median, SE, range) in parentheses where available. " +
+        "Ex. Pregnancy (mean 31 years; SD 4 years); Newborn; Adulthood " +
+        formatHelpTextNotes("Use age categories \"Fetal\" (in utero), \"Newborn\" (at birth), \"Neonatal\" (0-4 weeks), " +
+                            "\"Infancy\" (0-12 months), \"Childhood\" (0-11 years), \"Adolescence\" (12-18 years), \"Adulthood\" " +
+                            "(>18 years); may be assessment specific.") +
+        formatHelpTextNotes("Note \"Pregnancy\" instead of \"Adolescence\" or \"Adulthood\" if applicable.") +
+        formatHelpTextNotes("If multiple, separate with semicolons.") +
+        formatHelpTextNotes("Add units for quantitative measurements (days, months, years).")
+        )
     source = models.CharField(
         max_length=128,
         blank=True,
-        help_text="Population source (ex: general population, environmental "
-                  "exposure, occupational cohort)")
+        help_text="Population source (General population, Occupational cohort, Superfund site, etc.). Ex. General population")
     country = models.ForeignKey(
         Country)
     region = models.CharField(
         max_length=128,
-        blank=True)
+        blank=True,
+        help_text=OPTIONAL_NOTE)
     state = models.CharField(
         max_length=128,
-        blank=True)
+        blank=True,
+        help_text=OPTIONAL_NOTE)
     eligible_n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        verbose_name="Eligible N")
+        verbose_name="Eligible N",
+        help_text=OPTIONAL_NOTE + "<span class='optional'>Number of individuals eligible based on study design and inclusion/exclusion criteria.</span>")
     invited_n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        verbose_name="Invited N")
+        verbose_name="Invited N",
+        help_text=OPTIONAL_NOTE + "<span class='optional'>Number of individuals initially asked to participate in the study.</span>")
     participant_n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        verbose_name="Participant N")
+        verbose_name="Participant N",
+        help_text="How many individuals participated in the study? Ex. 1321<br/>" +
+                formatHelpTextNotes("If mother-infant pairs, note number of pairs, not total individuals studied")
+        )
     criteria = models.ManyToManyField(
         Criteria,
         through=StudyPopulationCriteria,
         related_name='populations')
     comments = models.TextField(
         blank=True,
-        help_text="Note matching criteria, etc.")
+        help_text="Copy-paste text describing study population selection <br/>" +
+                "Ex. \"Data and biospecimens were obtained from the Maternal Infant Research on Environmental Chemicals (MIREC) Study, " +
+                "a trans-Canada cohort study of 2,001 pregnant women. Study participants were recruited from 10 Canadian cities between " +
+                "2008 and 2011. Briefly, women were eligible for inclusion if the fetus was at <14 weeks’ gestation at the time of recruitment " +
+                "and they were ≥18 years of age, able to communicate in French or English, and planning on delivering at a local hospital. " +
+                "Women with known fetal or chromosomal anomalies in the current pregnancy and women with a history of medical complications " +
+                "(including renal disease, epilepsy, hepatitis, heart disease, pulmonary disease, cancer, hematological disorders, threatened " +
+                "spontaneous abortion, and illicit drug use) were excluded from the study.\"")
+
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -324,6 +372,12 @@ class StudyPopulation(models.Model):
 class Outcome(BaseEndpoint):
     objects = managers.OutcomeManager()
 
+    NAME_HELP_TEXT = 'Follow "Recommended Terminology for Outcomes/Endpoints": ' + "<a target='_new' href=\"https://hawcprd.epa.gov/assessment/100000039/\">https://hawcprd.epa.gov/assessment/100000039/</a>. " + "Use title style (capitalize all words). Ex. Hyperthyroidism " + HAWC_VIS_NOTE
+
+    TAGS_HELP_TEXT = "For now, tag overall study confidence from the Risk of Bias review in this field. Ex. high" + formatHelpTextNotes("To add a new tag, click the \"+\" button to the right.") + formatHelpTextNotes("Only create new tags when necessary")
+
+                    
+
     TEXT_CLEANUP_FIELDS = (
         'name',
         'system',
@@ -342,45 +396,61 @@ class Outcome(BaseEndpoint):
         (6, 'other'),
     )
 
+
     study_population = models.ForeignKey(
         StudyPopulation,
         related_name='outcomes')
     system = models.CharField(
         max_length=128,
         blank=True,
-        help_text="Relevant biological system")
+        help_text="Enter biological system affected, following \"Recommended Terminology for Outcomes/Endpoints\": " +
+                    "<a target='_new' href='https://hawcprd.epa.gov/assessment/100000039/'>https://hawcprd.epa.gov/assessment/100000039/</a>. " +
+                    "Use title style (capitalize all words). Ex. Endocrine"
+        )
     effect = models.CharField(
         max_length=128,
         blank=True,
-        help_text="Effect, using common-vocabulary")
+        help_text="Enter effect, following \"Recommended Terminology for Outcomes/Endpoints\": " +
+                    "<a target='_new' href='https://hawcprd.epa.gov/assessment/100000039/'>https://hawcprd.epa.gov/assessment/100000039/</a>. " +
+                    "Use title style (capitalize all words). Ex. Thyroid Hormones "
+        )
     effect_subtype = models.CharField(
         max_length=128,
         blank=True,
-        help_text="Effect subtype, using common-vocabulary")
+        help_text="Enter effect subtype, following \"Recommended Terminology for Outcomes/Endpoints\": " +
+                    "<a target='_new' href='https://hawcprd.epa.gov/assessment/100000039/'>https://hawcprd.epa.gov/assessment/100000039/</a>. " +
+                    "Use title style (capitalize all words). Ex. Absolute" +
+                    formatHelpTextNotes("This field is not mandatory; often no effect subtype is necessary")
+        )
     diagnostic = models.PositiveSmallIntegerField(
         choices=DIAGNOSTIC_CHOICES)
-    diagnostic_description = models.TextField()
+    diagnostic_description = models.TextField(
+            help_text="Copy and paste diagnostic methods directly from study. Ex. \"Birth weight (grams) was measured by trained midwives at delivery.\" " +
+                    formatHelpTextNotes("Use quotation marks around direct quotes from a study")
+        )
     outcome_n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        verbose_name="Outcome N")
+        verbose_name="Outcome N",
+        help_text="Number of individuals for whom outcome was reported. Ex. 132")
     age_of_measurement = models.CharField(
         max_length=32,
         blank=True,
         verbose_name="Age at outcome measurement",
-        help_text='Textual age description when outcomes were measured '
-                  '[examples include:  specific age indicated in the study '
-                  '(e.g., "3 years of age, 10-12 years of age") OR standard '
-                  'age categories: "infancy (1-12 months), toddler (1-2 years)'
-                  ', middle childhood (6-11 years, early adolescence (12-18 '
-                  'years), late adolescence (19-21 years), adulthood (>21), '
-                  'older adulthood (varies)" - based on NICHD Integrated '
-                  'pediatric terminology]')
+        help_text="State study population’s age category at outcome measurement, with quantitative information " +
+                    "(mean, median, SE, range) in parentheses where available.<br/>" +
+                    "Ex. Pregnancy (mean 31 years;  SD 4 years); Newborn; Adulthood " +
+                    formatHelpTextNotes("Use age categories \"Fetal\" (in utero), \"Newborn\" (at birth), " +
+                                        "\"Neonatal\" (0-4 weeks), \"Infancy\" (0-12 months), \"Childhood\" (0-11 years), " +
+                                        "\"Adolescence\" (12-18 years), \"Adulthood\" (>18 years); may be assessment specific") +
+                    formatHelpTextNotes("Note \"Pregnancy\" instead of \"Adolescence\" or \"Adulthood\" if applicable") +
+                    formatHelpTextNotes("If multiple, separate with semicolons") +
+                    formatHelpTextNotes("Add units for quantitative measurements (days, months, years)")
+        )
     summary = models.TextField(
         blank=True,
-        help_text='Summarize main findings of outcome, or describe why no '
-                  'details are presented (for example, "no association '
-                  '(data not shown)")')
+        help_text="Provide additional outcome or extraction details if necessary. Ex. No association (data not shown)"
+        )
 
     COPY_NAME = "outcomes"
 
@@ -491,15 +561,25 @@ class ComparisonSet(models.Model):
         related_name='comparison_sets',
         null=True)
     name = models.CharField(
-        max_length=256)
+        max_length=256,
+        help_text="Name the comparison set, following the format <b>Exposure (If log transformed indicate Ln or Logbase) " +
+                "(If continuous, quartiles, tertiles, etc.) (Any other applicable information on analysis) - identifying " +
+                "characteristics of exposed group.</b> Each group is a collection of people, and all groups in this collection " +
+                "are comparable to one another. You may create a comparison set which contains two groups: cases and controls. " +
+                "Alternatively, for cohort-based studies, you may create a comparison set with four different groups, one for " +
+                "each quartile of exposure based on exposure measurements. Ex. PFNA (Ln) (Tertiles) – newborn boys" +
+                formatHelpTextNotes("Common identifying characteristics: cases, controls, newborns, boys, girls, men, women, pregnant women")
+
+        )
     exposure = models.ForeignKey(
         "Exposure",
         related_name="comparison_sets",
-        help_text="Exposure-group associated with this group",
+        help_text="Which chemical exposure group is associated with this comparison set?",
         blank=True,
         null=True)
     description = models.TextField(
-        blank=True)
+        blank=True,
+        help_text="Provide additional comparison set or extraction details if necessary")
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -591,18 +671,22 @@ class Group(models.Model):
         related_name="groups")
     group_id = models.PositiveSmallIntegerField()
     name = models.CharField(
-        max_length=256)
+        max_length=256,
+        help_text="First note \"Cases\" or \"Controls\" if applicable, then \"Continuous\" for continuous exposure " +
+                "or the appropriate quartile/tertile/etc. for categorial (\"Q1\", \"Q2\", etc). Ex. Cases Q3; Continuous"
+        )
     numeric = models.FloatField(
         verbose_name='Numerical value (sorting)',
-        help_text='Numerical value, can be used for sorting',
+        help_text="For categorical, note position in which groups should be listed in visualizations. Ex. Q1: 1" +
+                    " " + HAWC_VIS_NOTE_UNSTYLED,
         blank=True,
         null=True)
     comparative_name = models.CharField(
         max_length=64,
         verbose_name="Comparative Name",
-        help_text='Group and value, displayed in plots, for example '
-                  '"1.5-2.5(Q2) vs ≤1.5(Q1)", or if only one group is '
-                  'available, "4.8±0.2 (mean±SEM)"',
+        help_text="For categorical, note if there is a comparison group. Ex. referent; Q2 vs. Q1 " +
+                    "The referent group against which exposure or \"index\" groups are compared is " +
+                    "typically the group with the lowest or no exposure",
         blank=True)
     sex = models.CharField(
         max_length=1,
@@ -610,27 +694,31 @@ class Group(models.Model):
         choices=SEX_CHOICES)
     ethnicities = models.ManyToManyField(
         Ethnicity,
-        blank=True)
+        blank=True,
+        help_text="Optional")
     eligible_n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        verbose_name="Eligible N")
+        verbose_name="Eligible N",
+        help_text="Optional")
     invited_n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        verbose_name="Invited N")
+        verbose_name="Invited N",
+        help_text="Optional")
     participant_n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        verbose_name="Participant N")
+        verbose_name="Participant N",
+        help_text="Ex. 1400")
     isControl = models.NullBooleanField(
         verbose_name="Control?",
         default=None,
         choices=IS_CONTROL_CHOICES,
-        help_text="Should this group be interpreted as a null/control group")
+        help_text="Mark \"Case\" or \"Control\" if applicable")
     comments = models.TextField(
         blank=True,
-        help_text="Any other comments related to this group")
+        help_text="Provide additional group or extraction details if necessary")
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -705,6 +793,8 @@ class Group(models.Model):
 class Exposure(models.Model):
     objects = managers.ExposureManager()
 
+    ROUTE_HELP_TEXT = 'Select the most significant route(s) of chemical exposure'
+
     ESTIMATE_TYPE_CHOICES = (
         (0, None),
         (1, "mean"),
@@ -732,7 +822,9 @@ class Exposure(models.Model):
         related_name='exposures')
     name = models.CharField(
         max_length=128,
-        help_text='Name of exposure and exposure-route')
+        help_text='Name of chemical exposure; use abbreviation. Ex. PFNA; DEHP')
+
+    # for help_text for these fields, see ROUTE_HELP_TEXT
     inhalation = models.BooleanField(
         default=False)
     dermal = models.BooleanField(
@@ -746,56 +838,85 @@ class Exposure(models.Model):
         verbose_name="Intravenous (IV)")
     unknown_route = models.BooleanField(
         default=False)
+
     measured = models.CharField(
         max_length=128,
         blank=True,
-        verbose_name="What was measured")
+        verbose_name="What was measured",
+        help_text="Chemical measured in study; typically, the same as chemical exposure, but occasionally " +
+                    "chemical exposure metabolite or another chemical signal. Use abbreviation. Ex PFNA; MEHP")
     metric = models.CharField(
         max_length=128,
-        verbose_name="Measurement Metric")
+        verbose_name="Measurement Metric",
+        help_text="In what was the chemical measured? Ex. Air; Maternal serum" +
+                    formatHelpTextNotes("Exposure medium (ex. air, water), tissue or bodily fluid in which biomarker " +
+                                        "detected (ex. blood, serum, plasma, urine, feces, breast milk, hair, saliva, teeth, finger or " +
+                                        "toe nails), or occupation from which exposure assumed (cadmium factory worker)") +
+                    HAWC_VIS_NOTE
+        )
     metric_units = models.ForeignKey(
-        'assessment.DoseUnits')
+        'assessment.DoseUnits',
+        help_text="Note chemical measurement units (metric system); if no units given, that is, chemical exposure assumed " +
+                    "from occupation or survey data, note appropriate exposure categories. Ex. ng/mL; Y/N; electroplating/welding/other" +
+                    HAWC_VIS_NOTE
+        )
     metric_description = models.TextField(
-        verbose_name="Measurement Description")
+        verbose_name="Measurement Description",
+        help_text="Briefly describe how chemical levels in measurement metric were assessed. Ex. Single plasma sample collected for " +
+                    "each pregnant woman during the first trimester" +
+                    formatHelpTextNotes("Note key details or if measurement details not provided. May vary by assessment.")
+        )
     analytical_method = models.TextField(
-        help_text="Include details on the lab-techniques for exposure "
-                  "measurement in samples.")
+        help_text="Copy and paste lab technique and related information (such as system, corporation name and location) used to measure " +
+        "chemical exposure levels. Ex. \"Three PFAS (PFOA, PFOS, and PFHxS) were measured in first-trimester plasma using ultra-high-pressure " +
+        "liquid chromatography (ACQUITY UPLC System; Waters Corporation, Milford, Massachusetts) coupled with tandem mass spectrometry, " +
+        "operated in the multiple reaction monitoring mode with an electrospray ion source in negative mode.\""
+        )
     sampling_period = models.CharField(
         max_length=128,
-        help_text='Exposure sampling period',
+        help_text=OPTIONAL_NOTE,
         blank=True)
     age_of_exposure = models.CharField(
         max_length=32,
         blank=True,
-        help_text='Textual age description for when exposure measurement '
-                  'sample was taken, treatment given, or age for which survey '
-                  'data apply [examples include:  specific age indicated in '
-                  'the study (e.g., "gestational week 20, 3 years of age, '
-                  '10-12 years of age, previous 12 months") OR standard age '
-                  'categories: "fetal (in utero), neonatal (0-27 days), '
-                  'infancy (1-12 months) toddler (1-2 years), middle '
-                  'childhood (6-11 years, early adolescence (12-18 years),'
-                  'late adolescence (19-21 years), adulthood (>21),'
-                  'older adulthood (varies)" – based on NICHD Integrated'
-                  'pediatric terminology]')
+        help_text="When exposure measurement sample was taken, treatment given, and/or specific age or range of ages for which " +
+                    "survey data apply; quantitative information (mean, median, SE, range) in parentheses where available.  Ex. Pregnancy " +
+                    "(mean 31 years; SD 4 years); Newborn; Adulthood" +
+                    formatHelpTextNotes("Use age categories \"Fetal\" (in utero), \"Newborn\" (at birth), " +
+                                        "\"Neonatal\" (0-4 weeks), \"Infancy\" (0-12 months), \"Childhood\" (0-11 years), \"Adolescence\" (12-18 years), " +
+                                        "\"Adulthood\" (>18 years); may be assessment specific") +
+                    formatHelpTextNotes("Note \"Pregnancy\" instead of \"Adolescence\" or \"Adulthood\" if applicable") +
+                    formatHelpTextNotes("If multiple, separate with semicolons") +
+                    formatHelpTextNotes("Add units for quantitative measurements (days, months, years)")
+        )
+                  
     duration = models.CharField(
         max_length=128,
         blank=True,
-        help_text='Exposure duration')
+        help_text="Note exposure duration<br/>" +
+                "Ex. Acute, Short-term (2 weeks), Chronic, Developmental, Unclear." +
+                formatHelpTextNotes("In many cases (e.g. most cross-sectional studies) exposure duration will be difficult " +
+                                    "to establish; use “Unclear” if duration cannot be empirically derived from study design")
+        )
     exposure_distribution = models.CharField(
         max_length=128,
         blank=True,
-        help_text='May be used to describe the exposure distribution, for '
-                  'example, "2.05 µg/g creatinine (urine), geometric mean; '
-                  '25th percentile = 1.18, 75th percentile = 3.33"')
+        help_text="Enter exposure distribution details not noted in fields below. Ex. 25th percentile=1.18; 75th percentile=3.33" +
+                    formatHelpTextNotes("Typically 25th and 75th percentiles or alternative central tendency estimate")
+        )
+
     n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        help_text="Individuals where outcome was measured")
+        help_text=OPTIONAL_NOTE + "<span class='optional'>Number of individuals where exposure was measured</span>")
     estimate = models.FloatField(
         blank=True,
         null=True,
-        help_text="Central tendency estimate")
+        help_text="Use the central tendency estimate most commonly reported in the set of studies (typically mean or median). " +
+                    "Ex. 0.78" +
+                    formatHelpTextNotes("Note: type and units recorded in other fields") +
+                    HAWC_VIS_NOTE
+        )
     estimate_type = models.PositiveSmallIntegerField(
         choices=ESTIMATE_TYPE_CHOICES,
         verbose_name="Central estimate type",
@@ -803,8 +924,7 @@ class Exposure(models.Model):
     variance = models.FloatField(
         blank=True,
         null=True,
-        verbose_name='Variance',
-        help_text="Variance estimate")
+        verbose_name='Variance')
     variance_type = models.PositiveSmallIntegerField(
         choices=VARIANCE_TYPE_CHOICES,
         default=0)
@@ -812,24 +932,25 @@ class Exposure(models.Model):
         blank=True,
         null=True,
         verbose_name='Lower CI',
-        help_text="Numerical value for lower-confidence interval")
+        help_text="Numerical value")
     upper_ci = models.FloatField(
         blank=True,
         null=True,
         verbose_name='Upper CI',
-        help_text="Numerical value for upper-confidence interval")
+        help_text="Numerical value")
     lower_range = models.FloatField(
         blank=True,
         null=True,
         verbose_name='Lower range',
-        help_text='Numerical value for lower range')
+        help_text='Numerical value')
     upper_range = models.FloatField(
         blank=True,
         null=True,
         verbose_name='Upper range',
-        help_text='Numerical value for upper range')
+        help_text='Numerical value')
     description = models.TextField(
-        blank=True)
+        blank=True,
+        help_text="Provide additional exposure or extraction details if necessary")
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -1151,7 +1272,10 @@ class Result(models.Model):
         (5, "other"))
 
     name = models.CharField(
-        max_length=256
+        max_length=256,
+        help_text="Name the result, following the format <b>Effect Exposure (If log-transformed) (continuous, quartiles, tertiles, etc.) " +
+        "– subgroup</b>. Ex. Hyperthyroidism PFHxS (ln) (continuous) – women" +
+        HAWC_VIS_NOTE
     )
 
     outcome = models.ForeignKey(
@@ -1167,66 +1291,68 @@ class Result(models.Model):
     metric = models.ForeignKey(
         ResultMetric
         ,related_name="results"
-        ,help_text="&nbsp;"
+        ,help_text="Select the most specific term for the result metric"
     )
 
     metric_description = models.TextField(
         blank=True
-        ,help_text="Add additional text describing the metric used, if needed."
+        ,help_text="Specify metric if \"other\"; optionally, provide details. Ex. Logistic regression to estimate OR and 95% CIs for continuous ln-transformed PFHxS"
     )
 
     data_location = models.CharField(
         max_length=128
         ,blank=True
-        ,help_text="Details on where the data are found in the literature "
-                   "(ex: Figure 1, Table 2, etc.)"
+        ,help_text="Details on where the data are found in the literature. Ex. Figure 1; Supplemental Table 2"
     )
 
     population_description = models.CharField(
         max_length=128
-        ,help_text='Detailed description of the population being studied for'
-                   'this outcome, which may be a subset of the entire'
-                   'study-population. For example, "US (national) NHANES'
-                   '2003-2008, Hispanic children 6-18 years, ♂♀ (n=797)"',
+        ,help_text="Describe the population subset studied for this outcome, following the format " +
+                    "<b>Male or female adults or children (n)</b>. Ex. Women (n=1200); Newborn girls (n=33)" +
+                    HAWC_VIS_NOTE,
         blank=True
     )
 
     dose_response = models.PositiveSmallIntegerField(
         verbose_name="Dose Response Trend"
-        ,help_text="Was a trend observed?"
+        ,help_text=OPTIONAL_NOTE
         ,default=0
         ,choices=DOSE_RESPONSE_CHOICES
     )
 
     dose_response_details = models.TextField(
         blank=True
+        ,help_text=OPTIONAL_NOTE
     )
 
     prevalence_incidence = models.CharField(
         max_length=128
         ,verbose_name="Overall incidence prevalence"
+        ,help_text=OPTIONAL_NOTE
         ,blank=True
     )
 
     statistical_power = models.PositiveSmallIntegerField(
-        help_text="Is the study sufficiently powered?"
+        help_text=OPTIONAL_NOTE
         ,default=0
         ,choices=STATISTICAL_POWER_CHOICES
     )
 
     statistical_power_details = models.TextField(
         blank=True
+        ,help_text=OPTIONAL_NOTE
     )
 
     statistical_test_results = models.TextField(
         blank=True
+        ,help_text=OPTIONAL_NOTE
     )
 
     trend_test = models.CharField(
         verbose_name="Trend test result"
         ,max_length=128
         ,blank=True
-        ,help_text="Enter result, if available (ex: p=0.015, p≤0.05, n.s., etc.)"
+        ,help_text=OPTIONAL_NOTE + "<span class='optional'>Enter result, if available (ex: p=0.015, p≤0.05, n.s., etc.)</span>"
     )
 
     adjustment_factors = models.ManyToManyField(
@@ -1252,14 +1378,12 @@ class Result(models.Model):
         ,null=True
         ,default=0.95
         ,verbose_name="Confidence Interval (CI)"
-        ,help_text="A 95% CI is written as 0.95."
+        ,help_text="Write as a decimal: a 95% CI should be recorded as 0.95. Ex. 0.95"
     )
 
     comments = models.TextField(
         blank=True
-        ,help_text='Summarize main findings of outcome, or describe why no '
-                   'details are presented (for example, "no association '
-                   '(data not shown)")'
+        ,help_text="Summarize main findings (optional) or describe why no details are presented. Ex. No association (data not shown)"
     )
 
     created = models.DateTimeField(
@@ -1274,6 +1398,7 @@ class Result(models.Model):
         EffectTag
         ,blank=True
         ,verbose_name="Tags"
+        ,help_text="Note units. Ex. IQR increase"
     )
 
     COPY_NAME = "results"
@@ -1404,53 +1529,66 @@ class GroupResult(models.Model):
     n = models.PositiveIntegerField(
         blank=True,
         null=True,
-        help_text="Individuals in group where outcome was measured")
+        help_text=HAWC_VIS_NOTE_UNSTYLED)
     estimate = models.FloatField(
         blank=True,
         null=True,
-        help_text="Central tendency estimate for group")
+        help_text=HAWC_VIS_NOTE_UNSTYLED)
     variance = models.FloatField(
         blank=True,
         null=True,
         verbose_name='Variance',
-        help_text="Variance estimate for group")
+        help_text="Note value when available. " + HAWC_VIS_NOTE_UNSTYLED)
     lower_ci = models.FloatField(
         blank=True,
         null=True,
         verbose_name='Lower CI',
-        help_text="Numerical value for lower-confidence interval")
+        help_text="Note lower confidence interval value when available. " + HAWC_VIS_NOTE_UNSTYLED)
     upper_ci = models.FloatField(
         blank=True,
         null=True,
         verbose_name='Upper CI',
-        help_text="Numerical value for upper-confidence interval")
+        help_text="Note upper confidence interval value when available. " + HAWC_VIS_NOTE_UNSTYLED)
     lower_range = models.FloatField(
         blank=True,
         null=True,
         verbose_name='Lower range',
-        help_text='Numerical value for lower range')
+        help_text="Note lower range value when available. " + HAWC_VIS_NOTE_UNSTYLED)
     upper_range = models.FloatField(
         blank=True,
         null=True,
         verbose_name='Upper range',
-        help_text='Numerical value for upper range')
+        help_text="Note upper range value when available. " + HAWC_VIS_NOTE_UNSTYLED)
     p_value_qualifier = models.CharField(
         max_length=1,
         choices=P_VALUE_QUALIFIER_CHOICES,
         default="-",
-        verbose_name='p-value qualifier')
+        verbose_name='p-value qualifier',
+        help_text="Select n.s. if results are not statistically significant; otherwise, choose the appropriate qualifier. " + 
+                    HAWC_VIS_NOTE_UNSTYLED)
     p_value = models.FloatField(
         blank=True,
         null=True,
         verbose_name='p-value',
-        validators=[MinValueValidator(0.), MaxValueValidator(1.)])
+        validators=[MinValueValidator(0.), MaxValueValidator(1.)],
+        help_text="Note p-value when available. " + HAWC_VIS_NOTE_UNSTYLED)
     is_main_finding = models.BooleanField(
         blank=True,
         verbose_name="Main finding",
-        help_text="Is this the main-finding for this outcome?")
+        help_text="If study does not report a statistically significant association (p<0.05) between exposure " +
+                    "and health outcome at any exposure level, check \"Main finding\" for highest exposure group " +
+                    "compared with referent group (e.g.Q4 vs. Q1). If study reports a statistically significant " + 
+                    "association and monotonic dose response, check \"Main finding\" for lowest exposure group with " +
+                    "a statistically significant association. If nonmonotonic dose response, case-by-case considering " +
+                    "statistical trend analyses, consistency of pattern across exposure groups, and/or biological " +
+                    "significance.  See \"Results\" section of https://ehp.niehs.nih.gov/1205502/ for examples and " +
+                    "further details. " + HAWC_VIS_NOTE_UNSTYLED)
     main_finding_support = models.PositiveSmallIntegerField(
         choices=MAIN_FINDING_CHOICES,
-        help_text="Are the results supportive of the main-finding?",
+        help_text="Select appropriate level of support for the main finding." +
+                    "See \"Results\" section of https://ehp.niehs.nih.gov/1205502/ for examples and further details. " +
+                    "Choose between \"inconclusive\" vs. \"not-supportive\" based on chemical- and study-specific context. " +
+                    HAWC_VIS_NOTE_UNSTYLED,
         default=1)
     created = models.DateTimeField(
         auto_now_add=True)
