@@ -40,8 +40,8 @@ class Experiment(models.Model):
         ("NR", "Not-reported"))
 
     LITTER_EFFECT_CHOICES = (
-        ("NA", "Not-applicable"),
-        ("NR", "Not-reported"),
+        ("NA", "Not applicable"),
+        ("NR", "Not reported"),
         ("YS", "Yes, statistical control"),
         ("YD", "Yes, study-design"),
         ("N",  "No"),
@@ -110,33 +110,33 @@ class Experiment(models.Model):
     vehicle = models.CharField(
         max_length=64,
         verbose_name="Chemical vehicle",
-        help_text="Describe vehicle (use name as described in methods "
-                    "but also add the common name if the vehicle was "
-                    "described in a non-standard way)",
+        help_text="Describe vehicle (use name as described in methods but also add the " +
+                    "common name if the vehicle was described in a non-standard way). " +
+                    "Enter \"not reported\" if the vehicle is not described. For inhalation " +
+                    "studies, air can be inferred if not explicitly reported. " +
+                    "Examples: \"corn oil,\" \"filtered air,\" \"not reported, but assumed clean air.\"",
         blank=True)
     diet = models.TextField(
-        help_text="Copy paste diet/water from materials and methods, "
-                    "use quotation marks around all text directly copy/pasted "
-                    "from paper. If diet is of particular importance in an "
-                    "assessment, then use a short description so it can be "
-                    "displayed in visualizations (e.g., soy-protein free 2020X "
-                    "Teklad). In these cases, the longer materials and methods "
-                    "description can be captured in 'animal husbandry' in the "
-                    "Animal Group extraction module.",
+        help_text="Describe diet as presented in the paper (e.g., \"soy-protein free " +
+                    "2020X Teklad,\" \"Atromin 1310\", \"standard rodent chow\").",
         blank=True)
     guideline_compliance = models.CharField(
         max_length=128,
         blank=True,
-        help_text="""Description of any compliance methods used (i.e. use of EPA 
-                    OECD, NTP, or other guidelines; conducted under GLP guideline 
-                    conditions, non-GLP but consistent with guideline study, 
-                    etc.). This field response should match any description used 
-                    in study evaluation in the reporting quality domain.""")
+        help_text="""Description of any compliance methods used (i.e. use of EPA
+                    OECD, NTP, or other guidelines; conducted under GLP guideline
+                    conditions, non-GLP but consistent with guideline study,
+                    etc.). This field response should match any description used
+                    in study evaluation in the reporting quality domain, e.g., 
+                    GLP study (OECD guidelines 414 and 412, 1981 versions)""")
     litter_effects = models.CharField(
         max_length=2,
         choices=LITTER_EFFECT_CHOICES,
         default="NA",
-        help_text="Type of controls used for litter-effects")
+        help_text="Type of controls used for litter-effects. The \"No\" response " +
+                "will be infrequently used. More typically the information will be " +
+                "\"Not reported\" and assumed not considered. Only use \"No\" if it " +
+                "is explicitly mentioned in the study that litter was not controlled for.")
     litter_effect_notes = models.CharField(
         max_length=128,
         help_text="Any additional notes describing how litter effects were controlled",
