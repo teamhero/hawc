@@ -147,6 +147,9 @@ class AnimalGroupForm(ModelForm):
     class Meta:
         model = models.AnimalGroup
         exclude = ('experiment', 'dosing_regime', 'generation', 'parents')
+        labels = {
+            'lifestage_assessed': 'Lifestage at assessment'
+        }
 
     def __init__(self, *args, **kwargs):
         parent = kwargs.pop('parent', None)
@@ -239,6 +242,9 @@ class GenerationalAnimalGroupForm(AnimalGroupForm):
     class Meta:
         model = models.AnimalGroup
         exclude = ('experiment', )
+        labels = {
+            'lifestage_assessed': 'Lifestage at assessment'
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

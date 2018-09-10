@@ -307,8 +307,13 @@ class AnimalGroup(models.Model):
     lifestage_assessed = models.CharField(
         max_length=32,
         blank=True,
-        help_text='Textual life-stage description when endpoints were measured '
-                  '(examples include: "parental, PND18, juvenile, adult, multiple")')
+        help_text='Definitions: <b>Developmental</b>: Prenatal and perinatal exposure in dams or ' +
+                    'postnatal exposure in offspring until sexual maturity (~6 weeks in rats and ' +
+                    'mice). Include studies with pre-mating exposure if the endpoint focus is ' +
+                    'developmental. <b>Adult</b>: Exposure in sexually mature males or females. <b>Adult ' +
+                    '(gestation)</b>: Exposure in dams during pregnancy. <b>Multi-lifestage</b>: includes both ' +
+                    'developmental and adult (i.e., multi-generational studies, exposure that start ' +
+                    'before sexual maturity and continue to adulthood)')
     duration_observation = models.FloatField(
         verbose_name="Exposure-outcome duration",
         help_text='Numeric length of time between start of exposure and outcome assessment, '
