@@ -155,6 +155,14 @@ class Endpoint extends Observee {
         }
     }
 
+	get_bmd_data(name) {
+		try {
+			return this.data.bmd.output[name];
+		} catch (err) {
+			return '-';
+		}
+	}
+
     get_bmd_special_values(name){
         // return the appropriate BMD output value
         try{
@@ -455,6 +463,8 @@ class Endpoint extends Observee {
             this.dose_units,
             this.get_special_dose_text('NOEL'),
             this.get_special_dose_text('LOEL'),
+			this.get_bmd_data('BMD'),
+			this.get_bmd_data('BMDL'),
         ];
     }
 
