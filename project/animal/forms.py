@@ -515,10 +515,6 @@ class EndpointForm(ModelForm):
     def clean_variance_type(self):
         data_type = self.cleaned_data.get("data_type")
         variance_type = self.cleaned_data.get("variance_type")
-        if data_type == "C" and variance_type == 0:
-            raise forms.ValidationError(
-                "If entering continuous data, the variance type must be SD"
-                "(standard-deviation) or SE (standard error)")
         return variance_type
 
     def clean_response_units(self):
@@ -551,8 +547,9 @@ class EndpointGroupForm(forms.ModelForm):
 
         if data_type == 'C':
             var = data.get("variance")
-            if var is not None and var_type in (0, 3):
-                msg = 'Variance must be numeric, or the endpoint-field "variance-type" should be "not reported"'
+            if var is not None and var_type == 3:
+                variance_name = models.Endpoint.VARIANCE_NAME[var_type]
+                msg = 'Variance data should not be provided if "' + variance_name + '" is the selected Variance Type.'
                 self.add_error('variance', msg)
         elif data_type == 'P':
             if data.get("lower_ci") is None and data.get("upper_ci") is not None:
@@ -614,6 +611,14 @@ class EndpointFilterForm(forms.Form):
         ('effect', 'effect'),
         ('-NOEL', 'NOAEL'),
         ('-LOEL', 'LOAEL'),
+        # BMD/BMDL is stored in output which is a JsonField on the bmd Model object. We want to sort on a sub-field of that.
+        # when/if HAWC upgrades to Django 2.1 (see yekta's comment on https://stackoverflow.com/questions/36641759/django-1-9-jsonfield-order-by)
+        # could possibly do something like this instead.
+        # for now we use a custom sort string and handle it in EndpointList class
+        # ('bmd_model__model__output__-BMD', 'BMD'),
+        # ('bmd_model__model__output__-BMDL', 'BMDLS'),
+        ('customBMD', 'BMD'),
+        ('customBMDLS', 'BMDLS'),
         ('effect_subtype', 'effect subtype'),
         ('animal_group__experiment__chemical', 'chemical'),
     )

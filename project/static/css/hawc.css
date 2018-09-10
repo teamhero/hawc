@@ -521,3 +521,18 @@ Risk of Bias
     font-weight: bold;
     color: darkgreen;
 }
+
+.help-block .help-text-notes {
+	display: block;
+	font-style: italic;
+}
+
+.help-block .important-note {
+	display: block;
+	font-style: italic;
+	color: red;
+}
+
+.help-block .optional {
+	color: #999999;
+}
