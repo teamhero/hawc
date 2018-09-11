@@ -611,7 +611,7 @@ class Reference(models.Model):
     full_text_url = CustomURLField(
         blank=True,
         help_text="Link to full-text URL from journal site (may require increased "
-                  "access privileges, only reviewers and team-members)")
+                  "access privileges to view)")
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(

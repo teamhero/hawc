@@ -40,8 +40,8 @@ class Experiment(models.Model):
         ("NR", "Not-reported"))
 
     LITTER_EFFECT_CHOICES = (
-        ("NA", "Not-applicable"),
-        ("NR", "Not-reported"),
+        ("NA", "Not applicable"),
+        ("NR", "Not reported"),
         ("YS", "Yes, statistical control"),
         ("YD", "Yes, study-design"),
         ("N",  "No"),
@@ -110,33 +110,33 @@ class Experiment(models.Model):
     vehicle = models.CharField(
         max_length=64,
         verbose_name="Chemical vehicle",
-        help_text="Describe vehicle (use name as described in methods "
-                    "but also add the common name if the vehicle was "
-                    "described in a non-standard way)",
+        help_text="Describe vehicle (use name as described in methods but also add the " +
+                    "common name if the vehicle was described in a non-standard way). " +
+                    "Enter \"not reported\" if the vehicle is not described. For inhalation " +
+                    "studies, air can be inferred if not explicitly reported. " +
+                    "Examples: \"corn oil,\" \"filtered air,\" \"not reported, but assumed clean air.\"",
         blank=True)
     diet = models.TextField(
-        help_text="Copy paste diet/water from materials and methods, "
-                    "use quotation marks around all text directly copy/pasted "
-                    "from paper. If diet is of particular importance in an "
-                    "assessment, then use a short description so it can be "
-                    "displayed in visualizations (e.g., soy-protein free 2020X "
-                    "Teklad). In these cases, the longer materials and methods "
-                    "description can be captured in 'animal husbandry' in the "
-                    "Animal Group extraction module.",
+        help_text="Describe diet as presented in the paper (e.g., \"soy-protein free " +
+                    "2020X Teklad,\" \"Atromin 1310\", \"standard rodent chow\").",
         blank=True)
     guideline_compliance = models.CharField(
         max_length=128,
         blank=True,
-        help_text="""Description of any compliance methods used (i.e. use of EPA 
-                    OECD, NTP, or other guidelines; conducted under GLP guideline 
-                    conditions, non-GLP but consistent with guideline study, 
-                    etc.). This field response should match any description used 
-                    in study evaluation in the reporting quality domain.""")
+        help_text="""Description of any compliance methods used (i.e. use of EPA
+                    OECD, NTP, or other guidelines; conducted under GLP guideline
+                    conditions, non-GLP but consistent with guideline study,
+                    etc.). This field response should match any description used
+                    in study evaluation in the reporting quality domain, e.g., 
+                    GLP study (OECD guidelines 414 and 412, 1981 versions)""")
     litter_effects = models.CharField(
         max_length=2,
         choices=LITTER_EFFECT_CHOICES,
         default="NA",
-        help_text="Type of controls used for litter-effects")
+        help_text="Type of controls used for litter-effects. The \"No\" response " +
+                "will be infrequently used. More typically the information will be " +
+                "\"Not reported\" and assumed not considered. Only use \"No\" if it " +
+                "is explicitly mentioned in the study that litter was not controlled for.")
     litter_effect_notes = models.CharField(
         max_length=128,
         help_text="Any additional notes describing how litter effects were controlled",
@@ -262,6 +262,19 @@ class AnimalGroup(models.Model):
         ("F4", "Fourth-generation (F4)"),
         ("Ot", "Other"))
 
+    # these choices for lifesage expose/assessed were added ~Sept 2018. B/c there
+    # are existing values in the database, we are not going to enforce these choices on
+    # the model as we do for say sex/SEX_CHOICES. Instead we'll leave the model as is,
+    # and start using this to drive a Select widget on the form. For old/existing data,
+    # we'll add the previously saved value to the dropdown at runtime so we don't lose data.
+    LIFESTAGE_CHOICES = (
+        ("Developmental", "Developmental"),
+        ("Adult", "Adult"),
+        ("Adult (gestation)", "Adult (gestation)"),
+        ("Multi-lifestage", "Multi-lifestage")
+    )
+        
+
     TEXT_CLEANUP_FIELDS = (
         'name',
         'animal_source',
@@ -283,7 +296,9 @@ class AnimalGroup(models.Model):
     species = models.ForeignKey(
         'assessment.Species')
     strain = models.ForeignKey(
-        'assessment.Strain')
+        'assessment.Strain',
+        help_text='When adding a new strain, put the stock in parenthesis, e.g., ' +
+                    '\"Sprague-Dawley (Harlan).\"')
     sex = models.CharField(
         max_length=1,
         choices=SEX_CHOICES)
@@ -307,14 +322,17 @@ class AnimalGroup(models.Model):
     lifestage_assessed = models.CharField(
         max_length=32,
         blank=True,
-        help_text='Textual life-stage description when endpoints were measured '
-                  '(examples include: "parental, PND18, juvenile, adult, multiple")')
+        help_text='Definitions: <b>Developmental</b>: Prenatal and perinatal exposure in dams or ' +
+                    'postnatal exposure in offspring until sexual maturity (~6 weeks in rats and ' +
+                    'mice). Include studies with pre-mating exposure if the endpoint focus is ' +
+                    'developmental. <b>Adult</b>: Exposure in sexually mature males or females. <b>Adult ' +
+                    '(gestation)</b>: Exposure in dams during pregnancy. <b>Multi-lifestage</b>: includes both ' +
+                    'developmental and adult (i.e., multi-generational studies, exposure that start ' +
+                    'before sexual maturity and continue to adulthood)')
     duration_observation = models.FloatField(
         verbose_name="Exposure-outcome duration",
-        help_text='Numeric length of time between start of exposure and outcome assessment, '
-                    'in days when &lt;7 (e.g., 5 days), weeks when &ge;7 days to 12 weeks (e.g., 1 '
-                    'week, 12 weeks), or months when &gt;12 weeks (e.g., 15 months). For '
-                    'repeated measures use descriptions such as "1, 2 and 3 weeks"',
+        help_text='Optional: Numeric length of time between start of exposure and outcome assessment in days. ' +
+                    'This field may be used to sort studies which is why days are used as a common metric.',
         blank=True,
         null=True)
     siblings = models.ForeignKey(
@@ -339,7 +357,7 @@ class AnimalGroup(models.Model):
         null=True)  # not enforced in db, but enforced in views
     comments = models.TextField(
         blank=True,
-        verbose_name="Animal Husbandry",
+        verbose_name="Animal Source and Husbandry",
         help_text="Copy paste animal husbandry information from materials and methods, "
                     "use quotation marks around all text directly copy/pasted from paper.")
     created = models.DateTimeField(

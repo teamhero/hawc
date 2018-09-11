@@ -69,8 +69,8 @@ class Study(Reference):
         max_length=256,
         help_text="How the study should be identified in HAWC (last name year, HERO ID). "
                   "This field is used to select studies for figures and endpoint filters within HAWC, "
-                  "so you may need to add distinguishing features such as chemical name. "
-                  "This field is commonly used in HAWC visualizations.")
+                  "so you may need to add distinguishing features such as chemical name when the assessment "
+                  "includes multiple chemicals. This field may be used in HAWC visualizations.")
     full_citation = models.TextField(
         help_text="Complete study citation, in desired format. First author last name, Initial; "
                   "Second author last name, Initial; etc. (Year). Title. Journal volume (issue): "
@@ -88,21 +88,23 @@ class Study(Reference):
                   "Provide details when a COI is inferred.")
     funding_source = models.TextField(
         blank=True,
-        help_text="When available, cut and paste the funding source information with quotations.")
+        help_text="When reported, cut and paste the funding source information with quotations, e.g., " +
+                    "\"The study was sponsored by Hoechst AG and Dow Europe\".")
     study_identifier = models.CharField(
         max_length=128,
         blank=True,
         verbose_name="Internal study identifier",
-        help_text="HERO LitCiter reference format {First author last name, year, HERO ID} "
-                  "*This field is used for HERO reference formatting purposes to help document preparation.")
+        help_text="This field may be used in HAWC visualizations when there is a preference not to " +
+                    "display the HERO ID number, so use author year format, e.g., Smith, 1978, " +
+                    "Smith and Jones, 1978 or Smith et al (for more than 3 authors)")
     contact_author = models.BooleanField(
         default=False,
         help_text="Was the author contacted for clarification of methods, results, or to request additional data?")
     ask_author = models.TextField(
         blank=True,
         verbose_name="Correspondence details",
-        help_text="Details on correspondence between data-extractor and author, if needed. "
-                  "Please include data and details of the correspondence. The files documenting "
+        help_text="Details on correspondence between data-extractor and author (if author contacted). "
+                  "Please include date and details of the correspondence. The files documenting "
                   "the correspondence can also be added to HAWC as attachments and HERO as a "
                   "new record, but first it is important to redact confidential or personal "
                   "information (e.g., email address).")

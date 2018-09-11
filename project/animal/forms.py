@@ -147,6 +147,9 @@ class AnimalGroupForm(ModelForm):
     class Meta:
         model = models.AnimalGroup
         exclude = ('experiment', 'dosing_regime', 'generation', 'parents')
+        labels = {
+            'lifestage_assessed': 'Lifestage at assessment'
+        }
 
     def __init__(self, *args, **kwargs):
         parent = kwargs.pop('parent', None)
@@ -155,6 +158,7 @@ class AnimalGroupForm(ModelForm):
         if parent:
             self.instance.experiment = parent
 
+        """
         self.fields['lifestage_exposed'].widget = selectable.AutoCompleteWidget(
             lookup_class=lookups.RelatedAnimalGroupLifestageExposedLookup,
             allow_new=True)
@@ -166,6 +170,25 @@ class AnimalGroupForm(ModelForm):
             allow_new=True)
         self.fields['lifestage_assessed'].widget.update_query_parameters(
             {'related': self.instance.experiment.study.assessment.id})
+        """
+
+        # for lifestage assessed/exposed, use a select widget. Manually add in
+        # previously saved values that don't conform to the LIFESTAGE_CHOICES tuple
+        lifestage_dict = dict(models.AnimalGroup.LIFESTAGE_CHOICES)
+
+        if self.instance.lifestage_exposed in lifestage_dict:
+            le_choices = models.AnimalGroup.LIFESTAGE_CHOICES
+        else:
+            le_choices = ((self.instance.lifestage_exposed, self.instance.lifestage_exposed),) + models.AnimalGroup.LIFESTAGE_CHOICES
+        self.fields['lifestage_exposed'].widget = forms.Select(choices=le_choices)
+
+        if self.instance.lifestage_assessed in lifestage_dict:
+            la_choices = models.AnimalGroup.LIFESTAGE_CHOICES
+        else:
+            la_choices = ((self.instance.lifestage_assessed, self.instance.lifestage_assessed),) + models.AnimalGroup.LIFESTAGE_CHOICES
+        self.fields['lifestage_assessed'].widget = forms.Select(choices=la_choices)
+
+
 
         self.fields['siblings'].queryset = models.AnimalGroup.objects.filter(
                 experiment=self.instance.experiment)
@@ -239,6 +262,9 @@ class GenerationalAnimalGroupForm(AnimalGroupForm):
     class Meta:
         model = models.AnimalGroup
         exclude = ('experiment', )
+        labels = {
+            'lifestage_assessed': 'Lifestage at assessment'
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
