@@ -37,3 +37,22 @@ class Visual(AssessmentViewset):
         if self.action == "list":
             cls = serializers.CollectionVisualSerializer
         return cls
+
+
+class EvidenceProfile(AssessmentViewset):
+    """
+    For list view, return all EvidenceProfile objects for an assessment, but using the
+    simplified collection view.
+
+    For all other views, use the detailed visual view.
+    """
+
+    assessment_filter_args = "assessment"
+    model = models.EvidenceProfile
+    pagination_class = DisabledPagination
+
+    def get_serializer_class(self):
+        cls = serializers.EvidenceProfileSerializer
+        if self.action == "list":
+            cls = serializers.CollectionEvidenceProfileSerializer
+        return cls

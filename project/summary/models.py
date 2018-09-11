@@ -761,9 +761,18 @@ class EvidenceProfile(models.Model):
     def get_update_url(self):
         return reverse('summary:evidenceprofile_update', kwargs={'pk': self.assessment_id, 'slug': self.slug})
 
+    # This method returns the "delete" URL for this EvidenceProfile
+    def get_delete_url(self):
+        return reverse('summary:evidenceprofile_delete', kwargs={"pk": self.assessment_id, "slug":self.slug})
+
     # This method returns the object's parent Assessment
     def get_assessment(self):
         return self.assessment
+
+    # This property is static and is simply the string "Evidence Profile"
+    @property
+    def visual_type(self):
+        return "Evidence Profile"
 
 
 # This object is the second-level object for an EvidenceProfile object (multiple EvidenceProfileStream objects

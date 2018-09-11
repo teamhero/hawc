@@ -569,6 +569,15 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
     template_name = "summary/evidenceprofile_detail.html"
 
 
+class EvidenceProfileDelete(GetEvidenceProfileObjectMixin, BaseDelete):
+    success_message = 'Evidence Profile deleted.'
+    model = models.EvidenceProfile
+    template_name = "summary/evidenceprofile_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse_lazy('summary:visualization_list', kwargs={'pk': self.assessment.pk})
+
+
 # This function returns the set of serialized objects that are commonly used as context data for Evidence Profile objects
 def getEvidenceProfileContextData(object):
     returnValue = {}
