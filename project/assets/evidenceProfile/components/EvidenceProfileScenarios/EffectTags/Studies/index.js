@@ -116,15 +116,6 @@ class StudiesFormset extends Component {
         );
     }
 
-    /*
-            <div id={this.divId}>
-                <strong className="control-label studiesSectionTitle">Studies Within This Tag</strong>
-                <button id={this.addButtonId} className="btn btn-primary pull-right" type="button" onClick={this.handleButtonClick}>New Study</button>
-                <br className="studiesClearBoth" />
-                {this.state.divs}
-            </div>
-    */
-
     // This function handles the clicking of a button within this formset
     handleButtonClick(event) {
         if ((typeof(event) == "object") && (typeof(event.target) == "object") && (typeof(event.target.id) == "string") && (event.target.id != "")) {
