@@ -5,6 +5,7 @@ import EvidenceProfileScenario from "../../EvidenceProfileScenario";
 import "./index.css";
 
 import {renderEffectTagsFormset} from "./EffectTags";
+import {renderConfidenceFactorsFormset} from "./ConfidenceFactors";
 
 // Set the colors to be used as shades for the alternating Scenarios within this stream
 let shade1 = "#E9E9FF";
@@ -97,9 +98,9 @@ class EvidenceProfileScenariosFormset extends Component {
                 studies={this.scenarios[i].scenario.object.studies}
                 effectTags_config={this.props.config.effectTagsFormset}
                 confidencefactors_increase={this.scenarios[i].scenario.object.confidencefactors_increase}
-                confidencefactors_increase_optionSet={this.props.config.confidenceFactorsIncrease}
-                confidenceFactors_decrease={this.scenarios[i].scenario.object.confidencefactors_decrease}
-                confidenceFactors_decrease_optionSet={this.props.config.confidenceFactorsDecrease}
+                confidenceFactorsIncrease_config={this.props.config.confidenceFactorsIncreaseFormset}
+                confidencefactors_decrease={this.scenarios[i].scenario.object.confidencefactors_decrease}
+                confidenceFactorsDecrease_config={this.props.config.confidenceFactorsDecreaseFormset}
                 divId={this.divId}
                 idPrefix={this.scenarioIdPrefix}
                 fieldPrefix={this.fieldPrefix}
@@ -184,9 +185,9 @@ class EvidenceProfileScenariosFormset extends Component {
                     studies={this.scenarios[scenarioIndex].scenario.object.studies}
                     effectTags_config={this.props.config.effectTagsFormset}
                     confidencefactors_increase={this.scenarios[scenarioIndex].scenario.object.confidencefactors_increase}
-                    confidencefactors_increase_optionSet={this.props.config.confidenceFactorsIncrease}
+                    confidenceFactorsIncrease_config={this.props.config.confidenceFactorsIncreaseFormset}
                     confidenceFactors_decrease={this.scenarios[scenarioIndex].scenario.object.confidencefactors_decrease}
-                    confidenceFactors_decrease_optionSet={this.props.config.confidenceFactorsDecrease}
+                    confidencefactorsDecrease_config={this.props.config.confidenceFactorsDecreaseFormset}
                     divId={this.divId}
                     idPrefix={this.scenarioIdPrefix}
                     fieldPrefix={this.fieldPrefix}
@@ -430,7 +431,7 @@ class ScenarioDiv extends Component {
             explanation: "",
         };
 
-        for (let i in {"studies":1, "effectTags":1}) {
+        for (let i in {"studies":1, "effectTags":1, "confidencefactors_increase":1, "confidencefactors_decrease":1}) {
             this[i] = ((i in props) && (props[i] !== null) && (typeof(props.studies) === "object") && (Array.isArray(props.studies))) ? props[i] : [];
         }
 
@@ -637,12 +638,44 @@ class ScenarioDiv extends Component {
                 </div>
 
                 <br className={"scenariosClearBoth"} />
+
+                <div className={"scenarioDivRow"}>
+                    <div
+                        ref={
+                            (input) => {
+                                this.scenariosFormsetReference = input;
+                            }
+                        }
+                        id={this.fieldPrefix + "_confidenceFactorsIncreaseFormset"}
+                        className={"scenarioDiv_confidenceFactorsIncreaseFormset"}
+                    >
+                    </div>
+                </div>
+
+                <br className={"scenariosClearBoth"} />
+
+                <div className={"scenarioDivRow"}>
+                    <div
+                        ref={
+                            (input) => {
+                                this.scenariosFormsetReference = input;
+                            }
+                        }
+                        id={this.fieldPrefix + "_confidenceFactorsDecreaseFormset"}
+                        className={"scenarioDiv_confidenceFactorsDecreaseFormset"}
+                    >
+                    </div>
+                </div>
+
+                <br className={"scenariosClearBoth"} />
             </div>
         )
     }
 
     componentDidMount() {
         renderEffectTagsFormset(this.studies, this.fieldPrefix + "_effectTagsFormset", this.props.effectTags_config);
+        renderConfidenceFactorsFormset("increase", this.confidencefactors_increase, this.fieldPrefix + "_confidenceFactorsIncreaseFormset", this.props.confidenceFactorsIncrease_config);
+        renderConfidenceFactorsFormset("decrease", this.confidencefactors_decrease, this.fieldPrefix + "_confidenceFactorsDecreaseFormset", this.props.confidenceFactorsDecrease_config);
     }
 }
 

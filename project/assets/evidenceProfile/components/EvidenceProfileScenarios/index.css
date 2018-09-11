@@ -98,5 +98,19 @@
 	width: 100%;
 	margin: 0 0 0 0;
 	padding: 10px 0 0 5px;
+    background-color: #CCFFFF;
+}
+
+.scenarioDiv_confidenceFactorsIncreaseFormset {
+	width: 100%;
+	margin: 0 0 0 0;
+	padding: 10px 0 0 5px;
     background-color: #E9FFE9;
+}
+
+.scenarioDiv_confidenceFactorsDecreaseFormset {
+	width: 100%;
+	margin: 0 0 0 0;
+	padding: 10px 0 0 5px;
+    background-color: #FFE0E0;
 }
