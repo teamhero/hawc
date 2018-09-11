@@ -58,7 +58,7 @@ class ConfidenceFactorsFormset extends Component {
             	this.confidenceFactors.push(
                 	{
                     	id: confidenceFactor.confidencefactor_id,
-                    	title: confidenceFactor.name,
+                    	title: ((confidenceFactor.confidencefactor_id !== null) || (confidenceFactor.confidencefactor_id !== "")) ? this.props.config.confidenceFactors.factors[this.props.config.confidenceFactors.index[confidenceFactor.confidencefactor_id]].name : "",
 	                    explanation: confidenceFactor.explanation,
     	                caption: null,
         	            tr: null,
