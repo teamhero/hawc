@@ -480,8 +480,8 @@ class EvidenceProfileNew(BaseCreate):
                         outcome = json.dumps(scenario["outcome"]),
                         summary_of_findings = json.dumps(scenario["summary_of_findings"]),
                         studies = json.dumps(scenario["studies"]),
-                        confidencefactors_increase = "[]",
-                        confidencefactors_decrease = "[]",
+                        confidencefactors_increase = json.dumps(scenario["confidencefactors_increase"]),
+                        confidencefactors_decrease = json.dumps(scenario["confidencefactors_decrease"]),
                         order = scenario["order"],
                         created = pytz.timezone(timezone.get_default_timezone_name()).localize(datetime.now()),
                     )
@@ -577,8 +577,8 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
                     scenarioToSave.outcome = json.dumps(scenario["outcome"])
                     scenarioToSave.summary_of_findings = json.dumps(scenario["summary_of_findings"])
                     scenarioToSave.studies = json.dumps(scenario["studies"])
-                    scenarioToSave.confidencefactors_increase = "[]"
-                    scenarioToSave.confidencefactors_decrease = "[]"
+                    scenarioToSave.confidencefactors_increase = json.dumps(scenario["confidencefactors_increase"])
+                    scenarioToSave.confidencefactors_decrease = json.dumps(scenario["confidencefactors_decrease"])
                     scenarioToSave.order = scenario["order"]
 
                     scenarioToSave.save();

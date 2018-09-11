@@ -1005,8 +1005,8 @@ class EvidenceProfileForm(forms.ModelForm):
                         "required": True,
                         "type": "integer",
                         "can_be_empty": False,
-                    }
-                }
+                    },
+                },
             },
             "studies": {
                 "parent_object_type": "effect_tags",
@@ -1020,8 +1020,38 @@ class EvidenceProfileForm(forms.ModelForm):
                         "required": True,
                         "type": "integer",
                         "can_be_empty": False,
-                    }
-                }
+                    },
+                },
+            },
+            "confidenceFactorsIncrease": {
+                "parent_object_type": "stream_scenarios",
+                "parent_field": "confidenceFactorsIncrease",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_increase_(\d+)_confidenceFactor_(order|pk|explanation)$",
+                "re_replace_with": r"\1,\2,\3,\4",
+                "field_validation": {
+                    "pk": {
+                        "required": True,
+                        "type": "integer",
+                        "can_be_empty": False,
+                    },
+                },
+            },
+            "confidenceFactorsDecrease": {
+                "parent_object_type": "stream_scenarios",
+                "parent_field": "confidenceFactorsDecrease",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_decrease_(\d+)_confidenceFactor_(order|pk|explanation)$",
+                "re_replace_with": r"\1,\2,\3,\4",
+                "field_validation": {
+                    "pk": {
+                        "required": True,
+                        "type": "integer",
+                        "can_be_empty": False,
+                    },
+                },
             }
         }
 
@@ -1240,32 +1270,66 @@ class EvidenceProfileForm(forms.ModelForm):
         # Iterate through each of the stream objects in order to make an addition to each stream's scenarios
         for stream_key, stream_dict in unordered_types["evidence_profile_streams"]["objects"].items():
             if ("scenarios" in stream_dict):
-                # This stream has a set of scenarios, iterate over them and add a studies key to each one, initialized to an empty list
+                # This stream has a set of scenarios, iterate over them and add the following keys and initialize them to empty lists:
+                #   * scenarios
+                #   * confidencefactors_increase
+                #   * confidencefactors_decrease
+
                 for scenario in stream_dict["scenarios"]:
                     scenario["studies"] = []
+                    scenario["confidencefactors_increase"] = []
+                    scenario["confidencefactors_decrease"] = []
 
-                    if (
-                        (scenario["original_key"] in unordered_types["stream_scenarios"]["objects"])
-                        and ("effectTags" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]])
-                    ):
-                        # This scenario has a set of effectTags, iterate over them to build the studies key's value
-                        for effectTag in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]["effectTags"]:
-                            scenario["studies"].append(
-                                {
-                                    "effecttag_id": effectTag["pk"],
-                                    "studies": [],
-                                }
-                            )
+                    if ("original_key" in scenario):
+                        # This scenario includes an attribute named original_key
 
-                            if ((effectTag["original_key"] in unordered_types["effect_tags"]["objects"]) and ("studies" in unordered_types["effect_tags"]["objects"][effectTag["original_key"]])):
-                                # This effectTag object has a studies attribute, iterate through it to add each study's primary key to the studies[].studies array
-                                studyIndex = len(scenario["studies"]) - 1
-                                if (studyIndex >= 0):
-                                    for study in unordered_types["effect_tags"]["objects"][effectTag["original_key"]]["studies"]:
-                                        scenario["studies"][studyIndex]["studies"].append(study["pk"])
+                        if (scenario["original_key"] in unordered_types["stream_scenarios"]["objects"]):
+                            # original_key's value is an attribute in the set of objects within stream_scenarios; look for studes and confidence factors
 
-                    # Remove the original_key since it is no longer needed and was only relevent within this instantiation
-                    del scenario["original_key"]
+                            if ("effectTags" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]):
+                                # This scenario has a set of effectTags, iterate over them to build the studies key's value
+
+                                for effectTag in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]["effectTags"]:
+                                    scenario["studies"].append(
+                                        {
+                                            "effecttag_id": effectTag["pk"],
+                                            "studies": [],
+                                        }
+                                    )
+
+                                    if ((effectTag["original_key"] in unordered_types["effect_tags"]["objects"]) and ("studies" in unordered_types["effect_tags"]["objects"][effectTag["original_key"]])):
+                                        # This effectTag object has a studies attribute, iterate through it to add each study's primary key to the studies[].studies array
+                                        studyIndex = len(scenario["studies"]) - 1
+                                        if (studyIndex >= 0):
+                                            for study in unordered_types["effect_tags"]["objects"][effectTag["original_key"]]["studies"]:
+                                                scenario["studies"][studyIndex]["studies"].append(study["pk"])
+
+                            if ("confidenceFactorsIncrease" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]):
+                                # This scenario has a set of confidenceFactorsIncrease values, iterate over them to build the
+                                # confidencefactors_increase key's value
+
+                                for confidenceFactor in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]["confidenceFactorsIncrease"]:
+                                    scenario["confidencefactors_increase"].append(
+                                        {
+                                            "confidencefactor_id": confidenceFactor["pk"],
+                                            "explanation": confidenceFactor["explanation"] if (confidenceFactor["explanation"] is not None) else "",
+                                        }
+                                    )
+
+                            if ("confidenceFactorsDecrease" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]):
+                                # This scenario has a set of confidenceFactorsDecrease values, iterate over them to build the
+                                # confidencefactors_decrease key's value
+
+                                for confidenceFactor in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]["confidenceFactorsDecrease"]:
+                                    scenario["confidencefactors_decrease"].append(
+                                        {
+                                            "confidencefactor_id": confidenceFactor["pk"],
+                                            "explanation": confidenceFactor["explanation"] if (confidenceFactor["explanation"] is not None) else "",
+                                        }
+                                    )
+
+                        # Remove the original_key since it is no longer needed and was only relevent within this instantiation
+                        del scenario["original_key"]
 
         # Finally, iterate through the unordered object types that have a desired_order attribute and make sure that it contains the same object that
         # is found in the objects attribute
