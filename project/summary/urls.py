@@ -8,6 +8,7 @@ from . import views, api
 router = DefaultRouter()
 router.register(r'visual', api.Visual, base_name="visual")
 router.register(r'data_pivot', api.DataPivot, base_name="data_pivot")
+router.register(r'evidence_profile', api.EvidenceProfile, base_name="evidence_profile")
 
 
 urlpatterns = [
@@ -98,4 +99,5 @@ urlpatterns = [
     url(r'^evidenceprofile/assessment/(?P<pk>\d+)/new/', views.EvidenceProfileNew.as_view(), name='evidenceprofile_new'),
     url(r'^evidenceprofile/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/$', views.EvidenceProfileDetail.as_view(), name='evidenceprofile_detail'),
     url(r'^evidenceprofile/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/update/$', views.EvidenceProfileUpdate.as_view(), name='evidenceprofile_update'),
+    url(r'^evidenceprofile/assessment/(?P<pk>\d+)/(?P<slug>[\w-]+)/delete/$', views.EvidenceProfileDelete.as_view(), name='evidenceprofile_delete'),
 ]
