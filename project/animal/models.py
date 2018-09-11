@@ -862,7 +862,10 @@ class Endpoint(BaseEndpoint):
         choices=TREND_RESULT_CHOICES)
     diagnostic = models.TextField(
         blank=True,
-        help_text="Diagnostic or method used to measure endpoint (if relevant)")
+        help_text="List the endpoint/adverse outcome name as used in the study. "
+                    "This will help during QA/QC of the extraction to the original "
+                    "study in cases where the endpoint/adverse outcome name is "
+                    "adjusted for consistency across studies or assessments.")
     power_notes = models.TextField(
         blank=True,
         help_text="Power of study-design to detect change from control")

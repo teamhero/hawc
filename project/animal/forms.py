@@ -437,9 +437,19 @@ class EndpointForm(ModelForm):
             self.instance.assessment = assessment
 
         self.fields["name"].help_text = """
-            Short-text used to describe the endpoint.
-            Should include observation-time,
-            if multiple endpoints have the same observation time."""
+            Short-text used to describe the endpoint/adverse outcome. 
+            As a first pass during extraction, use the endpoint name as 
+            presented in the study. Do not add units – units are 
+            summarized in a separate extraction field. Once extraction 
+            is complete for an assessment, endpoint/adverse outcomes 
+            names may be adjusted to use terms that best work across 
+            studies or assessments using the data clean-up tool (the 
+            original name as presented in the study will be retained 
+            in the "diagnostic" field). If the endpoint is a repeated 
+            measure, then indicate the time in parentheses, e.g., 
+            running wheel activity (6 wk), using the abbreviated format: 
+            seconds = sec, minutes = min, hours = h, days = d, 
+            weeks = wk, months = mon, years = y."""
 
         self.helper = self.setHelper()
 
