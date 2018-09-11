@@ -1,0 +1,78 @@
+.confidenceFactorsClearBoth {
+	clear: both;
+}
+
+.confidenceFactorsSectionTitle {
+    font-size: 1.3em;
+}
+
+.confidenceFactorsIncreaseSectionTitleType {
+	font-weight: bold;
+	font-style: italic;
+	color: #008000;
+}
+
+.confidenceFactorsDecreaseSectionTitleType {
+	font-weight: bold;
+	font-style: italic;
+	color: #800000;
+}
+
+.confidenceFactorsTable {
+	margin: 3px 0 0 0;
+	width: 100%;
+}
+
+.confidenceFactorsIncreaseCaptionCell {
+	background-color: #008000;
+    border-color: #E9FFE9;
+	border-width: 0 0 5px 0;
+    display: table-cell;
+	color: #FFFFFF;
+	text-align: left;
+    padding: 0 5px 3px 5px;
+}
+
+.confidenceFactorsDecreaseCaptionCell {
+	background-color: #800000;
+	border-width: 0 0 5px 0;
+    border-color: #FFE0E0;
+    display: table-cell;
+	color: #FFFFFF;
+	text-align: left;
+    padding: 0 5px 3px 5px;
+}
+
+.confidenceFactorCaption_button {
+	float: left;
+	margin: 0 0 0 0;
+	padding: 0 5px 0 0;
+}
+
+.confidenceFactorCaption_title {
+	float: left;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+
+.confidenceFactorCell {
+    display: table-cell;
+	border: 0;
+    vertical-align: top;
+    padding: 5px 5px 2px 5px;
+}
+
+.confidenceFactorCell_leftButton {
+	text-align: left;
+	width: 7%;
+}
+
+.confidenceFactorCell_fields {
+	text-align: left;
+	width: 83%;
+}
+
+.confidenceFactorCell_rightButtons {
+	text-align: right;
+	width: 10%;
+}
