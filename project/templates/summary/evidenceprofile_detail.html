@@ -1,1 +1,78 @@
-EvidenceProfile_detail.html
+{% extends 'portal.html' %}
+
+
+{% block title %}
+	{{assessment}} | Evidence Profile Table  | {{object}} | HAWC
+{% endblock title %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'assessment:detail' pk=assessment.pk %}">{{ assessment }}</a><span class="divider">/</span></li>
+  <li><a href="{% url 'summary:visualization_list' assessment.pk %}">Visualizations</a><span class="divider">/</span></li>
+  {% if crud == "Read" %}
+	 <li class="active">{{object}}<span class="divider">/</span></li>
+  {% else %}
+	 <!-- Update or delete -->
+  	<li><a href="{{object.get_absolute_url}}">{{object}}</a><span class="divider">/</span></li>
+	 <li class="active">{{crud}}<span class="divider">/</span></li>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <h1>
+    {{object}}
+    <div class="btn-group pull-right">
+      <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Actions
+        <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu">
+        <li><a href="{% url 'summary:evidence_profile-list' %}?assessment_id={{assessment.id}}&id={{object.id}}&format=json">Download JSON Object</a></li>
+        {% if obj_perms.edit %}
+          <li class="divider"></li>
+          <li><a href="{% url "summary:evidenceprofile_update" assessment.pk object.slug %}">Edit Report Details</a></li>
+          <li><a href="{% url "summary:evidenceprofile_delete" assessment.pk object.slug %}">Delete Report</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </h1>
+
+  {% block dp_content %}
+    <div id="dp_display"></div>
+
+    <div id="loading_div">
+      <p>Fetching the latest data from {{assessment}}... <img src="{{STATIC_URL}}img/loading.gif"></p>
+    </div>
+
+    <div id="caption">{{object.caption|safe}}</div>
+  {% endblock dp_content %}
+{%endblock %}
+
+{% block extrajs %}
+	<script type="text/javascript">
+		// Call the evidenceProfileStartup method, passing in a function to be executed
+		window.app.evidenceProfileStartup(
+			function(evidenceProfile) {
+				// This function takes in an empty evidenceProfile object
+
+				evidenceProfile.EvidenceProfile.configure({}, {{evidenceProfile|safe}});
+
+        $("#loading_div").fadeOut(
+          function() {
+            evidenceProfile.EvidenceProfile.buildD3Table("dp_display");
+          }
+        );
+
+				// Handle any smartTags that may be on this page
+				window.app.smartTagsStartup(
+					function(smartTags) {
+						new smartTags.SmartTagContainer(
+							$('#caption'),
+							{
+								showOnStartup: true
+							}
+						);
+	 				}
+				)
+			}
+		);
+	</script>
+{% endblock %}

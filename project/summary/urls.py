@@ -6,10 +6,10 @@ from . import views, api
 
 
 router = DefaultRouter()
-router.register(r'visual', api.Visual, base_name="visual")
-router.register(r'data_pivot', api.DataPivot, base_name="data_pivot")
-router.register(r'evidence_profile', api.EvidenceProfile, base_name="evidence_profile")
-
+router.register(r"visual", api.Visual, base_name="visual")
+router.register(r"data_pivot", api.DataPivot, base_name="data_pivot")
+router.register(r"assessment_evidence_profiles", api.AssessmentEvidenceProfiles, base_name="assessment_evidence_profiles")
+router.register(r"evidence_profile", api.EvidenceProfile, base_name="evidence_profile")
 
 urlpatterns = [
 

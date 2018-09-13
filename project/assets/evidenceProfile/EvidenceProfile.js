@@ -90,7 +90,7 @@ class EvidenceProfile {
             EvidenceProfile.object = null;
         }
 
-        if (("streams" in EvidenceProfile.object) && (EvidenceProfile.object.streams.length > 0)) {
+        if ((EvidenceProfile.object !== null) && ("streams" in EvidenceProfile.object) && (EvidenceProfile.object.streams.length > 0)) {
             // One or more streams were provided as part of the object argument, convert each simple stream object into a formal
             // EvidenceProfileStream object
             let originalStreams = EvidenceProfile.object.streams;
@@ -114,6 +114,24 @@ class EvidenceProfile {
     static buildCrossStreamInferencesFormset() {
         renderCrossStreamInferencesFormset(EvidenceProfile.object.cross_stream_inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
     }
+
+    // This function builds the D3-based Evidence Profile Table from this.object
+    static buildD3Table(divId) {
+        if ((this.object !== null) && ("title" in this.object) && (this.object.title !== "") && (divId !== null) && (typeof(divId) === "string") && (divId !== "")) {
+            // this.object is not null and has a non-empty title attribute; and divId is a non-empty string, continue
+
+            let tableDiv = document.getElementById(divId);
+            if (tableDiv !== null) {
+                // The expected <div> was found in the document, continue
+
+                console.log("In buildD3Table()");
+                console.log('Put table in <div> with ID "' + divId + '"');
+                console.log("EvidenceProfile object:");
+                console.log(this.object);
+            }
+        }
+    }
 }
 
+// Export an EvidencProfile object as the default object
 export default EvidenceProfile;

@@ -84,8 +84,5 @@ class CollectionEvidenceProfileSerializer(serializers.ModelSerializer):
 class EvidenceProfileSerializer(CollectionEvidenceProfileSerializer):
     def to_representation(self, instance):
         returnValue = super().to_representation(instance)
-        returnValue["url_update"] = instance.get_update_url()
-        returnValue["url_delete"] = instance.get_delete_url()
-        returnValue["visual_type"] = instance.visual_type
 
         return returnValue

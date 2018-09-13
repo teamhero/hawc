@@ -1,6 +1,11 @@
-from assessment.api import AssessmentViewset, DisabledPagination
+from assessment.api import AssessmentViewset, DisabledPagination, AssessmentLevelPermissions, InAssessmentFilter
 
-from . import models, serializers
+from rest_framework import permissions, status, viewsets, decorators, filters
+from rest_framework.response import Response
+from rest_framework.exceptions import APIException
+from rest_framework.pagination import PageNumberPagination
+
+from . import models, serializers, views
 
 
 class DataPivot(AssessmentViewset):
@@ -39,7 +44,50 @@ class Visual(AssessmentViewset):
         return cls
 
 
-class EvidenceProfile(AssessmentViewset):
+# This API class returns a single EvidenceProfile object
+class EvidenceProfile(viewsets.ReadOnlyModelViewSet):
+    model = models.EvidenceProfile
+
+    assessment_filter_args = "assessment"
+    permission_classes = (AssessmentLevelPermissions, )
+    filter_backends = (InAssessmentFilter, filters.DjangoFilterBackend)
+
+    def list(self, request, *args, **kwargs):
+        returnValue = {}
+
+        evidenceProfile = self.get_queryset()
+        if (len(evidenceProfile) == 1):
+            # The query returned the desired Evidence Profile object, convert the complete profile to a dictionary object
+            returnValue = views.getCompleteEvidenceProfileDictionary(evidenceProfile[0])
+
+        return Response(returnValue)
+
+    # This method returns the set of objects that will be returned by this API call
+    def get_queryset(self):
+        returnValue = self.model.objects.none()
+
+        # Look for an incoming integer URL variable assessment_id, defaulting to 0
+        assessment_id = 0
+        try:
+            assessment_id = int(self.request.GET["assessment_id"])
+        except:
+            pass
+
+        # Look for an incoming integer URL variable id, defaulting to 0
+        id = 0
+        try:
+            id = int(self.request.GET["id"])
+        except:
+            pass
+
+        if ((assessment_id > 0) and (id > 0)):
+            # Both the expected URL variables are present and syntactically valid, get the desired object
+            returnValue = self.model.objects.get_qs(assessment_id).filter(id=id)
+
+        return returnValue
+
+
+class AssessmentEvidenceProfiles(AssessmentViewset):
     """
     For list view, return all EvidenceProfile objects for an assessment, but using the
     simplified collection view.
