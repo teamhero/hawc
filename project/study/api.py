@@ -3,8 +3,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.response import Response
 
-from assessment.api import (
-    AssessmentLevelPermissions, InAssessmentFilter, DisabledPagination)
+from assessment.api import (AssessmentLevelPermissions, InAssessmentFilter, DisabledPagination)
 
 from . import models, serializers, lookups
 from utils.api import CleanupFieldsBaseViewSet

@@ -63,3 +63,26 @@ class VisualSerializer(CollectionVisualSerializer):
         ]
 
         return ret
+
+
+# This class serializes a collection of Evidence Profiles
+class CollectionEvidenceProfileSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        returnValue = super().to_representation(instance)
+        returnValue["url"] = instance.get_absolute_url()
+        returnValue["url_update"] = instance.get_update_url()
+        returnValue["url_delete"] = instance.get_delete_url()
+        returnValue["visual_type"] = instance.visual_type
+
+        return returnValue
+
+    class Meta:
+        model = models.EvidenceProfile
+        fields = "__all__"
+
+
+class EvidenceProfileSerializer(CollectionEvidenceProfileSerializer):
+    def to_representation(self, instance):
+        returnValue = super().to_representation(instance)
+
+        return returnValue

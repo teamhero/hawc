@@ -20,22 +20,42 @@ class VisualCollection {
         }
     }
 
-    static buildTable(url1, url2, $el){
+    // This method builds the HTML table of links to this assessment's visualizations
+    static buildTable(url1, url2, url3, $el) {
         var visuals, obj;
 
+        // Call the included API URLs to retrieve the information about each type of visualization
         $.when(
            $.get(url1),
-           $.get(url2)
-        ).done(function(d1, d2) {
-            d1[0].push.apply(d1[0], d2[0]);
-            visuals = _.sortBy(d1[0], function(d){return d.title;});
-        }).fail(function(){
-            HAWCUtils.addAlert('Error- unable to fetch visualizations; please contact a HAWC administrator.');
-            visuals = [];
-        }).always(function(){
-            obj = new VisualCollection( visuals );
-            return obj.build_table($el);
-        });
+           $.get(url2),
+           $.get(url3)
+        ).done(
+            function(d1, d2, d3) {
+                // Merge all three of the responses into a single array
+                d1[0].push.apply(d1[0], d2[0]);
+                d1[0].push.apply(d1[0], d3[0]);
+
+                // Sort the data returned by title
+                visuals = _.sortBy(
+                    d1[0],
+                    function(d) {
+                        return d.title;
+                    }
+                );
+            }
+        ).fail(
+            function() {
+                // Something went wrong with at least one of the URLs, generate an alert
+                HAWCUtils.addAlert('Error- unable to fetch visualizations; please contact a HAWC administrator.');
+                visuals = [];
+            }
+        ).always(
+            function() {
+                // Whether everything went okay or not, build an HTML table based around the visuals array
+                obj = new VisualCollection( visuals );
+                return obj.build_table($el);
+            }
+        );
     }
 
     build_table($el){

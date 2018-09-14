@@ -568,6 +568,25 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
     model = models.EvidenceProfile
     template_name = "summary/evidenceprofile_detail.html"
 
+    def get_context_data(self, **kwargs):
+        # Get the basic context attributes from the superclass's get_context_data() method
+        returnValue = super().get_context_data(**kwargs)
+
+        # Load the entire EvidenceProfile object into a dictionary object and convert it to a JSON-formatted string (this will then be treated
+        # as an object by the client-side JavaScript)
+        returnValue["evidenceProfile"] = json.dumps(getCompleteEvidenceProfileDictionary(self.object))
+
+        return returnValue
+
+
+class EvidenceProfileDelete(GetEvidenceProfileObjectMixin, BaseDelete):
+    success_message = 'Evidence Profile deleted.'
+    model = models.EvidenceProfile
+    template_name = "summary/evidenceprofile_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse_lazy('summary:visualization_list', kwargs={'pk': self.assessment.pk})
+
 
 # This function returns the set of serialized objects that are commonly used as context data for Evidence Profile objects
 def getEvidenceProfileContextData(object):
@@ -595,64 +614,70 @@ def getEvidenceProfileContextData(object):
     # Retrieve all the values from the effect tags lookup table and serialize them into a JSON-formatted string
     returnValue["effect_tags"] = json.dumps([effectTagSerializer.to_representation(effectTag) for effectTag in EffectTag.objects.all().order_by("name")])
 
-    # Initialize the evidenceProfile object to an empty dictionary
-    evidenceProfile = {}
+    # Load the entire EvidenceProfile object into a dictionary object and convert it to a JSON-formatted string (this will then be treated as an object
+    # by the client-side JavaScript)
+    returnValue["evidenceProfile"] = json.dumps(getEvidenceProfileDictionary(object))
+
+    return returnValue
+
+
+# September 12, 2018, Jay Buie
+# This function was abstracted out from the getEvidenceProfileContextData() function above because there are times when an EvidenceProfile
+# This function returns a complete EvidenceProfile object (including child streams and grandchild scenarios) as a dictionary object
+def getEvidenceProfileDictionary(object):
+    returnValue = {}
 
     if (object):
         # The incoming object is not empty, create a JSON-friendly version of it, and include an additional attribute for the
         # profile's existing child streams
-        evidenceProfile = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
+        returnValue = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
 
         # Add a serialized version of the Evidence Profile object's streams to evidenceProfile, and copy the stream's primary key over into its
         # "fields" dictionary for retention in a later step
         streamObjectList = object.streams.all().order_by("order")
-        evidenceProfile["streams"] = json.loads(serializers.serialize("json", streamObjectList))
-        for stream in evidenceProfile["streams"]:
+        returnValue["streams"] = json.loads(serializers.serialize("json", streamObjectList))
+        for stream in returnValue["streams"]:
             stream["fields"]["pk"] = stream["pk"]
             stream["fields"]["scenarios"] = []
 
         i = 0
         iTo = len(streamObjectList)
-        maxStreamIndex = len(evidenceProfile["streams"]) - 1
+        maxStreamIndex = len(returnValue["streams"]) - 1
         while ((i < iTo) and (i <= maxStreamIndex)):
-            evidenceProfile["streams"][i]["fields"]["scenarios"] = json.loads(serializers.serialize("json", streamObjectList[i].scenarios.all().order_by("order")))
+            returnValue["streams"][i]["fields"]["scenarios"] = json.loads(serializers.serialize("json", streamObjectList[i].scenarios.all().order_by("order")))
 
-            for scenario in evidenceProfile["streams"][i]["fields"]["scenarios"]:
+            for scenario in returnValue["streams"][i]["fields"]["scenarios"]:
                 scenario["fields"]["pk"] = scenario["pk"]
 
-            evidenceProfile["streams"][i]["fields"]["scenarios"][:] = [scenario["fields"] for scenario in evidenceProfile["streams"][i]["fields"]["scenarios"] if (scenario)]
+            returnValue["streams"][i]["fields"]["scenarios"][:] = [scenario["fields"] for scenario in returnValue["streams"][i]["fields"]["scenarios"] if (scenario)]
 
             i = i + 1
     else:
         # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, and include an additional
         # attibute for the profile's child streams
-        evidenceProfile = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
-        evidenceProfile["streams"] = []
+        returnValue = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
+        returnValue["streams"] = []
 
-    evidenceProfile["cross_stream_confidence_judgement"] = json.loads(evidenceProfile["cross_stream_confidence_judgement"])
-    evidenceProfile["cross_stream_inferences"] = json.loads(evidenceProfile["cross_stream_inferences"])
+    returnValue["cross_stream_confidence_judgement"] = json.loads(returnValue["cross_stream_confidence_judgement"])
+    returnValue["cross_stream_inferences"] = json.loads(returnValue["cross_stream_inferences"])
+
 
     # Any existing stream objects loaded from the database will have the actual data fields stored within a "fields" attribute; extract
     # that data from the fields attribute and retain only that portion of the original stream object
-    evidenceProfile["streams"][:] = [stream["fields"] for stream in evidenceProfile["streams"] if (stream)]
+    returnValue["streams"][:] = [stream["fields"] for stream in returnValue["streams"] if (stream)]
 
     # Initialize a list to hold the primary keys of all the studies in the evidence profile
     study_id_list = []
 
-    # Attempt to de-serialize each stream's "confidence_judgement" and "outcome" attributes
-    for stream in evidenceProfile["streams"]:
+    # Attempt to de-serialize each stream's "confidence_judgement" attribute and child scenarios
+    for stream in returnValue["streams"]:
         try:
             stream["confidence_judgement"] = json.loads(stream["confidence_judgement"])
         except:
             stream["confidence_judgement"] = {}
 
-        try:
-            stream["outcomes"] = json.loads(stream["outcomes"])
-        except:
-            stream["outcomes"] = []
-
         # Attempt to iterate through each scenario within this stream and de=serialize their "outcome," "studies," "confidencefactor_increase,"
-        # "confidencefactor_decrease" and "summary_of_findings" attributes
+        # "confidencefactor_decrease" attributes
         if ("scenarios" in stream):
             for scenario in stream["scenarios"]:
                 try:
@@ -683,32 +708,62 @@ def getEvidenceProfileContextData(object):
                 except:
                     scenario["confidencefactors_decrease"] = []
 
-                try:
-                    scenario["summary_of_findings"] = json.loads(scenario["summary_of_findings"])
-                except:
-                    scenario["summary_of_findings"] = {}
-
-    if ((evidenceProfile["assessment"] is not None) and (len(study_id_list) > 0)):
+    if ((returnValue["assessment"] is not None) and (len(study_id_list) > 0)):
         # This is an existing evidence profile and at least one study_id is part of the evidence profile, get each study's title and short citation
 
-            # First, query the database and build a set of matching study objects
-            studies = {study[0]:(study[1] + " (" + study[2] + ")") for study in Study.objects.filter(assessment=evidenceProfile["assessment"]).filter(id__in=study_id_list).values_list("id", "title", "short_citation")}
+        # First, query the database and build a set of matching study objects
+        studies = {study[0]:(study[1] + " (" + study[2] + ")") for study in Study.objects.filter(assessment=returnValue["assessment"]).filter(id__in=study_id_list).values_list("id", "title", "short_citation")}
 
-            # Next, add the study titles/citations to each effect tag grouping within the evidence profile
-            for stream in evidenceProfile["streams"]:
-                if ("scenarios" in stream):
-                    for scenario in stream["scenarios"]:
-                        for effectTag in scenario["studies"]:
-                            # Initialize a dictionary within this effect tag grouping that will map study titles/citations to the studies within this effect tag
-                            effectTag["studyTitles"] = {}
+        # Next, add the study titles/citations to each effect tag grouping within the evidence profile
+        for stream in returnValue["streams"]:
+            if ("scenarios" in stream):
+                for scenario in stream["scenarios"]:
+                    for effectTag in scenario["studies"]:
+                        # Initialize a dictionary within this effect tag grouping that will map study titles/citations to the studies within this effect tag
+                        effectTag["studyTitles"] = {}
 
-                            # Iterate through the studies within this effect tag
-                            for study_id in effectTag["studies"]:
-                                if (study_id in studies):
-                                    effectTag["studyTitles"][study_id] = studies[study_id]
+                        # Iterate through the studies within this effect tag
+                        for study_id in effectTag["studies"]:
+                            if (study_id in studies):
+                                effectTag["studyTitles"][study_id] = studies[study_id]
 
-    # Serialize the evnidenceProfile into a JSON-formatted string version for inclusion in the request context (the JavaScript in the
-    # template will pick up all of the objects and datatypes as desired)
-    returnValue["evidenceProfile"] = json.dumps(evidenceProfile)
+    return returnValue
+
+
+# September 13, 2018, Jay Buie
+# This function was abstracted out from the getEvidenceProfileDictionary() function above because there are times when the complete (including names for
+# included studies and confidence factor) will need to be called from multiple places
+def getCompleteEvidenceProfileDictionary(object):
+    returnValue = {}
+
+    if (object):
+        # The incoming object is not empty, create a JSON-friendly version of it, and include an additional attribute for the
+        # profile's existing child streams
+        returnValue = getEvidenceProfileDictionary(object)
+
+        # Attempt to find names for each:
+        #   * stream -> scenario -> effectTag (studies are organized by effect tag)
+        #   * stream -> scenario -> confidence factor (confidence factors are in two groups, those that increase confidence and those that decrease it)
+        effectTags = {effectTag.id:effectTag.name for effectTag in EffectTag.objects.all()}
+
+        confidenceFactors = {
+            "increase": {confidenceFactor.id:confidenceFactor.name for confidenceFactor in ConfidenceFactor.objects.filter(increases_confidence=True)},
+            "decrease": {confidenceFactor.id:confidenceFactor.name for confidenceFactor in ConfidenceFactor.objects.filter(increases_confidence=False)},
+        }
+
+        # Iterate over each stream within the evidence profile
+        for stream in returnValue["streams"]:
+            if ("scenarios" in stream):
+                # This stream has a scenarios attribute, iterate over it to handle each scenario's studies and confidence factors
+
+                for scenario in stream["scenarios"]:
+                    # Iterate over the scenario's studies; studies are grouped by "effect tags," so you have do two iterations
+                    for effectTag in scenario["studies"]:
+                        effectTag["name"] = effectTags[effectTag["effecttag_id"]] if (effectTag["effecttag_id"] in effectTags) else ""
+
+                    # Iterate over the scenario's confidence factors; confidence factors are in two different attributes
+                    for i in ["increase", "decrease"]:
+                        for confidenceFactor in scenario["confidencefactors_" + i]:
+                            confidenceFactor["name"] = confidenceFactors[i][confidenceFactor["confidencefactor_id"]] if (confidenceFactor["confidencefactor_id"] in confidenceFactors[i]) else ""
 
     return returnValue
