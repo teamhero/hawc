@@ -398,7 +398,7 @@ class Endpoint extends Observee {
                 });
                 return ul;
             };
-        tbl.addHeaderRow(['General Notes/Methodology']);
+        tbl.addHeaderRow(['Methodology']);
         tbl.setColGroup([100]);
         tbl.tbody.append(this.data.endpoint_notes);
         $(div).html(tbl.getTbl());

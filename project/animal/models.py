@@ -511,7 +511,6 @@ class DosingRegime(models.Model):
         ("UN", "Untreated"),
         ("VT", "Vehicle-treated"),
         ("B" , "Untreated + Vehicle-treated"),
-        ("Y" , "Yes (untreated and/or vehicle)"),
         ("N" , "No"))
     
     TEXT_CLEANUP_FIELDS = (
@@ -526,7 +525,7 @@ class DosingRegime(models.Model):
     route_of_exposure = models.CharField(
         max_length=2,
         choices=ROUTE_EXPOSURE_CHOICES,
-        help_text="Primary route of exposure. If multiple primary-exposures, describe in notes-field below")
+        help_text="Primary route of exposure. If multiple primary-exposures, enter as a new dosing regimen.")
     duration_exposure = models.FloatField(
         verbose_name="Exposure duration (days)",
         help_text="Length of exposure period (fractions allowed), used for sorting in visualizations",
@@ -536,7 +535,14 @@ class DosingRegime(models.Model):
         verbose_name="Exposure duration (text)",
         max_length=128,
         blank=True,
-        help_text="Text-description of the exposure duration (ex: 21 days, 104 wks, GD0 to PND9, GD0 to weaning)")
+        help_text="Length of time between start of exposure and outcome assessment, "
+                    "in days when &lt;7 (e.g., 5d), weeks when &ge;7 days to 12 weeks (e.g., "
+                    "1wk, 12wk), or months when &gt;12 weeks (e.g., 15mon). For repeated "
+                    "measures use descriptions such as \"1, 2 and 3 wk\".  For inhalations "
+                    "studies, also include hours per day and days per week, e.g., \"13wk "
+                    "(6h/d, 7d/wk).\" This field is commonly used in visualizations, so "
+                    "use abbreviations (h, d, wk, mon, y) and no spaces between numbers "
+                    "to save space.")
     num_dose_groups = models.PositiveSmallIntegerField(
         default=4,
         validators=[MinValueValidator(1)],
@@ -544,16 +550,22 @@ class DosingRegime(models.Model):
         help_text="Number of dose groups, plus control")
     positive_control = models.NullBooleanField(
         choices=POSITIVE_CONTROL_CHOICES,
-        default=None,
+        default=False,
         help_text="Was a positive control used?")
     negative_control = models.CharField(
         max_length=2,
-        default="NR",
+        default="VT",
         choices=NEGATIVE_CONTROL_CHOICES,
         help_text="Description of negative-controls used")
     description = models.TextField(
         blank=True,
-        help_text="Detailed description of dosing methodology (i.e. exposed via inhalation 5 days/week for 6 hours)")
+        help_text="Cut and paste from methods, use quotation marks around all "
+                    "text directly copy/pasted from paper. Also summarize results "
+                    "of any analytical work done to confirm dose, stability, etc. "
+                    "This can be a narrative summary of tabular information, "
+                    "e.g., \"Author's present data on the target and actual concentration "
+                    "(Table 1; means &plusmn; SD for entire 13-week period) and the values are "
+                    "very close.\" ")
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -720,11 +732,11 @@ class Endpoint(BaseEndpoint):
     MONOTONICITY_CHOICES = (
         (0, "N/A, single dose level study"),
         (1, "N/A, no effects detected"),
-        (2, "yes, visual appearance of monotonicity but no trend"),
+        (2, "visual appearance of monotonicity"),
         (3, "yes, monotonic and significant trend"),
-        (4, "yes, visual appearance of non-monotonic but no trend"),
+        (4, "visual appearance of non-monotonicity"),
         (5, "yes, non-monotonic and significant trend"),
-        (6, "no pattern"),
+        (6, "no pattern/unclear"),
         (7, "unclear"),
         (8, "not-reported"))
 
@@ -741,7 +753,7 @@ class Endpoint(BaseEndpoint):
         3: "Not Reported"}
 
     OBSERVATION_TIME_UNITS = (
-        (0, "not-reported"),
+        (0, "not reported"),
         (1, "seconds"),
         (2, "minutes"),
         (3, "hours"),
@@ -749,8 +761,8 @@ class Endpoint(BaseEndpoint):
         (5, "weeks"),
         (6, "months"),
         (9, "years"),
-        (7, "PND"),
-        (8, "GD"))
+        (7, "post-natal day"),
+        (8, "gestational day"))
 
     TREND_RESULT_CHOICES = (
         (0, "not applicable"),
@@ -762,7 +774,8 @@ class Endpoint(BaseEndpoint):
         (3, 'increase from reference/control group'),
         (2, 'decrease from reference/control group'),
         (1, 'any change from reference/control group'),
-        (0, 'not reported'),
+        (0, 'unclear'),
+        (4, '---')
     )
 
     animal_group = models.ForeignKey(
@@ -776,15 +789,25 @@ class Endpoint(BaseEndpoint):
         max_length=128,
         blank=True,
         verbose_name="Organ (and tissue)",
-        help_text="Relevant organ; also include tissue if relevant")
+        help_text="Relevant organ or tissue")
     effect = models.CharField(
         max_length=128,
         blank=True,
-        help_text="Effect, using common-vocabulary")
+        help_text="Please reference terminology reference" 
+                    "file and use Title Style. Commonly used "
+                    "effects include \"Histopathology\", \"Malformation,\" "
+                    "\"Growth\", \"Clinical Chemistry\", \"Mortality,\" "
+                    "\"Organ Weight.\"")
     effect_subtype = models.CharField(
         max_length=128,
         blank=True,
-        help_text="Effect subtype, using common-vocabulary")
+        help_text="Please reference terminology reference file and use Title "
+                    "Style. Commonly used effects include \"Neoplastic\", \"Non-Neoplastic,\" "
+                    "\"Feed Consumption\", \"Fetal Survival\", \"Body Weight,\" \"Body Weight "
+                    "Gain,\" \"Body Length\". For Malformation effects, effect subtypes can "
+                    "be \"Skeletal Malformation\", \"External Malformation\" \"Soft Tissue.\" "
+                    "For organ weight effects, subtypes can be \"Absolute,\" \"Relative\" "
+                    "(absolute can be inferred when it's not explicitly stated).")
     observation_time = models.FloatField(
         blank=True,
         null=True,
@@ -801,10 +824,11 @@ class Endpoint(BaseEndpoint):
         max_length=128,
         blank=True,
         help_text="Details on where the data are found in the literature "
-                  "(ex: Figure 1, Table 2, etc.)")
+                    "(ex: \"Figure 1\", \"Table 2\", \"Text, p. 24\", \"Figure "
+                    "1 and Text, p.24\")")
     expected_adversity_direction = models.PositiveSmallIntegerField(
         choices=ADVERSE_DIRECTION_CHOICES,
-        default=0,
+        default=4,
         verbose_name='Expected response adversity direction',
         help_text='Response direction which would be considered adverse')
     response_units = models.CharField(
@@ -836,7 +860,7 @@ class Endpoint(BaseEndpoint):
     FEL = models.SmallIntegerField(
         verbose_name="FEL",
         default=-999,
-        help_text="Frank effect level")
+        help_text="OPTIONAL: Frank effect level")
     data_reported = models.BooleanField(
         default=True,
         help_text="Dose-response data for endpoint are available in the literature source")
@@ -852,7 +876,8 @@ class Endpoint(BaseEndpoint):
     statistical_test = models.CharField(
         max_length=256,
         blank=True,
-        help_text="Description of statistical analysis techniques used")
+        help_text="Short description of statistical analysis techniques used, e.g., "
+                    "Fisher Exact Test, ANOVA, Chi Square, Peto's test, none conducted")
     trend_value = models.FloatField(
         null=True,
         blank=True,
@@ -861,18 +886,40 @@ class Endpoint(BaseEndpoint):
         default=3,
         choices=TREND_RESULT_CHOICES)
     diagnostic = models.TextField(
+        verbose_name="Endpoint Name in Study",
         blank=True,
-        help_text="Diagnostic or method used to measure endpoint (if relevant)")
+        help_text="List the endpoint/adverse outcome name as used in the study. "
+                    "This will help during QA/QC of the extraction to the original "
+                    "study in cases where the endpoint/adverse outcome name is "
+                    "adjusted for consistency across studies or assessments.")
     power_notes = models.TextField(
         blank=True,
         help_text="Power of study-design to detect change from control")
     results_notes = models.TextField(
         blank=True,
-        help_text="Qualitative description of the results")
+        help_text= """
+            Qualitative description of the results. This field can be 
+            left blank if there is no need to further describe numerically 
+            extracted findings, e.g., organ or body weights. Use this 
+            field to describe findings such as the type and severity 
+            of histopathology or malformations not otherwise captured 
+            in the numerical data extraction. Also use this field to cut 
+            and paste findings described only in text in the study. If 
+            coding is used to create exposure-response arrays, then add 
+            this comment in bold font at the start of the text box entry 
+            <strong>"For exposure-response array data display purposes, the following 
+            results were coded (control and no effect findings were coded as 
+            "0", treatment-related increases were coded as "1", and 
+            treatment-related decreases were coded as "-1"."</strong>
+            """)
     endpoint_notes = models.TextField(
         blank=True,
-        verbose_name="General notes/methodology",
-        help_text="Any additional notes related to this endpoint/methodology, not including results")
+        verbose_name="Methods",
+        help_text="Cut and paste from methods, use quotation marks around all "
+                    "text directly copy/pasted from paper. Include all methods "
+                    "pertinent to measuring ALL outcomes, including statistical "
+                    "methods. This will make it easier to copy from existing HAWC "
+                    "endpoints to create new endpoints for a study.")
     additional_fields = models.TextField(
         default="{}")
 
