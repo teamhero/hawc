@@ -386,7 +386,9 @@ class EndpointForm(ModelForm):
     effects = selectable.AutoCompleteSelectMultipleField(
         lookup_class=EffectTagLookup,
         required=False,
-        help_text="Any additional descriptive-tags used to categorize the outcome",
+        help_text="For now, use the endpoint specific overall study "
+                    "evaluation rating of \"high\", \"medium\", \"low\" or "
+                    "\"uninformative\"",
         label="Additional tags"
     )
 
@@ -437,19 +439,22 @@ class EndpointForm(ModelForm):
             self.instance.assessment = assessment
 
         self.fields["name"].help_text = """
-            Short-text used to describe the endpoint/adverse outcome. 
-            As a first pass during extraction, use the endpoint name as 
-            presented in the study. Do not add units – units are 
-            summarized in a separate extraction field. Once extraction 
-            is complete for an assessment, endpoint/adverse outcomes 
-            names may be adjusted to use terms that best work across 
-            studies or assessments using the data clean-up tool (the 
-            original name as presented in the study will be retained 
-            in the "diagnostic" field). If the endpoint is a repeated 
-            measure, then indicate the time in parentheses, e.g., 
-            running wheel activity (6 wk), using the abbreviated format: 
-            seconds = sec, minutes = min, hours = h, days = d, 
-            weeks = wk, months = mon, years = y."""
+            Short-text used to describe the endpoint/adverse 
+            outcome. As a first pass during extraction, use 
+            the endpoint name as presented in the study. Do 
+            not add units &mdash; units are summarized in a separate 
+            extraction field. Once extraction is complete for 
+            an assessment, endpoint/adverse outcomes names may 
+            be adjusted to use terms that best work across 
+            studies or assessments using the data clean-up tool 
+            (the original name as presented in the study will 
+            be retained in the "diagnostic" field). If the 
+            endpoint is a repeated measure, then indicate the 
+            time in parentheses, e.g., running wheel activity 
+            (6 wk), using the abbreviated format: seconds = sec, 
+            minutes = min, hours = h, days = d, weeks = wk, 
+            months = mon, years = y.
+            """
 
         self.helper = self.setHelper()
 
@@ -464,9 +469,13 @@ class EndpointForm(ModelForm):
             inputs = {
                 "legend_text": "Create new endpoint",
                 "help_text":   """
-                    Create a new endpoint. An endpoint may should describe one
-                    measure-of-effect which was measured in the study. It may
-                    or may not contain quantitative data.""",
+                    Create a new endpoint. An endpoint should describe 
+                    one measure-of-effect which was measured in the study. 
+                    It may or may not contain quantitative data. For 
+                    endpoint terminology, use the reference document 
+                    "<a href="https://hawcprd.epa.gov/assessment/100000039/">Recommended 
+                    Terminology for Outcomes/Endpoints</a>."
+                    """,
                 "cancel_url": self.instance.animal_group.get_absolute_url()
             }
 
