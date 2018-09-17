@@ -730,15 +730,13 @@ class Endpoint(BaseEndpoint):
         ('NR', 'Not reported'))
 
     MONOTONICITY_CHOICES = (
+        (8, "---"),
         (0, "N/A, single dose level study"),
         (1, "N/A, no effects detected"),
         (2, "visual appearance of monotonicity"),
         (3, "yes, monotonic and significant trend"),
         (4, "visual appearance of non-monotonicity"),
-        (5, "yes, non-monotonic and significant trend"),
-        (6, "no pattern/unclear"),
-        (7, "unclear"),
-        (8, "not-reported"))
+        (6, "no pattern/unclear"))
 
     VARIANCE_TYPE_CHOICES = (
         (0, "NA"),
