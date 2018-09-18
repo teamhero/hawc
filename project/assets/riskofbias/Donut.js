@@ -29,6 +29,8 @@ class Donut extends D3Plot {
         this.radius_outer = 200;
         this.padding = {top:10, right:10, bottom:10, left:10};
         this.plot_div.css({'height': (this.h + this.padding.top + this.padding.bottom) + 'px'});
+        this.rotated_label_start_padding = 3; // padding from the inner radius where the rotated domain labels should start
+        this.rotated_label_end_padding = 2; // padding from the middle radius where the rotated domain labels should end
     }
 
     build_plot(){
@@ -153,57 +155,29 @@ class Donut extends D3Plot {
         this.domain_label_group = this.vis.append('g')
           .attr('transform', donut_center);
 
-        // add domain labels. Two sets because we want two rows of information
+        // rotate the labels
+        var labelArc = d3.svg.arc()
+            .innerRadius(this.radius_inner + this.rotated_label_start_padding)
+            .outerRadius(this.radius_inner + this.rotated_label_start_padding);
         this.domain_domain_labels = this.domain_label_group.selectAll('text1')
                 .data(this.pie_layout(this.domain_donut_data))
             .enter()
                 .append('text')
-                .attr('class', 'centeredLabel domain_arc')
-                .attr('transform', (d) => `translate(${domain_arc.centroid(d)})`)
-                .attr('text-anchor', 'middle')
+                .attr("alignment-baseline", "middle")
+                .attr("text-anchor", function(d) {
+                    return d.endAngle < Math.PI ? "start" : "end";
+                })
+                .attr("transform", function(d) { 
+                    var midAngle = d.endAngle < Math.PI ? d.startAngle/2 + d.endAngle/2 : d.startAngle/2  + d.endAngle/2 + Math.PI ;
+                    return "translate(" + labelArc.centroid(d)[0] + "," + labelArc.centroid(d)[1] + ") rotate(-90) rotate(" + (midAngle * 180/Math.PI) + ")";
+                })
+                .attr("pointer-events", "none")
+                .classed("autosized", true)
                 .text(function(d) {
-					if (d.data.domain.length > 24) {
-						var textMiddle = Math.floor(d.data.domain.length / 2);
-						var spaceBefore = d.data.domain.lastIndexOf(' ', textMiddle);
-						var spaceAfter = d.data.domain.indexOf(' ', textMiddle + 1);
-						if (spaceBefore == -1 || (spaceAfter != -1 && textMiddle - spaceBefore >= spaceAfter - textMiddle)) 
-							textMiddle = spaceAfter;
-						else
-							textMiddle = spaceBefore;
-						return d.data.domain.substr(0, textMiddle);
-					}
-					else return d.data.domain; });
-					
-        this.domain_domain2_labels = this.domain_label_group.selectAll('text1')
-                .data(this.pie_layout(this.domain_donut_data))
-            .enter()
-                .append('text')
-                .attr('class', 'centeredLabel domain_arc')
-                .attr('transform', (d) => `translate(${domain_arc.centroid(d)})`)
-                .attr('text-anchor', 'middle')
-                .text(function(d) {
-					if (d.data.domain.length > 24) {
-						var textMiddle = Math.floor(d.data.domain.length / 2);
-						var spaceBefore = d.data.domain.lastIndexOf(' ', textMiddle);
-						var spaceAfter = d.data.domain.indexOf(' ', textMiddle + 1);
-						if (spaceBefore == -1 || (spaceAfter != -1 && textMiddle - spaceBefore >= spaceAfter - textMiddle)) 
-							textMiddle = spaceAfter;
-						else
-							textMiddle = spaceBefore;
-						return d.data.domain.substr(textMiddle + 1);
-					}
-					else return ''; });
-				
-        this.domain_score_labels = this.domain_label_group.selectAll('text2')
-                .data(this.pie_layout(this.domain_donut_data))
-            .enter()
-                .append('text')
-                .attr('class', 'centeredLabel')
-                .style('fill',  function(d){return d.data.score_text_color;})
-                .attr('transform', function(d){
-                    var centroid = domain_arc.centroid(d);
-                    return `translate(${[centroid[0],centroid[1]+15]})`;
-                }).attr('text-anchor', 'middle');
+                    return d.data.domain;
+                });
+
+        $(document).ready(function() { self.autosize_domain_labels(); });
 
         // add detail labels
         this.detail_labels = this.detail_label_group.selectAll('text')
@@ -245,6 +219,20 @@ class Donut extends D3Plot {
             .enter()
                 .append('path')
                 .attr('class', 'donuts domain_arc')
+                .on('mouseover', function(v1){
+                    if (self.viewlock) return;
+                    d3.select(this).classed('hovered', true);
+                    $(':animated').promise().done(function(){
+                        self.show_domain_header(v1.data.domain);
+                    });
+                })
+                .on('mouseout', function(v){
+                    if (self.viewlock) return;
+                    d3.select(this).classed('hovered', false);
+                    detail_arcs.classed('hovered', false);
+                    domain_arcs.classed('hovered', false);
+                    self.subset_div.fadeOut('500', function(){self.clear_subset();});
+                })
                 .attr('d', domain_arc);
         this.domain_arcs = domain_arcs;
 
@@ -270,6 +258,31 @@ class Donut extends D3Plot {
         setTimeout(function(){self.toggle_domain_width();}, 2.0);
     }
 
+    // shrinks the rotated domain labels so that they fit within the defined radii. Easiest way to do this is to just
+    // repeatedly try successively smaller labels and then check them against their bounding box.
+    autosize_domain_labels() {
+        var maxLabelWidth = this.radius_middle - this.radius_inner - this.rotated_label_start_padding - this.rotated_label_end_padding;
+
+        var autosizeFields = $("text.autosized");
+        autosizeFields.each(function() {
+            var fld =$(this);
+            if (fld[0].getBBox().width > maxLabelWidth) {
+                var choppedText = fld.html().slice(0, -3);
+                while (choppedText.length > 0) {
+                    var abbreviatedText = choppedText + "...";
+                    fld.html(abbreviatedText);
+
+                    // getBBox needs to be fetched after each content update
+                    if (fld[0].getBBox().width <= maxLabelWidth) {
+                        break;
+                    } else {
+                        choppedText = choppedText.slice(0, -1);
+                    }
+                }
+            }
+        });
+    }
+
     toggle_domain_width(){
         var new_radius = this.radius_middle;
         if (this.domain_outer_radius === this.radius_middle)
@@ -284,25 +297,6 @@ class Donut extends D3Plot {
             .transition()
             .duration('500')
             .attr('d', this.domain_arc);
-
-        var domain_arc = this.domain_arc;
-        this.domain_domain_labels
-            .transition()
-            .duration('500')
-	.attr('transform', (d) => `translate(${(domain_arc.centroid(d))}) translate(0,${(d.data.idxOrder)>=(this.study.riskofbias.length)/2?10:-10})`);
-	
-        this.domain_domain2_labels
-            .transition()
-            .duration('500')
-	.attr('transform', (d) => `translate(${(domain_arc.centroid(d))}) translate(0,${(d.data.idxOrder)>=(this.study.riskofbias.length)/2?10:-10}) translate(0,12)`);
-
-        this.domain_score_labels
-            .transition()
-            .duration('500')
-            .attr('transform', function(d){
-                var centroid = domain_arc.centroid(d);
-                return `translate(${[centroid[0],centroid[1]+15]})`;
-            });
     }
 
     clear_subset(){
@@ -320,6 +314,12 @@ class Donut extends D3Plot {
             notes_txt = $('<p>').html(metric.notes).css({'height': 250, 'overflow': 'auto'});
         ol.append($('<li>').html([div, metric_txt, notes_txt]));
         this.subset_div.append(ol);
+        this.subset_div.fadeIn('500');
+    }
+
+    show_domain_header(domain){
+        this.clear_subset();
+        this.subset_div.append('<h4>{0} domain</h4>'.printf(domain));
         this.subset_div.fadeIn('500');
     }
 }
