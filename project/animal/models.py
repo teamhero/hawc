@@ -730,7 +730,7 @@ class Endpoint(BaseEndpoint):
         ('NR', 'Not reported'))
 
     MONOTONICITY_CHOICES = (
-        (8, "---"),
+        (8, "--"),
         (0, "N/A, single dose level study"),
         (1, "N/A, no effects detected"),
         (2, "visual appearance of monotonicity"),
@@ -870,7 +870,8 @@ class Endpoint(BaseEndpoint):
         help_text="Response values were estimated using a digital ruler or other methods")
     monotonicity = models.PositiveSmallIntegerField(
         default=8,
-        choices=MONOTONICITY_CHOICES)
+        choices=MONOTONICITY_CHOICES,
+        help_text="OPTIONAL")
     statistical_test = models.CharField(
         max_length=256,
         blank=True,
