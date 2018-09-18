@@ -412,8 +412,47 @@ class D3Plot {
         return !((v[1]>this.h) || (v[1]<0) || (v[0]<0) || (v[0]>this.w));
     }
 
-    add_menu(){
-        if(this.menu_div) return;  // singleton
+    add_menu(configuration) {
+        if (this.menu_div) {
+            // This method is only intended to be called once; the element that it creates already exists, meaning that this method has already been called
+            // at least one time prior -- return and do nothing
+            return;
+        }
+
+        // Jay Buie, September 18, 2018
+        // Added ability to exclude specific buttons from the set of buttons in this menu
+        // Build a list of buttons to be included in the menu, defaulting to all of them
+        var buttons = {
+            _includeAll: true,
+            buttonSet: {},
+        };
+
+        if ((configuration !== null) && (typeof(configuration) === "object")) {
+            // The incoming configuration argument is an object, look for a list of specific fields to either include or exclude
+
+            var include = (("include" in configuration) && (typeof(configuration.include) === "string") && (configuration.include !== "")) ? configuration.include.split(",") : [];
+            var iTo = include.length;
+            if (iTo > 0) {
+                // At least one button was listed to be specifically included, set _includeAll to false, and set each button in include to true
+
+                buttons._includeAll = false;
+                for (var i=0; i<iTo; i++) {
+                    buttons.buttonSet[include[i]] = true;
+                }
+            }
+
+            var exclude = (("exclude" in configuration) && (typeof(configuration.exclude) === "string") && (configuration.exclude !== "")) ? configuration.exclude.split(",") : [];
+            iTo = exclude.length;
+            if (iTo > 0) {
+                // At least one button was listed to be specifically excluded, set _includeAll to false, and set each button in exclude to to false
+
+                buttons._includeAll = false;
+                for (var i=0; i<iTo; i++) {
+                    buttons.buttonSet[exclude[i]] = false;
+                }
+            }
+        }
+
         var plot = this;
 
         // show cog to toggle options menu
@@ -434,24 +473,59 @@ class D3Plot {
         this.menu_div = $('<div class="options_menu"></div>');
         this.plot_div.append(this.menu_div);
 
-        // add close button to menu
-        var close_button = {id:'close',
-                            cls: 'btn btn-mini pull-right',
-                            title: 'Hide menu',
-                            text: 'x',
-                            on_click(){plot._toggle_menu_bar();}};
-        this.add_menu_button(close_button);
+        if ((buttons._includeAll) || (!("legend" in buttons.buttonSet)) || (buttons.buttonSet.legend)) {
+            // Either all buttons are being included, or the show/hide legend button is not explixitly being excluded, add it to the menu
 
-        this._add_download_buttons();
+            var hide_legend = {
+                id:'hide',
+                cls: 'btn btn-mini pull-right',
+                title: 'Hide / Show legend',
+                text: '',
+                icon: 'icon-cog',
+                on_click() {
+                    plot._hide_show_plot();
+                },
+            };
 
-        // add zoom button to menu
-        var zoom_button = {id:'close',
-                           cls: 'btn btn-mini pull-right',
-                           title: 'Zoom image to full-size',
-                           text: '',
-                           icon: 'icon-zoom-in',
-                           on_click(){plot.trigger_resize(true);}};
-        this.resize_button = this.add_menu_button(zoom_button);
+            this.add_menu_button(hide_legend);
+        }
+
+        if ((buttons._includeAll) || (!("menu" in buttons.buttonSet)) || (buttons.buttonSet.menu)) {
+            // Either all buttons are being included, or the show/hide menu button is not explixitly being excluded, add it to the menu
+
+            var close_button = {
+                id:'close',
+                cls: 'btn btn-mini pull-right',
+                title: 'Hide menu',
+                text: 'x',
+                on_click() {
+                    plot._toggle_menu_bar();
+                }
+            };
+           this.add_menu_button(close_button);
+        }
+
+        if ((buttons._includeAll) || (!("download" in buttons.buttonSet)) || (buttons.buttonSet.download)) {
+            // Either all buttons are being included, or the download button is not explixitly being excluded, add it to the menu
+            this._add_download_buttons();
+        }
+
+        if ((buttons._includeAll) || (!("zoom" in buttons.buttonSet)) || (buttons.buttonSet.zoom)) {
+            // Either all buttons are being included, or the zoom button is not explixitly being excluded, add it to the menu
+
+            var zoom_button = {
+                id:'zoom',
+                cls: 'btn btn-mini pull-right',
+                title: 'Zoom image to full-size',
+                text: '',
+                icon: 'icon-zoom-in',
+                on_click() {
+                    plot.trigger_resize(true);
+                },
+            };
+
+            this.resize_button = this.add_menu_button(zoom_button);
+        }
     }
 
     _add_download_buttons(){
