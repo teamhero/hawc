@@ -847,7 +847,7 @@ class Exposure(models.Model):
                     "chemical exposure metabolite or another chemical signal. Use abbreviation. Ex PFNA; MEHP")
     metric = models.CharField(
         max_length=128,
-        verbose_name="Measurement Metric",
+        verbose_name="Measurement metric",
         help_text="In what was the chemical measured? Ex. Air; Maternal serum" +
                     formatHelpTextNotes("Exposure medium (ex. air, water), tissue or bodily fluid in which biomarker " +
                                         "detected (ex. blood, serum, plasma, urine, feces, breast milk, hair, saliva, teeth, finger or " +
@@ -861,7 +861,7 @@ class Exposure(models.Model):
                     HAWC_VIS_NOTE
         )
     metric_description = models.TextField(
-        verbose_name="Measurement Description",
+        verbose_name="Measurement description",
         help_text="Briefly describe how chemical levels in measurement metric were assessed. Ex. Single plasma sample collected for " +
                     "each pregnant woman during the first trimester" +
                     formatHelpTextNotes("Note key details or if measurement details not provided. May vary by assessment.")
@@ -1314,7 +1314,7 @@ class Result(models.Model):
     )
 
     dose_response = models.PositiveSmallIntegerField(
-        verbose_name="Dose Response Trend"
+        verbose_name="Dose response trend"
         ,help_text=OPTIONAL_NOTE
         ,default=0
         ,choices=DOSE_RESPONSE_CHOICES
@@ -1377,7 +1377,7 @@ class Result(models.Model):
         blank=True
         ,null=True
         ,default=0.95
-        ,verbose_name="Confidence Interval (CI)"
+        ,verbose_name="Confidence interval (CI)"
         ,help_text="Write as a decimal: a 95% CI should be recorded as 0.95. Ex. 0.95"
     )
 
