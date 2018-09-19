@@ -67,10 +67,15 @@ class Study(Reference):
         help_text='Study contains in-vitro data')
     short_citation = models.CharField(
         max_length=256,
-        help_text="How the study should be identified in HAWC (last name year, HERO ID). "
-                  "This field is used to select studies for figures and endpoint filters within HAWC, "
-                  "so you may need to add distinguishing features such as chemical name when the assessment "
-                  "includes multiple chemicals. This field may be used in HAWC visualizations.")
+        help_text="""
+                Use this format: last name, year, HERO ID (e.g., Baeder, 1990, 10130). This field 
+                is used to select studies for visualizations and endpoint filters within HAWC, so 
+                you may need to add distinguishing features such as chemical name when the 
+                assessment includes multiple chemicals (e.g., Baeder, 1990, 10130 PFHS). Note: 
+                Brackets can be added to put the references in LitCiter format in document text, 
+                e.g., {Baeder, 1990, 10130} or {Baeder, 1990, 10130@@author-year}, but LitCiter 
+                will not work on HAWC visuals.
+                """)
     full_citation = models.TextField(
         help_text="Complete study citation, in desired format. First author last name, Initial; "
                   "Second author last name, Initial; etc. (Year). Title. Journal volume (issue): "
@@ -94,9 +99,11 @@ class Study(Reference):
         max_length=128,
         blank=True,
         verbose_name="Internal study identifier",
-        help_text="This field may be used in HAWC visualizations when there is a preference not to " +
-                    "display the HERO ID number, so use author year format, e.g., Smith, 1978, " +
-                    "Smith and Jones, 1978 or Smith et al (for more than 3 authors)")
+        help_text="""
+                This field may be used in HAWC visualizations when there is a preference not to 
+                display the HERO ID number, so use author year format, e.g., Smith, 1978, Smith 
+                and Jones, 1978 or Smith et al., 1978 (for more than 3 authors).
+                """)
     contact_author = models.BooleanField(
         default=False,
         help_text="Was the author contacted for clarification of methods, results, or to request additional data?")

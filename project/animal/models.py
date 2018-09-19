@@ -88,7 +88,11 @@ class Experiment(models.Model):
         max_length=40,
         blank=True,
         verbose_name="Chemical identifier (CAS)",
-        help_text="CAS number for chemical-tested. Use N/A if not applicable")
+        help_text="""
+                CAS number for chemical-tested. Use N/A if not applicable. If more than one 
+                CAS number is applicable, then use a common one here and indicate others 
+                in the comment field below.
+                """)
     chemical_source = models.CharField(
         max_length=128,
         verbose_name="Source of chemical",
@@ -123,12 +127,13 @@ class Experiment(models.Model):
     guideline_compliance = models.CharField(
         max_length=128,
         blank=True,
-        help_text="""Description of any compliance methods used (i.e. use of EPA
-                    OECD, NTP, or other guidelines; conducted under GLP guideline
-                    conditions, non-GLP but consistent with guideline study,
-                    etc.). This field response should match any description used
-                    in study evaluation in the reporting quality domain, e.g., 
-                    GLP study (OECD guidelines 414 and 412, 1981 versions)""")
+        help_text="""
+            Description of any compliance methods used (i.e. use of EPA OECD, NTP, 
+            or other guidelines; conducted under GLP guideline conditions, non-GLP but consistent 
+            with guideline study, etc.). This field response should match any description used 
+            in study evaluation in the reporting quality domain, e.g., GLP study (OECD guidelines 
+            414 and 412, 1981 versions). If not reported, then use state "not reported."
+            """)
     litter_effects = models.CharField(
         max_length=2,
         choices=LITTER_EFFECT_CHOICES,
@@ -288,11 +293,12 @@ class AnimalGroup(models.Model):
         related_name="animal_groups")
     name = models.CharField(
         max_length=80,
-        help_text="Name should be: sex, common strain name, species and use Title Style "
-                    "(e.g. Male Sprague Dawley Rat, Female C57BL/6 Mice). For developmental "
-                    "studies, include the generation before sex in title (e.g., F1 Male "
-                    "Sprague Dawley Rat or P0 Female C57 Mice)"
-        )
+        help_text="""
+            Name should be: sex, common strain name, species and use Title Style 
+            (e.g. Male Sprague Dawley Rat, Female C57BL/6 Mice, Male and Female 
+            C57BL/6 Mice). For developmental studies, include the generation before 
+            sex in title (e.g., F1 Male Sprague Dawley Rat or P0 Female C57 Mice)
+            """)
     species = models.ForeignKey(
         'assessment.Species')
     strain = models.ForeignKey(
