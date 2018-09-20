@@ -17,9 +17,6 @@ import {renderCrossStreamInferencesFormset} from "./components/CrossStreamInfere
 // This class is intended to hold an Evidence Profile object -- essentially all of the data needed to generate an Evidence Profile report,
 // or a form for creating and managing an Evidence Profile
 class EvidenceProfile {
-    /*
-    */
-
     constructor(configuration) {
         // This constructor is empty, all work happens through static methods
         // The object represented by this class is intended to be a singleton -- i.e. there will only be one in use on a page at any time

@@ -660,6 +660,12 @@ def getEvidenceProfileDictionary(object):
         # profile's existing child streams
         returnValue = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
 
+        # Attempt to convert the settings field into a dictionary, defaulting to an empty one
+        try:
+            returnValue["settings"] = json.loads(returnValue["settings"])
+        except:
+            returnValue["settings"] = {}
+
         # Add a serialized version of the Evidence Profile object's streams to evidenceProfile, and copy the stream's primary key over into its
         # "fields" dictionary for retention in a later step
         streamObjectList = object.streams.all().order_by("order")
@@ -681,9 +687,10 @@ def getEvidenceProfileDictionary(object):
 
             i = i + 1
     else:
-        # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, and include an additional
-        # attibute for the profile's child streams
+        # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, convert the settings to an empty dictionary
+        # and include an additional attibute for the profile's child streams
         returnValue = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
+        returnValue["settings"] = {}
         returnValue["streams"] = []
 
     returnValue["cross_stream_confidence_judgement"] = json.loads(returnValue["cross_stream_confidence_judgement"])
