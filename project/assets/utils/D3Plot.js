@@ -32,6 +32,20 @@ class D3Plot {
         this.legend_left = left;
     }
 
+    // Jay Buie, September 20, 2018
+    // Moved this method into the superclass from dataPivot.DataPivot so that it would be available to any other subclasses that want to use it
+    // This method sets the font style from the included settings object
+    set_font_style(font) {
+        // Define an object of valid font styles
+        var validFonts = {
+            "Times New Roman": true,
+            "Arial": true,
+        };
+
+        // Set the font for this SVG object, defaulting to Arial if the font argument is not valid
+        d3.select(this.svg).attr('style', 'font-family: {0}'.printf(((font !== null) && (typeof(font) == "string") && (font in validFonts)) ? font : "Arial"));
+    }
+
     build_legend(settings){
         var plot = this,
             buffer = settings.box_padding, //shortcut reference

@@ -20,7 +20,6 @@ class EvidenceProfileTable extends D3Plot {
         this.object = object;
 
         this.settings = object.settings;
-        /*
         this.settings = {
             plot_settings: {
                 plot_width: 1024,
@@ -30,8 +29,10 @@ class EvidenceProfileTable extends D3Plot {
                     bottom: 14,
                     left: 16,
                 },
+                "font_style": "Times New Roman",
             }
-        };,
+        };
+        /*
         */
 
         this.plot_div = $(plot_div);
@@ -69,33 +70,29 @@ class EvidenceProfileTable extends D3Plot {
         this.plot_div.html("");
 
         if (
-            (this.object.title === "")
-            && (Object.keys(this.object.cross_stream_confidence_judgement).length === 0)
-            && (this.object.cross_stream_inferences.length === 0)
-            && (this.object.streams.length === 0)
+            (this.object.title !== "")
+            || (Object.keys(this.object.cross_stream_confidence_judgement).length > 0)
+            || (this.object.cross_stream_inferences.length > 0)
+            || (this.object.streams.length > 0)
         ) {
+            // The object has at least some data (even if not completed), attempt to display the table in its current state
+            this.build_plot_skeleton(true);
+            this.set_font_style(("plot_settings" in this.settings) && ("font_style" in this.settings.plot_settings) ? this.settings.plot_settings.font_style : "");
+            this.draw_table();
+            this.add_final_rectangle();
+            this.add_menu({exclude:"download"});
+            this.trigger_resize();
+        }
+        else {
             // This object is completely empty
             return HAWCUtils.addAlert('<strong>Error: </strong>no profile data are available to be summaraized', this.plot_div);
         }
+    }
 
-        this.build_plot_skeleton(true);
-        /*
-        this.set_font_style();
-        this.layout_text();
-        this.layout_plot();
-        this.add_axes();
-        this.draw_visualizations();
-        this.add_final_rectangle();
-        this.legend = new DataPivotLegend(
-            this.vis,
-            this.dp_settings.legend,
-            this.dp_settings,
-            {offset: true, editable: this.editable});
-        */
-        this.add_menu({exclude:"download"});
-        /*
-        this.trigger_resize();
-        */
+    // This method draws the actual table based on the data within this.object; the skeleton for the D3 object has been built and is ready for the table
+    draw_table() {
+        console.log("In EvidenceProfileTable.draw_table()");
+        console.log(this.object);
     }
 }
 
