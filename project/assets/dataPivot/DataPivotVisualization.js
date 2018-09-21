@@ -197,7 +197,7 @@ class DataPivotVisualization extends D3Plot {
             return HAWCUtils.addAlert('<strong>Error: </strong>data exists, but settings need to be modified (currently no rows are displayed).', this.plot_div);
         }
         this.build_plot_skeleton(true);
-        this.set_font_style();
+        this.set_font_style(this.dp_settings.plot_settings.font_style);
         this.layout_text();
         this.layout_plot();
         this.add_axes();
@@ -210,19 +210,6 @@ class DataPivotVisualization extends D3Plot {
             {offset: true, editable: this.editable});
         this.add_menu();
         this.trigger_resize();
-    }
-
-    set_font_style(){
-        var font;
-        switch (this.dp_settings.plot_settings.font_style){
-        case 'Times New Roman':
-            font = 'Times New Roman;';
-            break;
-        case 'Arial':
-        default:
-            font = 'Arial;';
-        }
-        d3.select(this.svg).attr('style', 'font-family: {0}'.printf(font));
     }
 
     get_dataset(){
