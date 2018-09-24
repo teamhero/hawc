@@ -699,7 +699,7 @@ export function renderCrossStreamInferencesFormset(inferences, formConfig, infer
     if (formActionsList.length > 0) {
         // The desired element was found in the page, attempt to add the new element as desired
 
-        formActionsList[0].insertAdjacentHTML("beforebegin", '<hr style="margin-top:-12px; border-width:1px;" /><div id="' + inferencesConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div>');
+        formActionsList[0].insertAdjacentHTML("beforebegin", '<hr style="border-width:1px;" /><div id="' + inferencesConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div>');
         ReactDOM.render(
             <CrossStreamInferencesFormset inferences={inferences} config={inferencesConfig} />,
             document.getElementById(inferencesConfig.divId)
