@@ -744,7 +744,7 @@ class EvidenceProfileForm(forms.ModelForm):
     class Meta:
         # Set the base model and form fields for this form
         model = models.EvidenceProfile
-        fields = ('title', 'slug', 'settings', 'caption', )
+        fields = ('title', 'slug', 'caption', )
 
     # This is the initialization method for this form object
     def __init__(self, *args, **kwargs):
@@ -775,37 +775,152 @@ class EvidenceProfileForm(forms.ModelForm):
         confidenceJudgementChoices = [(confidenceJudgement.value, confidenceJudgement.name) for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value")]
         confidenceJudgementChoices.insert(0, ("", "Select Judgement"))
 
+        # Attempt to get the list of fonts available to an Evidence Profile
+        fontChoices = [(font, font) for font in self.instance.get_font_options()]
+        fontChoices.insert(0, ("", "Select Font"))
+
+        # Attempt to get the current settings for this evidence profile, defaulting to the default ones
+        default_settings = self.instance.get_default_settings()
+        current_settings = {
+            "plot_settings": default_settings
+        }
+
+        try:
+            current_settings = json.loads(self.instance.settings)
+        except:
+            pass
+
         # Create an ordered dictionary of new fields that will be added to the form
         new_fields = OrderedDict()
         new_fields.update(
             [
                 (
-                    "confidence_judgement_score"
-                    ,forms.ChoiceField(
-                        required = False
-                        ,label = "Total Judgement Score Across All Streams"
-                        ,choices = confidenceJudgementChoices
-                        ,widget = forms.Select(
+                    "settings_plot_width",
+                    forms.IntegerField(
+                        required = True,
+                        label = "Report Width (in pixels)",
+                        initial = int(current_settings["plot_settings"]["plot_width"]) if (("plot_settings" in current_settings) and ("plot_width" in current_settings["plot_settings"])) else default_settings["plot_width"],
+                        help_text = "This is the width of the report on the web page",
+                        min_value = 512,
+                        max_value = 2048,
+                        widget = forms.TextInput(
+                            attrs = {
+                                "style": "width:48px;"
+                            }
+                        ),
+                    ),
+                ),
+                (
+                    "settings_padding_top",
+                    forms.IntegerField(
+                        required = True,
+                        label = "Top Margin (in pixels)",
+                        initial = int(current_settings["plot_settings"]["padding"]["top"]) if (("plot_settings" in current_settings) and ("padding" in current_settings["plot_settings"]) and ("top" in current_settings["plot_settings"]["padding"])) else default_settings["padding"]["top"],
+                        help_text = "This is the size of the report's top margin on the web page",
+                        min_value = -10,
+                        max_value = 60,
+                        widget = forms.TextInput(
+                            attrs = {
+                                "style": "width:48px;"
+                            }
+                        ),
+                    ),
+                ),
+                (
+                    "settings_padding_right",
+                    forms.IntegerField(
+                        required = True,
+                        label = "Right Margin (in pixels)",
+                        initial = int(current_settings["plot_settings"]["padding"]["right"]) if (("plot_settings" in current_settings) and ("padding" in current_settings["plot_settings"]) and ("right" in current_settings["plot_settings"]["padding"])) else default_settings["padding"]["right"],
+                        help_text = "This is the size of the report's right-side margin on the web page",
+                        min_value = -10,
+                        max_value = 60,
+                        widget = forms.TextInput(
+                            attrs = {
+                                "style": "width:48px;"
+                            }
+                        ),
+                    ),
+                ),
+                (
+                    "settings_padding_bottom",
+                    forms.IntegerField(
+                        required = True,
+                        label = "Bottom Margin (in pixels)",
+                        initial = int(current_settings["plot_settings"]["padding"]["bottom"]) if (("plot_settings" in current_settings) and ("padding" in current_settings["plot_settings"]) and ("bottom" in current_settings["plot_settings"]["padding"])) else default_settings["padding"]["bottom"],
+                        help_text = "This is the size of the report's bottom margin on the web page",
+                        min_value = -10,
+                        max_value = 60,
+                        widget = forms.TextInput(
+                            attrs = {
+                                "style": "width:48px;"
+                            }
+                        ),
+                    ),
+                ),
+                (
+                    "settings_padding_left",
+                    forms.IntegerField(
+                        required = True,
+                        label = "Left Margin (in pixels)",
+                        initial = int(current_settings["plot_settings"]["padding"]["left"]) if (("plot_settings" in current_settings) and ("padding" in current_settings["plot_settings"]) and ("left" in current_settings["plot_settings"]["padding"])) else default_settings["padding"]["left"],
+                        help_text = "This is the size of the report's left-side margin on the web page",
+                        min_value = -10,
+                        max_value = 60,
+                        widget = forms.TextInput(
+                            attrs = {
+                                "style": "width:48px;"
+                            }
+                        ),
+                    ),
+                ),
+                (
+                    "settings_font_style",
+                    forms.ChoiceField(
+                        required = False,
+                        label = "Font",
+                        choices = fontChoices,
+                        initial = current_settings["plot_settings"]["font_style"] if (("plot_settings" in current_settings) and ("font_style" in current_settings["plot_settings"])) else default_settings["font_style"],
+                        widget = forms.Select(
+                            attrs = {
+                                "style": "width:175px; margin-bottom:12px;"
+                            }
+                        ),
+                    ),
+                ),
+                (
+                    "confidence_judgement_score",
+                    forms.ChoiceField(
+                        required = False,
+                        label = "Total Judgement Score Across All Streams",
+                        choices = confidenceJudgementChoices,
+                        initial = initial_confidence_judgement["score"] if ("score" in initial_confidence_judgement) else "",
+                        widget = forms.Select(
                             attrs={
                                 "style": "width:175px;"
                             }
-                        )
-                    )
-                )
-                ,(
-                    "confidence_judgement_explanation"
-                    ,forms.CharField(
-                        required = False
-                        ,label = "Explanation"
-                        ,initial = initial_confidence_judgement_explanation
-                        ,help_text = "Explain why you selected the overall judgement score you did"
-                        ,widget = forms.Textarea(
-                            attrs = {
-                                "rows": 2
-                            }
-                        )
-                    )
-                )
+                        ),
+                    ),
+                ),
+                (
+                    "confidence_judgement_title",
+                    forms.CharField(
+                        required = True,
+                        label = "Title/Short Explanation",
+                        initial = initial_confidence_judgement["title"] if ("title" in initial_confidence_judgement) else "",
+                        widget = forms.TextInput(),
+                    ),
+                ),
+                (
+                    "confidence_judgement_explanation",
+                    forms.CharField(
+                        required = False,
+                        label = "Full Explanation",
+                        initial = initial_confidence_judgement["explanation"] if ("explanation" in initial_confidence_judgement) else "",
+                        help_text = "Explain why you selected the overall judgement score you did",
+                        widget = forms.Textarea(),
+                    ),
+                ),
             ]
         )
 
@@ -1399,25 +1514,28 @@ class EvidenceProfileForm(forms.ModelForm):
         # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
         cleaned_data["streams"] = unordered_types["evidence_profile_streams"]["desired_order"]
 
-        # Create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
+        # Create an object in the cleaned data that is made up of data related to inferences and judgements across all streams
         # within this evidence profile
         confidence_judgement = {
             "score": cleaned_data.get("confidence_judgement_score"),
             "explanation": cleaned_data.get("confidence_judgement_explanation"),
         }
 
-        cleaned_data["cross_stream_conclusions"] = json.dumps(
-            {
-                "inferences": unordered_types["cross_stream_inferences"]["desired_order"],
-                "confidence_judgement": confidence_judgement,
-            }
-        )
+        # Create an object in the cleanted data that is made up of the related "report settings" data fields
+        cleaned_data["settings"] = {
+            "plot_settings": {
+                "plot_width": cleaned_data.get("settings_plot_width"),
+                "padding": {
+                    "top": cleaned_data.get("settings_padding_top"),
+                    "right": cleaned_data.get("settings_padding_right"),
+                    "bottom": cleaned_data.get("settings_padding_bottom"),
+                    "left": cleaned_data.get("settings_padding_left"),
+                }
+            },
+            "font_style": cleaned_data.get("settings_font_style"),
+        }
 
-        """
-        for stream in cleaned_data["streams"]:
-            print(stream["pk"])
-            print(stream["outcomes"])
-            print("-------------------------------------------")
-        """
+        # Create an object in the cleaned data that is made of the data related to each cross-stream inference within this evidence profile
+        cleaned_data["cross_stream_inferences"] = unordered_types["cross_stream_inferences"]["desired_order"]
 
         return cleaned_data

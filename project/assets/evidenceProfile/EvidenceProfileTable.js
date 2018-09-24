@@ -20,20 +20,6 @@ class EvidenceProfileTable extends D3Plot {
         this.object = object;
 
         this.settings = object.settings;
-        this.settings = {
-            plot_settings: {
-                plot_width: 1024,
-                padding: {
-                    top: 10,
-                    right: 12,
-                    bottom: 14,
-                    left: 16,
-                },
-                "font_style": "Times New Roman",
-            }
-        };
-        /*
-        */
 
         this.plot_div = $(plot_div);
         this.defaultSettings = defaultSettings;

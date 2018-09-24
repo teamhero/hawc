@@ -939,7 +939,7 @@ export function renderEvidenceProfileStreamsFormset(streams, formConfig, streams
     if (captionDivList.length > 0) {
         // The desired element was found in the page, attempt to add the new element as desired
 
-        captionDivList[0].insertAdjacentHTML("afterend", '<hr style="margin-top:32px; border-width:1px;" /><div id="' + streamsConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div>');
+        captionDivList[0].insertAdjacentHTML("afterend", '<hr style="margin-top:32px; border-width:1px;" /><div id="' + streamsConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div><hr style="margin-top:-16px; margin-bottom:32px; border-width:2px;" />');
         ReactDOM.render(
             <EvidenceProfileStreamsFormset streams={streams} config={streamsConfig} confidenceJudgements={formConfig.confidenceJudgements} />,
             document.getElementById(streamsConfig.divId)
