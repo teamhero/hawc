@@ -311,6 +311,8 @@ class Session(models.Model):
         return LogicField.objects\
             .filter(assessment=self.endpoint.assessment_id)
 
+    def get_study(self):
+        return self.endpoint.animal_group.experiment.study
 
 class Model(models.Model):
     objects = managers.ModelManager()

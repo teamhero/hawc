@@ -241,6 +241,9 @@ class Experiment(models.Model):
         for child in self.animal_groups.all():
             child.complete_copy(cw)
 
+    def get_study(self):
+        return self.study
+
 
 class AnimalGroup(models.Model):
     objects = managers.AnimalGroupManager()
@@ -481,6 +484,8 @@ class AnimalGroup(models.Model):
         self.dosing_regime_id = cw[DosingRegime.COPY_NAME][self.dosing_regime_id]
         self.save()
 
+    def get_study(self):
+        return self.experiment.study
 
 class DosingRegime(models.Model):
 
@@ -661,6 +666,8 @@ class DosingRegime(models.Model):
         for child in children:
             child.copy_across_assessments(cw)
 
+    def get_study(self):
+        return self.dosed_animals.experiment.study
 
 class DoseGroup(models.Model):
     objects = managers.DoseGroupManager()
@@ -1207,6 +1214,9 @@ class Endpoint(BaseEndpoint):
         # copy other children
         for child in children:
             child.copy_across_assessments(cw)
+
+    def get_study(self):
+        return self.animal_group.experiment.study
 
 
 class ConfidenceIntervalsMixin(object):

@@ -45,7 +45,12 @@ def get_crumbs(obj, parent=None):
     else:
         crumbs = parent.get_crumbs()
     if obj.id is not None:
-        crumbs.append((obj.__str__(),  obj.get_absolute_url()))
+        icon = None
+        icon_fetch_method = getattr(obj, 'get_crumbs_icon', None)
+        if callable(icon_fetch_method):
+            icon = icon_fetch_method()
+
+        crumbs.append((obj.__str__(),  obj.get_absolute_url(), icon))
     else:
         crumbs.append((obj._meta.verbose_name.lower(), ))
     return crumbs
