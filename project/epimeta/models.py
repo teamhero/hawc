@@ -139,6 +139,9 @@ class MetaProtocol(models.Model):
             ser['notes']
         )
 
+    def get_study(self):
+        return self.study
+
 
 class MetaResult(models.Model):
     objects = managers.MetaResultManager()
@@ -369,6 +372,9 @@ class MetaResult(models.Model):
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
 
+    def get_study(self):
+        return self.protocol.study
+
 
 class SingleResult(models.Model):
     objects = managers.SingleResultManager()
@@ -479,6 +485,9 @@ class SingleResult(models.Model):
         self.study_id = cw[Study.COPY_NAME][self.study_id]
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
+
+    def get_study(self):
+        return self.meta_result.protocol.study
 
 
 reversion.register(

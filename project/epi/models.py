@@ -368,6 +368,9 @@ class StudyPopulation(models.Model):
         for child in children:
             child.copy_across_assessments(cw)
 
+    def get_study(self):
+        return self.study
+
 
 class Outcome(BaseEndpoint):
     objects = managers.OutcomeManager()
@@ -548,6 +551,9 @@ class Outcome(BaseEndpoint):
         for child in children:
             child.copy_across_assessments(cw)
 
+    def get_study(self):
+        return self.study_population.study
+
 
 class ComparisonSet(models.Model):
     objects = managers.ComparisonSetManager()
@@ -649,6 +655,9 @@ class ComparisonSet(models.Model):
         cw[self.COPY_NAME][old_id] = self.id
         for child in children:
             child.copy_across_assessments(cw)
+
+    def get_study(self):
+        return self.study_population.study
 
 
 class Group(models.Model):
@@ -1076,6 +1085,9 @@ class Exposure(models.Model):
         self.study_population_id = cw[StudyPopulation.COPY_NAME][self.study_population_id]
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
+
+    def get_study(self):
+        return self.study_population.study
 
 
 class GroupNumericalDescriptions(models.Model):

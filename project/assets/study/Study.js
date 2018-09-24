@@ -114,6 +114,7 @@ class Study{
     build_details_table(div){
         var tbl = new DescriptiveTable(),
             links = this._get_identifiers_hyperlinks_ul();
+        tbl.add_tbody_tr('Locked?', this.data.editable ? 'no' : 'yes');
         tbl.add_tbody_tr('Data type(s)', this._get_data_types());
         tbl.add_tbody_tr('Full citation', this.data.full_citation);
         tbl.add_tbody_tr('Abstract', this.data.abstract);
@@ -127,6 +128,7 @@ class Study{
         tbl.add_tbody_tr('Author contacted?', HAWCUtils.booleanCheckbox(this.data.contact_author));
         tbl.add_tbody_tr('Author contact details', this.data.ask_author);
         tbl.add_tbody_tr('Extraction comments', this.data.summary);
+
         $(div).html(tbl.get_tbl());
     }
 
