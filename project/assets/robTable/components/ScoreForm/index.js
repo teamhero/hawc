@@ -32,6 +32,8 @@ class ScoreForm extends Component {
                 scoreShades: shades,
                 score: null,
                 notes: props.score.notes,
+				endpointChoices: this.props.endpoints,
+				endpointIDs: [],
             }
         }
         else {
@@ -55,12 +57,17 @@ class ScoreForm extends Component {
                 },
                 score: null,
                 notes: props.score.notes,
-            };
+ 				endpointChoices: this.props.endpoints,
+				endpointIDs: [],
+           };
         }
-        
+		
         this.handleEditorInput = this.handleEditorInput.bind(this);
         this.selectScore = this.selectScore.bind(this);
         this.selectEndpoint = this.selectEndpoint.bind(this);
+        this.addGenericEndpoint = this.addGenericEndpoint.bind(this);
+        this.handleEPEditorInput = this.handleEPEditorInput.bind(this);
+        this.selectEPScore = this.selectEPScore.bind(this);
     }
 
     componentWillMount(){
@@ -96,8 +103,21 @@ class ScoreForm extends Component {
         this.validateInput(score, this.state.notes);
     }
 
+    selectEPScore(score){
+        this.setState({
+            score,
+            selectedShade: this.state.scoreShades[score],
+            selectedSymbol: this.state.scoreSymbols[score],
+        });
+    }
+	
     handleEditorInput(event){
         this.setState({notes: event});
+        this.validateInput(this.state.score, event);
+    }
+
+    handleEPEditorInput(event){
+        this.setState({EPnotes: event});
         this.validateInput(this.state.score, event);
     }
 
@@ -109,26 +129,29 @@ class ScoreForm extends Component {
         }
     }
 
-    selectEndpoint(endpoint){
-		console.log('selected:'+endpoint+':'+this.state.endpointChoices[endpoint]);
-		this.setState({
-			endpointID: this.state.endpointChoices[endpoint],
-			endpointText: this.state.endpointChoices[endpoint],
-			numEndpointScores: this.state.numEndpointScores + 1,
+    addGenericEndpoint(){
+		console.log('generic endpoint selected');
+		this.setState((prevState) => {
+			return {numEndpointScores: prevState.numEndpointScores + 1};
 		});
+    }
+
+    selectEndpoint(endpoint){
+		this.state.endpointIDs.push(endpoint);
+		this.forceUpdate();
     }
 
     render() {
 		const endpointScores = [];
 		//const EPButton = this.props.showEPButton;
 		
-		for (var i=0;i<this.state.numEndpointScores; i++) {
-			endpointScores.push(<EndpointScoreForm key={i} updateNotesLeft={this.props.updateNotesLeft} endpointID={this.state.endpointID} endpointText={this.state.endpointText} />);
-		};
-		
-        let { name } = this.props.score.metric,
-            { scoreChoices, score, notes, selectedSymbol, selectedShade, endpointChoices } = this.state;
-	
+        let endpointAddControl, { name } = this.props.score.metric,
+            { scoreChoices, scoreSymbols, scoreShades, score, notes, selectedSymbol, selectedShade, endpointChoices, endpointIDs } = this.state;
+
+		endpointAddControl = _.isEmpty(endpointChoices) ?
+		    <button onClick={this.addGenericEndpoint}>Endpoint to be Assigned</button> :
+		    <Select choices={endpointChoices} id={name+'_ep'} handleSelect={this.selectEndpoint} />;
+			
 		if (this.props.showEPButton)
         return (
 			<div>
@@ -142,11 +165,8 @@ class ScoreForm extends Component {
                     <ScoreIcon shade={selectedShade}
                              symbol={selectedSymbol}/>
 					<br/>
-					Add unique notes for:<br/>
-					<button>Endpoints</button>
-					<br/>
-                    <Select choices={endpointChoices} id={name+'_ep'} handleSelect={this.selectEndpoint} />
-					<br/>
+					Add unique notes for an endpoint:<br/>
+					{endpointAddControl}
                 </div>
                 <ReactQuill id={name}
                          value={notes}
@@ -155,7 +175,11 @@ class ScoreForm extends Component {
                          theme='snow'
                          className='score-editor' />
             </div>
-			<div>{endpointScores}</div>
+			<div>
+			{_.map(endpointIDs, (endpoint) => {
+			    return <EndpointScoreForm ref={'epform'+endpoint} key={endpoint} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint} endpointText={endpointChoices[endpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} />;
+            })}
+			</div>
 			</div>
         );
 		else

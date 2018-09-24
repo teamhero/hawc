@@ -10,8 +10,11 @@ const defaultState = {
     name: '',
     final: [],
     riskofbiases: [],
+    experiments: [],
     active: [],
     heroid: '',
+	endpointNotes: [],
+	endpointScores: [],
 };
 
 function study(state=defaultState, action){
