@@ -774,10 +774,10 @@ class EvidenceProfile(models.Model):
         return {
             "plot_width": 1024,
             "padding": {
-                "top": 25,
-                "right": 25,
-                "bottom": 40,
-                "left": 20
+                "top": 10,
+                "right": 10,
+                "bottom": 20,
+                "left": 10
             },
             "font_style": "Arial"
         }

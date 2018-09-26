@@ -42,6 +42,8 @@ class D3Plot {
             "Arial": true,
         };
 
+        console.log(font);
+
         // Set the font for this SVG object, defaulting to Arial if the font argument is not valid
         d3.select(this.svg).attr('style', 'font-family: {0}'.printf(((font !== null) && (typeof(font) == "string") && (font in validFonts)) ? font : "Arial"));
     }
@@ -163,6 +165,7 @@ class D3Plot {
                 }
             }
         };
+
         $(window).resize(this.trigger_resize);
 
         // add gray background to plot.

@@ -31,7 +31,7 @@ class EvidenceProfile {
                     "top": 25,
                     "right": 25,
                     "bottom": 40,
-                    "left": 20
+                    "left": 20,
                 },
                 "font_style": "Arial",
             },
