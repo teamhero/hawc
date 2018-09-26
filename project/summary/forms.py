@@ -1530,9 +1530,9 @@ class EvidenceProfileForm(forms.ModelForm):
                     "right": cleaned_data.get("settings_padding_right"),
                     "bottom": cleaned_data.get("settings_padding_bottom"),
                     "left": cleaned_data.get("settings_padding_left"),
-                }
+                },
+                "font_style": cleaned_data.get("settings_font_style"),
             },
-            "font_style": cleaned_data.get("settings_font_style"),
         }
 
         # Create an object in the cleaned data that is made of the data related to each cross-stream inference within this evidence profile

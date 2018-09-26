@@ -668,7 +668,6 @@ def getEvidenceProfileDictionary(object):
         try:
             returnValue["settings"] = json.loads(returnValue["settings"])
         except:
-            print("Crud")
             try:
                 returnValue["settings"] = object.get_default_settings()
             except:
