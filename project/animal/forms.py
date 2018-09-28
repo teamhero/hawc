@@ -56,7 +56,6 @@ class ExperimentForm(ModelForm):
             if type(widget) != forms.CheckboxInput:
                 widget.attrs['class'] = 'span12'
 
-        self.fields["diet"].widget.attrs['rows'] = 3
         self.fields["description"].widget.attrs['rows'] = 4
 
         if self.instance.id:
@@ -84,7 +83,6 @@ class ExperimentForm(ModelForm):
         helper.add_fluid_row('chemical', 3, "span4")
         helper.add_fluid_row('purity_available', 4, ["span2", "span2", "span2", "span6"])
         helper.add_fluid_row('litter_effects', 2, "span6")
-        helper.add_fluid_row('diet', 2, "span6")
         return helper
 
     PURITY_QUALIFIER_REQ = "Qualifier must be specified"
@@ -238,6 +236,9 @@ class AnimalGroupForm(ModelForm):
 
         if "generation" in self.fields:
             helper.add_fluid_row('siblings', 3, "span4")
+
+        helper.add_fluid_row('comments', 2, "span6")
+
         return helper
 
     def clean(self):

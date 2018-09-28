@@ -72,7 +72,8 @@ class AnimalGroup {
             .add_tbody_tr_list('Parents', getRelations(this.data.parents))
             .add_tbody_tr('Siblings', this._getAniRelationLink(this.data.siblings))
             .add_tbody_tr_list('Children', getRelations(this.data.children))
-            .add_tbody_tr('Animal Husbandry', this.data.comments);
+            .add_tbody_tr('Animal Husbandry', this.data.comments)
+            .add_tbody_tr('Diet', this.data.diet);
 
         return tbl.get_tbl();
     }
