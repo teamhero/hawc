@@ -60,7 +60,6 @@ class Experiment(models.Model):
         'chemical_source',
         'vehicle',
         'description',
-        'diet',
         'litter_effect_notes',
         'guideline_compliance',
     )
@@ -119,10 +118,6 @@ class Experiment(models.Model):
                     "Enter \"not reported\" if the vehicle is not described. For inhalation " +
                     "studies, air can be inferred if not explicitly reported. " +
                     "Examples: \"corn oil,\" \"filtered air,\" \"not reported, but assumed clean air.\"",
-        blank=True)
-    diet = models.TextField(
-        help_text="Describe diet as presented in the paper (e.g., \"soy-protein free " +
-                    "2020X Teklad,\" \"Atromin 1310\", \"standard rodent chow\").",
         blank=True)
     guideline_compliance = models.CharField(
         max_length=128,
@@ -192,7 +187,6 @@ class Experiment(models.Model):
             'experiment-purity_qualifier',
             'experiment-purity',
             'experiment-vehicle',
-            'experiment-diet',
             'experiment-litter_effects',
             'experiment-litter_effect_notes',
             'experiment-guideline_compliance',
@@ -213,7 +207,6 @@ class Experiment(models.Model):
             ser['purity_qualifier'],
             ser['purity'],
             ser['vehicle'],
-            ser['diet'],
             ser['litter_effects'],
             ser['litter_effect_notes'],
             ser['guideline_compliance'],
@@ -289,6 +282,7 @@ class AnimalGroup(models.Model):
         'lifestage_exposed',
         'lifestage_assessed',
         'comments',
+        'diet',
     )
 
     experiment = models.ForeignKey(
@@ -369,6 +363,10 @@ class AnimalGroup(models.Model):
         verbose_name="Animal Source and Husbandry",
         help_text="Copy paste animal husbandry information from materials and methods, "
                     "use quotation marks around all text directly copy/pasted from paper.")
+    diet = models.TextField(
+        help_text="Describe diet as presented in the paper (e.g., \"soy-protein free " +
+                    "2020X Teklad,\" \"Atromin 1310\", \"standard rodent chow\").",
+        blank=True)
     created = models.DateTimeField(
         auto_now_add=True)
     last_updated = models.DateTimeField(
@@ -423,6 +421,7 @@ class AnimalGroup(models.Model):
             "animal_group-parents",
             "animal_group-generation",
             "animal_group-comments",
+            "animal_group-diet",
             "species-name",
             "strain-name",
         )
@@ -446,6 +445,7 @@ class AnimalGroup(models.Model):
             '|'.join([cls.get_relation_id(p) for p in ser['parents']]),
             ser['generation'],
             cleanHTML(ser['comments']),
+            ser['diet'],
             ser['species'],
             ser['strain']
         )
