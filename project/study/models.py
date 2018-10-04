@@ -37,6 +37,7 @@ class Study(Reference):
     TEXT_CLEANUP_FIELDS = (
         'short_citation',
         'full_citation',
+        'study_identifier',
         'coi_details',
         'funding_source',
         'ask_author',

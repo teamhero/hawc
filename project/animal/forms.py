@@ -448,7 +448,7 @@ class EndpointForm(ModelForm):
             be adjusted to use terms that best work across 
             studies or assessments using the data clean-up tool 
             (the original name as presented in the study will 
-            be retained in the "diagnostic" field). If the 
+            be retained in the "Endpoint Name in Study" field). If the 
             endpoint is a repeated measure, then indicate the 
             time in parentheses, e.g., running wheel activity 
             (6 wk), using the abbreviated format: seconds = sec, 

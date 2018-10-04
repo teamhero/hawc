@@ -521,6 +521,7 @@ class DosingRegime(models.Model):
     
     TEXT_CLEANUP_FIELDS = (
         'description',
+        'duration_exposure_text',
     )
 
     dosed_animals = models.OneToOneField(
