@@ -129,11 +129,11 @@ class ScoreForm extends Component {
         }
     }
 
-    addGenericEndpoint(){
-		console.log('generic endpoint selected');
-		this.setState((prevState) => {
-			return {numEndpointScores: prevState.numEndpointScores + 1};
-		});
+    addGenericEndpoint(e){
+		e.preventDefault();
+		//console.log('generic endpoint selected');
+		this.state.endpointIDs.push(0);
+		this.forceUpdate();
     }
 
     selectEndpoint(endpoint){
@@ -149,7 +149,7 @@ class ScoreForm extends Component {
             { scoreChoices, scoreSymbols, scoreShades, score, notes, selectedSymbol, selectedShade, endpointChoices, endpointIDs } = this.state;
 
 		endpointAddControl = _.isEmpty(endpointChoices) ?
-		    <button onClick={this.addGenericEndpoint}>Endpoint to be Assigned</button> :
+		    <button onClick={this.addGenericEndpoint}>Endpoint TBA</button> :
 		    <Select choices={endpointChoices} id={name+'_ep'} handleSelect={this.selectEndpoint} />;
 			
 		if (this.props.showEPButton)
@@ -165,7 +165,7 @@ class ScoreForm extends Component {
                     <ScoreIcon shade={selectedShade}
                              symbol={selectedSymbol}/>
 					<br/>
-					Add unique notes for an endpoint:<br/>
+					Add notes for an endpoint:<br/>
 					{endpointAddControl}
                 </div>
                 <ReactQuill id={name}
@@ -176,8 +176,12 @@ class ScoreForm extends Component {
                          className='score-editor' />
             </div>
 			<div>
-			{_.map(endpointIDs, (endpoint) => {
-			    return <EndpointScoreForm ref={'epform'+endpoint} key={endpoint} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint} endpointText={endpointChoices[endpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} />;
+			{_.map(endpointIDs, (endpoint, index) => { //function(endpoint, index) {
+				console.log(endpoint+":"+index);
+				if (endpoint==0)
+					return <EndpointScoreForm ref={'epform'+endpoint+'.'+index} key={endpoint+'.'+index} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint+'.'+index} endpointText={'Endpoint Notes'} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} />;
+				else
+					return <EndpointScoreForm ref={'epform'+endpoint} key={endpoint} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint} endpointText={endpointChoices[endpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} />;
             })}
 			</div>
 			</div>

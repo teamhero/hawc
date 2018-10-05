@@ -36,19 +36,19 @@ class RiskOfBiasForm extends Component {
                     score: form.state.score };
             });
         }));
-        let EPscores = _.flatten(_.map(this.refs, (domain) => {
+        let scoresperendpoint = _.flatten(_.map(this.refs, (domain) => {
             return _.map(domain.refs, (metric) => {
-                let { form } = metric.refs;
+                let { form } = metric.refs, metric_id = metric.props.metric.values[0].metric.id;
                 return _.map(form.refs, (endpoint) => {
 					return {
-						id: endpoint.state.endpointID,
+						endpoint: endpoint.state.endpointID,
 						notes: endpoint.state.EPnotes,
-						score: endpoint.state.score };
+						score: endpoint.state.score,
+						metric_id: metric_id };
 				});	
             }); 
         }));
-		console.log(EPscores);
-        //this.props.dispatch(submitRiskOfBiasScores({scores}));
+        this.props.dispatch(submitRiskOfBiasScores({scores, scoresperendpoint}));
     }
 
     handleCancel(e){

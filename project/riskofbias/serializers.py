@@ -66,16 +66,24 @@ class RiskOfBiasScoreSerializer(serializers.ModelSerializer):
         model = models.RiskOfBiasScore
         fields = ('id', 'score', 'notes', 'metric',)
 
+class RiskOfBiasScorePerEndpointSerializer(serializers.ModelSerializer):
+    metric = RiskOfBiasMetricSerializer(read_only=True)
+
+    class Meta:
+        model = models.RiskOfBiasScorePerEndpoint
+        fields = ('id', 'baseendpoint', 'score', 'notes', 'metric',)
+
 
 class RiskOfBiasSerializer(serializers.ModelSerializer):
     scores = RiskOfBiasScoreSerializer(read_only=False, many=True, partial=True)
+    scoresperendpoint = RiskOfBiasScorePerEndpointSerializer(read_only=False, many=True, partial=True)
     author = HAWCUserSerializer(read_only=True)
 
     class Meta:
         model = models.RiskOfBias
         fields = ('id', 'author', 'active',
                   'final', 'study', 'created',
-                  'last_updated', 'scores')
+                  'last_updated', 'scores', 'scoresperendpoint')
 
     def update(self, instance, validated_data):
         """
@@ -87,6 +95,19 @@ class RiskOfBiasSerializer(serializers.ModelSerializer):
             for field, value in list(form_data.items()):
                 setattr(score, field, value)
             score.save()
+        scoreperendpoint_data = validated_data.pop('scoresperendpoint')
+        
+        """for spe in scoreperendpoint_data:
+            if spe.get('endpoint') < 1:
+                noEndpoint.push(spe)
+            else:
+                endpointUpdate.push(spe)
+				
+        for scoreperendpoint, form_data in zip(instance.scoresperendpoint.all(), spe_to_update):
+            for field, value in list(form_data.items()):
+                setattr(scoreperendpoint, field, value)
+            scoreperendpoint.save()""" 
+		
         return super().update(instance, validated_data)
 
 
