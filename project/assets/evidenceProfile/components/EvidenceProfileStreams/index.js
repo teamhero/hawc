@@ -179,8 +179,6 @@ class EvidenceProfileStreamsFormset extends Component {
                         streamReferences={this.streamReferences}
                     />;
 
-                    console.log(this.streams);
-
                     this.setState(
                         {
                             divs: this.buildDivs(),
