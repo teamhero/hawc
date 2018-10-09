@@ -9,7 +9,6 @@ import {
 
 import Library from "./Library";
 import EvidenceProfileStream from "./EvidenceProfileStream";
-import EvidenceProfileTable from "./EvidenceProfileTable";
 
 import {renderEvidenceProfileStreamsFormset} from "./components/EvidenceProfileStreams";
 import {renderCrossStreamInferencesFormset} from "./components/CrossStreamInferences";
@@ -127,19 +126,6 @@ class EvidenceProfile {
     // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
     static buildCrossStreamInferencesFormset() {
         renderCrossStreamInferencesFormset(EvidenceProfile.object.cross_stream_conclusions.inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
-    }
-
-    // This function builds the D3-based Evidence Profile Table from this.object
-    static buildD3Table(divId) {
-        if ((divId !== null) && (typeof(divId) === "string") && (divId !== "")) {
-            // divId is a non-empty string, see if it matcehes an element in the DOM
-
-            let tableDiv = document.getElementById(divId);
-            if (tableDiv !== null) {
-                // The expected <div> was found in the document, attempt to build the data object
-                let table = new EvidenceProfileTable(this.object, tableDiv, this.defaultSettings);
-            }
-        }
     }
 }
 

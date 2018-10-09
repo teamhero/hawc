@@ -188,7 +188,7 @@ class EvidenceProfileScenariosFormset extends Component {
                     confidencefactors_increase={this.scenarios[scenarioIndex].scenario.object.confidencefactors_increase}
                     confidenceFactorsIncrease_config={this.props.config.confidenceFactorsIncreaseFormset}
                     confidenceFactors_decrease={this.scenarios[scenarioIndex].scenario.object.confidencefactors_decrease}
-                    confidencefactorsDecrease_config={this.props.config.confidenceFactorsDecreaseFormset}
+                    confidenceFactorsDecrease_config={this.props.config.confidenceFactorsDecreaseFormset}
                     divId={this.divId}
                     idPrefix={this.scenarioIdPrefix}
                     fieldPrefix={this.fieldPrefix}

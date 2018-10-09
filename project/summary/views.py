@@ -442,8 +442,7 @@ class EvidenceProfileNew(BaseCreate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-        # Set the object model's settings and cross-stream related fields to JSON-formatted strings based on the cleaned data from the submitted form
-        form.instance.settings = json.dumps(form.cleaned_data.get("settings"))
+        # Set the object model's cross-stream related fields to JSON-formatted strings based on the cleaned data from the submitted form
         form.instance.cross_stream_confidence_judgement = json.dumps(form.cleaned_data.get("cross_stream_confidence_judgement"))
         form.instance.cross_stream_inferences = json.dumps(form.cleaned_data.get("cross_stream_inferences"))
 
@@ -511,10 +510,10 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-        # Set the form instance's cross_stream_conclusions to the JSON-formatted version of the cleaned, combined version of the separate
-        # related form fields
-        form.instance.cross_stream_conclusions = form.cleaned_data.get("cross_stream_conclusions")
-        # Set the object model's settings and cross-stream related fields to JSON-formatted strings based on the cleaned data from the submitted form
+        # Set the object model's cross-stream related fields to JSON-formatted strings based on the cleaned data from the submitted form
+        form.instance.cross_stream_confidence_judgement = json.dumps(form.cleaned_data.get("cross_stream_confidence_judgement"))
+        form.instance.cross_stream_inferences = json.dumps(form.cleaned_data.get("cross_stream_inferences"))
+
         return super().form_valid(form)
 
     # This method is automatically called by the superclass's form_valid() method; this method is used within this class to handle the saving
@@ -602,7 +601,7 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
 
         # Load the entire EvidenceProfile object into a dictionary object and convert it to a JSON-formatted string (this will then be treated
         # as an object by the client-side JavaScript)
-        returnValue["evidenceProfile"] = json.dumps(getCompleteEvidenceProfileDictionary(self.object))
+        returnValue["evidenceProfile"] = getCompleteEvidenceProfileDictionary(self.object)
 
         return returnValue
 
@@ -642,9 +641,6 @@ def getEvidenceProfileContextData(object):
     # Retrieve all the values from the effect tags lookup table and serialize them into a JSON-formatted string
     returnValue["effect_tags"] = json.dumps([effectTagSerializer.to_representation(effectTag) for effectTag in EffectTag.objects.all().order_by("name")])
 
-    # Retrieve a JSON-friendly set of default settings for a table
-    returnValue["default_settings"] = json.dumps(object.get_default_settings()) if (object) else json.dumps(models.EvidenceProfile().get_default_settings())
-
     # Load the entire EvidenceProfile object into a dictionary object and convert it to a JSON-formatted string (this will then be treated as an object
     # by the client-side JavaScript)
     returnValue["evidenceProfile"] = json.dumps(getEvidenceProfileDictionary(object))
@@ -662,16 +658,6 @@ def getEvidenceProfileDictionary(object):
         # The incoming object is not empty, create a JSON-friendly version of it, and include an additional attribute for the
         # profile's existing child streams
         returnValue = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
-
-        # Attempt to convert the settings field into a dictionary, defaulting first to the default settings, but then defaulting to an empty dictionary
-        # if that doesn't work
-        try:
-            returnValue["settings"] = json.loads(returnValue["settings"])
-        except:
-            try:
-                returnValue["settings"] = object.get_default_settings()
-            except:
-                returnValue["settings"] = {}
 
         # Add a serialized version of the Evidence Profile object's streams to evidenceProfile, and copy the stream's primary key over into its
         # "fields" dictionary for retention in a later step
@@ -694,10 +680,8 @@ def getEvidenceProfileDictionary(object):
 
             i = i + 1
     else:
-        # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, convert the settings to an empty dictionary
-        # and include an additional attibute for the profile's child streams
+        # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, include an additional attribute for the profile's child streams
         returnValue = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
-        returnValue["settings"] = {}
         returnValue["streams"] = []
 
     returnValue["cross_stream_confidence_judgement"] = json.loads(returnValue["cross_stream_confidence_judgement"])

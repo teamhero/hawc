@@ -704,7 +704,6 @@ class EvidenceProfile(models.Model):
     # Declare the basic attributes for this object
     title = models.CharField(max_length=128, help_text="Enter the title of this evidence profile table (spaces and special-characters allowed).")
     slug = models.SlugField(verbose_name="URL Name", help_text="The URL (web address) used to describe this object (no spaces or special-characters).")
-    settings = models.TextField(default="{}", help_text="Paste content from a settings file from a different evidence profile, or keep set to an empty object (\"{}\").")
     caption = models.TextField(default="", blank=True)
     cross_stream_conclusions = models.TextField(default="{}")
 
@@ -753,26 +752,6 @@ class EvidenceProfile(models.Model):
     # This method returns the object's parent Assessment
     def get_assessment(self):
         return self.assessment
-
-    # This function returns a dictionary with a set of default settings for an EvidenceProfile object
-    def get_default_settings(self):
-        return {
-            "plot_width": 1024,
-            "padding": {
-                "top": 10,
-                "right": 10,
-                "bottom": 20,
-                "left": 10
-            },
-            "font_style": "Arial"
-        }
-
-    # This function returns a list with a set of font options for the font-style setting for an EvidenceProfile object
-    def get_font_options(self):
-        return [
-            "Times New Roman",
-            "Arial",
-        ]
 
     # This property is static and is simply the string "Evidence Profile"
     @property

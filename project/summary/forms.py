@@ -775,119 +775,10 @@ class EvidenceProfileForm(forms.ModelForm):
         confidenceJudgementChoices = [(confidenceJudgement.value, confidenceJudgement.name) for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value")]
         confidenceJudgementChoices.insert(0, ("", "Select Judgement"))
 
-        # Attempt to get the list of fonts available to an Evidence Profile
-        fontChoices = [(font, font) for font in self.instance.get_font_options()]
-        fontChoices.insert(0, ("", "Select Font"))
-
-        # Attempt to get the current settings for this evidence profile, defaulting to the default ones
-        default_settings = self.instance.get_default_settings()
-        current_settings = {
-            "plot_settings": default_settings
-        }
-
-        try:
-            current_settings = json.loads(self.instance.settings)
-        except:
-            pass
-
         # Create an ordered dictionary of new fields that will be added to the form
         new_fields = OrderedDict()
         new_fields.update(
             [
-                (
-                    "settings_plot_width",
-                    forms.IntegerField(
-                        required = True,
-                        label = "Report Width (in pixels)",
-                        initial = int(current_settings["plot_settings"]["plot_width"]) if (("plot_settings" in current_settings) and ("plot_width" in current_settings["plot_settings"])) else default_settings["plot_width"],
-                        help_text = "This is the width of the report on the web page",
-                        min_value = 512,
-                        max_value = 2048,
-                        widget = forms.TextInput(
-                            attrs = {
-                                "style": "width:48px;"
-                            }
-                        ),
-                    ),
-                ),
-                (
-                    "settings_padding_top",
-                    forms.IntegerField(
-                        required = True,
-                        label = "Top Margin (in pixels)",
-                        initial = int(current_settings["plot_settings"]["padding"]["top"]) if (("plot_settings" in current_settings) and ("padding" in current_settings["plot_settings"]) and ("top" in current_settings["plot_settings"]["padding"])) else default_settings["padding"]["top"],
-                        help_text = "This is the size of the report's top margin on the web page",
-                        min_value = -10,
-                        max_value = 60,
-                        widget = forms.TextInput(
-                            attrs = {
-                                "style": "width:48px;"
-                            }
-                        ),
-                    ),
-                ),
-                (
-                    "settings_padding_right",
-                    forms.IntegerField(
-                        required = True,
-                        label = "Right Margin (in pixels)",
-                        initial = int(current_settings["plot_settings"]["padding"]["right"]) if (("plot_settings" in current_settings) and ("padding" in current_settings["plot_settings"]) and ("right" in current_settings["plot_settings"]["padding"])) else default_settings["padding"]["right"],
-                        help_text = "This is the size of the report's right-side margin on the web page",
-                        min_value = -10,
-                        max_value = 60,
-                        widget = forms.TextInput(
-                            attrs = {
-                                "style": "width:48px;"
-                            }
-                        ),
-                    ),
-                ),
-                (
-                    "settings_padding_bottom",
-                    forms.IntegerField(
-                        required = True,
-                        label = "Bottom Margin (in pixels)",
-                        initial = int(current_settings["plot_settings"]["padding"]["bottom"]) if (("plot_settings" in current_settings) and ("padding" in current_settings["plot_settings"]) and ("bottom" in current_settings["plot_settings"]["padding"])) else default_settings["padding"]["bottom"],
-                        help_text = "This is the size of the report's bottom margin on the web page",
-                        min_value = -10,
-                        max_value = 60,
-                        widget = forms.TextInput(
-                            attrs = {
-                                "style": "width:48px;"
-                            }
-                        ),
-                    ),
-                ),
-                (
-                    "settings_padding_left",
-                    forms.IntegerField(
-                        required = True,
-                        label = "Left Margin (in pixels)",
-                        initial = int(current_settings["plot_settings"]["padding"]["left"]) if (("plot_settings" in current_settings) and ("padding" in current_settings["plot_settings"]) and ("left" in current_settings["plot_settings"]["padding"])) else default_settings["padding"]["left"],
-                        help_text = "This is the size of the report's left-side margin on the web page",
-                        min_value = -10,
-                        max_value = 60,
-                        widget = forms.TextInput(
-                            attrs = {
-                                "style": "width:48px;"
-                            }
-                        ),
-                    ),
-                ),
-                (
-                    "settings_font_style",
-                    forms.ChoiceField(
-                        required = False,
-                        label = "Font",
-                        choices = fontChoices,
-                        initial = current_settings["plot_settings"]["font_style"] if (("plot_settings" in current_settings) and ("font_style" in current_settings["plot_settings"])) else default_settings["font_style"],
-                        widget = forms.Select(
-                            attrs = {
-                                "style": "width:175px; margin-bottom:12px;"
-                            }
-                        ),
-                    ),
-                ),
                 (
                     "confidence_judgement_score",
                     forms.ChoiceField(
@@ -939,10 +830,6 @@ class EvidenceProfileForm(forms.ModelForm):
             if (type(widget) != forms.CheckboxInput):
                 # This form field does not use the forms.CheckboxInput widget, add the 'span12' class to its widget
                 widget.attrs['class'] = 'span12'
-
-            if (fieldName == "settings"):
-                # For the "settings" field, constrain their textarea height to two rows
-                self.fields[fieldName].widget.attrs["rows"] = 2
 
         if (self.instance.id):
             # This is an existing evidence profile that is being edited, set inputs accordingly
@@ -1519,20 +1406,6 @@ class EvidenceProfileForm(forms.ModelForm):
         confidence_judgement = {
             "score": cleaned_data.get("confidence_judgement_score"),
             "explanation": cleaned_data.get("confidence_judgement_explanation"),
-        }
-
-        # Create an object in the cleanted data that is made up of the related "report settings" data fields
-        cleaned_data["settings"] = {
-            "plot_settings": {
-                "plot_width": cleaned_data.get("settings_plot_width"),
-                "padding": {
-                    "top": cleaned_data.get("settings_padding_top"),
-                    "right": cleaned_data.get("settings_padding_right"),
-                    "bottom": cleaned_data.get("settings_padding_bottom"),
-                    "left": cleaned_data.get("settings_padding_left"),
-                },
-                "font_style": cleaned_data.get("settings_font_style"),
-            },
         }
 
         # Create an object in the cleaned data that is made of the data related to each cross-stream inference within this evidence profile

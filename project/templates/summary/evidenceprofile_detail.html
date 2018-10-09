@@ -1,8 +1,7 @@
 {% extends 'portal.html' %}
 
-
 {% block title %}
-	{{assessment}} | Evidence Profile Table  | {{object}} | HAWC
+	{{assessment}} | Evidence Profile Table | {{object}} | HAWC
 {% endblock title %}
 
 {% block breadcrumbs %}
@@ -15,7 +14,7 @@
   	<li><a href="{{object.get_absolute_url}}">{{object}}</a><span class="divider">/</span></li>
 	 <li class="active">{{crud}}<span class="divider">/</span></li>
   {% endif %}
-{% endblock %}
+{% endblock breadcrumbs %}
 
 {% block content %}
   <h1>
@@ -35,44 +34,41 @@
     </div>
   </h1>
 
-  {% block dp_content %}
-    <div id="dp_display"></div>
+  {% block evidence_profile_table %}
+    <table id="evidenceProfileTable">
+      <tr>
+        <td class="headerCenter" style="width:12.5%;">Outcome</td>
+        <td class="headerCenter" style="width:12.5%;">Studies</td>
+        <td class="headerCenter" style="width:12.5%;">Factors That <em>Increase</em> Confidence</td>
+        <td class="headerCenter" style="width:12.5%;">Factors That <em>Decrease</em> Confidence</td>
+        <td class="headerCenter" style="width:12.5%; font-size:0.9em;">Summary of Findings and Confidence Judgement for Individual Outcome</td>
+        <td class="headerCenter" style="width:12.5%;">Within-Stream Confidence Judgement</td>
+        <td class="headerCenter" style="width:12.5%;">Inference Across Streams</td>
+        <td class="headerCenter" style="width:12.5%;">Across-Stream Confidence Judgement</td>
+      </tr>
 
-    <div id="loading_div">
-      <p>Fetching the latest data from {{assessment}}... <img src="{{STATIC_URL}}img/loading.gif"></p>
-    </div>
-
-    <div id="caption">{{object.caption|safe}}</div>
-  {% endblock dp_content %}
-{%endblock %}
+      {% for stream in evidenceProfile.streams %}
+      <tr>
+        <td>Stream</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <div id="caption">{{evidenceProfile.caption|safe}}</div>
+  {% endblock evidence_profile_table %}
+{% endblock content %}
 
 {% block extrajs %}
-	<script type="text/javascript">
-		// Call the evidenceProfileStartup method, passing in a function to be executed
-		window.app.evidenceProfileStartup(
-			function(evidenceProfile) {
-				// This function takes in an empty evidenceProfile object
+  <style>
+    #evidenceProfileTable {
+      font-size: 0.9em;
+    }
 
-				evidenceProfile.EvidenceProfile.configure({}, {{evidenceProfile|safe}});
-
-        $("#loading_div").fadeOut(
-          function() {
-            evidenceProfile.EvidenceProfile.buildD3Table("dp_display");
-          }
-        );
-
-				// Handle any smartTags that may be on this page
-				window.app.smartTagsStartup(
-					function(smartTags) {
-						new smartTags.SmartTagContainer(
-							$('#caption'),
-							{
-								showOnStartup: true
-							}
-						);
-	 				}
-				)
-			}
-		);
-	</script>
-{% endblock %}
+    .headerCenter {
+      font-weight: bold;
+      text-align: center;
+      vertical-align:bottom;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+  </style>
+{% endblock extrajs %}

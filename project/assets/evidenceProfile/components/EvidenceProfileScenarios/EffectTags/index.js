@@ -190,6 +190,7 @@ class EffectTagsFormset extends Component {
                     name={this.effectTags[effectTagIndex].name}
                     studies={this.effectTags[effectTagIndex].studies}
                     effectTags_optionSet={this.props.config.effectTags}
+                    studies_config={this.props.config.studiesFormset}
                     divId={this.divId}
                     idPrefix={this.effectTagIdPrefix}
                     fieldPrefix={this.fieldPrefix}
@@ -702,15 +703,20 @@ export function renderEffectTagsFormset(studies, divId, config) {
 	            if (effectTagsFormsetDiv !== null) {
 	            	// The <div> element intended to hold this formset exists, render the formset
 
-                ReactDOM.render(
-                    <EffectTagsFormset
-                        studies={studies}
-                        streamIndex={indices[0]}
-                        scenarioIndex={indices[1]}
-                        config={config}
-                    />,
-                    effectTagsFormsetDiv
-                );
+                    console.log("In renderEffectTagsFormset()");
+                    console.log(studies);
+                    console.log(config);
+                    console.log("-----------------------------------------------");
+
+                    ReactDOM.render(
+                        <EffectTagsFormset
+                            studies={studies}
+                            streamIndex={indices[0]}
+                            scenarioIndex={indices[1]}
+                            config={config}
+                        />,
+                        effectTagsFormsetDiv
+                    );
 	            }
         	}
 		}
