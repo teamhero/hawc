@@ -37,6 +37,14 @@ function updateFinalScores(scores){
     };
 }
 
+function addNewEndpointNote(metric){
+	let numEndpointScores = numEndpointScores++;
+	return {
+		type: type.ADD_NEW_EP_NOTE,
+		metric,
+	};
+}
+
 function formatOutgoingRiskOfBias(state, riskofbias){
     let riskofbias_id = state.config.riskofbias.id,
         author,

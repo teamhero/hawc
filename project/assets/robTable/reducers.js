@@ -10,8 +10,11 @@ const defaultState = {
     name: '',
     final: [],
     riskofbiases: [],
+    experiments: [],
     active: [],
     heroid: '',
+	endpointNotes: [],
+	endpointScores: [],
 };
 
 function study(state=defaultState, action){
@@ -27,6 +30,7 @@ function study(state=defaultState, action){
             name: action.study.short_citation,
             final: action.study.final,
             riskofbiases: action.study.riskofbiases,
+            experiments: action.study.experiments,
             active: action.study.riskofbiases,
             isFetching: false,
             itemsLoaded: true,

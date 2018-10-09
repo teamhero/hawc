@@ -36,7 +36,19 @@ class RiskOfBiasForm extends Component {
                     score: form.state.score };
             });
         }));
-        this.props.dispatch(submitRiskOfBiasScores({scores}));
+        let scoresperendpoint = _.flatten(_.map(this.refs, (domain) => {
+            return _.map(domain.refs, (metric) => {
+                let { form } = metric.refs, metric_id = metric.props.metric.values[0].metric.id;
+                return _.map(form.refs, (endpoint) => {
+					return {
+						endpoint: endpoint.state.endpointID,
+						notes: endpoint.state.EPnotes,
+						score: endpoint.state.score,
+						metric_id: metric_id };
+				});	
+            }); 
+        }));
+        this.props.dispatch(submitRiskOfBiasScores({scores, scoresperendpoint}));
     }
 
     handleCancel(e){
@@ -68,6 +80,7 @@ class RiskOfBiasForm extends Component {
                                            ref={domain.key}
                                            domain={domain}
                                            config={config}
+                                           endpoints={this.props.experiments}
                                            updateNotesLeft={this.updateNotesLeft}/>;
                     })}
                     <Completeness number={this.state.notesLeft} />
@@ -88,6 +101,7 @@ function mapStateToProps(state){
         config: state.config,
         itemsLoaded: state.study.itemsLoaded,
         riskofbiases: state.study.riskofbiases,
+		experiments: state.study.experiments,
         error: state.study.error,
     };
 }
