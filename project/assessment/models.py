@@ -358,7 +358,7 @@ class BaseEndpoint(models.Model):
     # Some denormalization but required for efficient capture of all endpoints
     # in assessment; major use case in HAWC.
 
-    name = models.CharField(max_length=128, verbose_name="Endpoint/Adverse Outcome")
+    name = models.CharField(max_length=128, verbose_name="Endpoint/Adverse outcome")
     effects = models.ManyToManyField(EffectTag, blank=True, verbose_name="Tags")
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
