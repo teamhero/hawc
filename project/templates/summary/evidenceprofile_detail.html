@@ -1,4 +1,7 @@
 {% extends 'portal.html' %}
+{% load keyvalue %}
+{% load evidenceprofile_scenario_effect %}
+{% load evidenceprofile_scenario_confidencefactorset %}
 
 {% block title %}
 	{{assessment}} | Evidence Profile Table | {{object}} | HAWC
@@ -36,21 +39,105 @@
 
   {% block evidence_profile_table %}
     <table id="evidenceProfileTable">
-      <tr>
-        <td class="headerCenter" style="width:12.5%;">Outcome</td>
-        <td class="headerCenter" style="width:12.5%;">Studies</td>
-        <td class="headerCenter" style="width:12.5%;">Factors That <em>Increase</em> Confidence</td>
-        <td class="headerCenter" style="width:12.5%;">Factors That <em>Decrease</em> Confidence</td>
-        <td class="headerCenter" style="width:12.5%; font-size:0.9em;">Summary of Findings and Confidence Judgement for Individual Outcome</td>
-        <td class="headerCenter" style="width:12.5%;">Within-Stream Confidence Judgement</td>
-        <td class="headerCenter" style="width:12.5%;">Inference Across Streams</td>
-        <td class="headerCenter" style="width:12.5%;">Across-Stream Confidence Judgement</td>
+      <tr class="headerRow">
+        <td colspan="2" style="width:12.5%;">Outcome</td>
+        <td style="width:12.5%;">Studies</td>
+        <td style="width:12.5%;">Factors That <em>Increase</em> Confidence</td>
+        <td style="width:12.5%;">Factors That <em>Decrease</em> Confidence</td>
+        <td style="width:12.5%; font-size:0.9em;">Summary of Findings and Confidence Judgement for Individual Outcome</td>
+        <td style="width:12.5%;">Within-Stream Confidence Judgement</td>
+        <td style="width:12.5%;">Inference Across Streams</td>
+        <td style="width:12.5%;">Across-Stream Confidence Judgement</td>
+      </tr>
+
+      <tr class="bodyRow">
+        <td colspan="7" class="bodyCellStreamTitle">
+          {% if tableBodyRows > 1 %}
+            {% with stream=evidenceProfile.streams|first %}
+              {% if stream.stream_title == "" %}
+                Stream Has No Title
+              {% else %}
+                {{stream.stream_title|safe}}
+              {% endif %}
+            {% endwith %}
+          {% else %}
+            No Streams In Evidence Profile
+          {% endif %}
+        </td>
+        <td rowspan="{{tableBodyRows|safe}}">
+          {{evidenceProfile.cross_stream_inferences|safe}}
+        </td>
+        <td rowspan="{{tableBodyRows|safe}}">
+          {{evidenceProfile.cross_stream_confidence_judgement|safe}}
+        </td>
       </tr>
 
       {% for stream in evidenceProfile.streams %}
-      <tr>
-        <td>Stream</td>
-      </tr>
+        {% if forloop.counter > 1 %}
+          <tr class="bodyRow">
+            <td colspan="7" class="bodyCellStreamTitle">
+              {% if stream.stream_title == "" %}
+                Stream Has No Title
+              {% else %}
+                {{stream.stream_title|safe}}
+              {% endif %}
+            </td>
+          </tr>
+        {% endif %}
+
+        {% if stream.scenarios %}
+          {% for scenario in stream.scenarios %}
+            <tr class="bodyRow">
+              <td rowspan="{{scenarioRows|keyvalue:scenario.pk}}">
+                {% if scenario.scenario_name == "" %}
+                  Scenario Has No Name
+                {% else %}
+                  {{scenario.scenario_name|safe}}
+                {% endif %}
+              </td>
+
+              {% if scenario.studies|length > 0 %}
+                {% with effect=scenario.studies|first %}
+                  <td>
+                      {{effect.name|safe}}
+                  </td>
+                  {% evidenceprofile_scenario_effect effect %}
+                {% endwith %}
+              {% else %}
+                <td colspan="6">No Studies</td>
+              {% endif %}
+
+              {% evidenceprofile_scenario_confidencefactorset scenario.confidencefactors_increase scenarioRows|keyvalue:scenario.pk %}
+              {% evidenceprofile_scenario_confidencefactorset scenario.confidencefactors_decrease scenarioRows|keyvalue:scenario.pk %}
+
+              <td rowspan="{{scenarioRows|keyvalue:scenario.pk}}">
+                {{scenario.outcome|safe}}
+              </td>
+
+              {% if forloop.first %}
+                <td rowspan="{{streamRows|keyvalue:stream.pk}}">
+                  {{stream.confidence_judgement|safe}}
+                </td>
+              {% endif %}
+            </tr>
+
+            {% for effect in scenario.studies %}
+              {% if forloop.counter > 1 %}
+                <tr class="bodyRow">
+                  <td>{{effect.name|safe}}</td>
+                  {% evidenceprofile_scenario_effect effect %}
+                </tr>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% else %}
+          <tr class="bodyRow">
+            <td>No Scenarios In Stream</td>
+            <td rowspan="{{streamRows|keyvalue:stream.pk}}">
+              {{stream.confidence_judgement|safe}}
+            </td>
+          </tr>
+        {% endif %}
       {% endfor %}
     </table>
     <div id="caption">{{evidenceProfile.caption|safe}}</div>
@@ -63,12 +150,23 @@
       font-size: 0.9em;
     }
 
-    .headerCenter {
+    tr.headerRow td {
       font-weight: bold;
       text-align: center;
-      vertical-align:bottom;
+      vertical-align: bottom;
       padding-bottom: 0;
       margin-bottom: 0;
+    }
+
+    tr.bodyRow td {
+      font-weight: normal;
+      text-align: left;
+      vertical-align: top;
+      padding: 0 3px 0 3px;
+    }
+
+    td.bodyCellStreamTitle {
+      background: #DDDDDD;
     }
   </style>
 {% endblock extrajs %}
