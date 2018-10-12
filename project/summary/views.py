@@ -604,37 +604,24 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
         returnValue["evidenceProfile"] = getCompleteEvidenceProfileDictionary(self.object)
 
         returnValue["tableBodyRows"] = 0
-        returnValue["streamRows"] = {}
-        returnValue["scenarioRows"] = {}
+        returnValue["streamDataRows"] = {}
 
         # Count up the total number of rows that will be in the body of the generated table
         if (len(returnValue["evidenceProfile"]["streams"]) > 0):
             # This EvidenceProfile has at least one Stream, iterate over the Streams to build the total count
 
             for stream in returnValue["evidenceProfile"]["streams"]:
-                streamRows = 0
-                scenarioCount = len(stream["scenarios"])
+                # For this stream, set its streamDataRows to the number of scenarios it contains, or a miminum of one
+                returnValue["streamDataRows"][stream["pk"]] = max(1, len(stream["scenarios"]))
 
-                if (scenarioCount > 0):
-                    # This Stream has at least one child Scenario
-
-                    # Add one row for the Stream title
-                    streamRows = streamRows + 1
-
-                    # Iterate over the Scenarios to continue building the total count by adding a row for each set of studies (adding at least one
-                    # row no matter what)
-                    for scenario in stream["scenarios"]:
-                        returnValue["scenarioRows"][scenario["pk"]] = max(1, len(scenario["studies"]))
-                        streamRows = streamRows + returnValue["scenarioRows"][scenario["pk"]]
-                else:
-                    # This Stream has no child Scenarios, add two rows to the body (one for Stream title and one saying "No Scenarios")
-                    streamRows = streamRows + 2
-
-                returnValue["tableBodyRows"] = returnValue["tableBodyRows"] + streamRows
-                returnValue["streamRows"][stream["pk"]] = streamRows - 1
+                # For the total rows in the body of the table, add an additional row to account for the stream's title
+                returnValue["tableBodyRows"] = returnValue["tableBodyRows"] + returnValue["streamDataRows"][stream["pk"]] + 1
         else:
             # This EvidenceProfile has no streams, thus it only has only one row (one saying "No Streams")
             returnValue["tableBodyRows"] = 1
+
+        # Get a JSON-friendly version of the available stream type options
+        returnValue["stream_types"] = {type["value"]: type["name"] for type in models.get_serialized_stream_types()}
 
         return returnValue
 
