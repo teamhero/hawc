@@ -1,7 +1,7 @@
 {% extends 'portal.html' %}
 {% load keyvalue %}
-{% load evidenceprofile_scenario_effect %}
-{% load evidenceprofile_scenario_confidencefactorset %}
+{% load evidenceprofile_confidencejudgement %}
+{% load evidenceprofile_listobjects %}
 
 {% block title %}
 	{{assessment}} | Evidence Profile Table | {{object}} | HAWC
@@ -40,7 +40,7 @@
   {% block evidence_profile_table %}
     <table id="evidenceProfileTable">
       <tr class="headerRow">
-        <td colspan="2" style="width:12.5%;">Outcome</td>
+        <td style="width:12.5%;">Outcome</td>
         <td style="width:12.5%;">Studies</td>
         <td style="width:12.5%;">Factors That <em>Increase</em> Confidence</td>
         <td style="width:12.5%;">Factors That <em>Decrease</em> Confidence</td>
@@ -51,13 +51,16 @@
       </tr>
 
       <tr class="bodyRow">
-        <td colspan="7" class="bodyCellStreamTitle">
+        <td colspan="6" class="bodyCellStreamTitle">
           {% if tableBodyRows > 1 %}
             {% with stream=evidenceProfile.streams|first %}
               {% if stream.stream_title == "" %}
                 Stream Has No Title
               {% else %}
                 {{stream.stream_title|safe}}
+                {% if stream.stream_type in stream_types %}
+                  <em>({{stream_types|keyvalue:stream.stream_type}})</em>
+                {% endif %}
               {% endif %}
             {% endwith %}
           {% else %}
@@ -65,21 +68,24 @@
           {% endif %}
         </td>
         <td rowspan="{{tableBodyRows|safe}}">
-          {{evidenceProfile.cross_stream_inferences|safe}}
+          {% evidenceprofile_listobjects evidenceProfile.cross_stream_inferences %}
         </td>
         <td rowspan="{{tableBodyRows|safe}}">
-          {{evidenceProfile.cross_stream_confidence_judgement|safe}}
+          {% evidenceprofile_confidencejudgement evidenceProfile.cross_stream_confidence_judgement %}
         </td>
       </tr>
 
       {% for stream in evidenceProfile.streams %}
         {% if forloop.counter > 1 %}
           <tr class="bodyRow">
-            <td colspan="7" class="bodyCellStreamTitle">
+            <td colspan="6" class="bodyCellStreamTitle">
               {% if stream.stream_title == "" %}
                 Stream Has No Title
               {% else %}
                 {{stream.stream_title|safe}}
+                {% if stream.stream_type in stream_types %}
+                  <em>({{stream_types|keyvalue:stream.stream_type}})</em>
+                {% endif %}
               {% endif %}
             </td>
           </tr>
@@ -88,7 +94,7 @@
         {% if stream.scenarios %}
           {% for scenario in stream.scenarios %}
             <tr class="bodyRow">
-              <td rowspan="{{scenarioRows|keyvalue:scenario.pk}}">
+              <td>
                 {% if scenario.scenario_name == "" %}
                   Scenario Has No Name
                 {% else %}
@@ -96,39 +102,39 @@
                 {% endif %}
               </td>
 
-              {% if scenario.studies|length > 0 %}
-                {% with effect=scenario.studies|first %}
-                  <td>
-                      {{effect.name|safe}}
-                  </td>
-                  {% evidenceprofile_scenario_effect effect %}
-                {% endwith %}
-              {% else %}
-                <td colspan="6">No Studies</td>
-              {% endif %}
-
-              {% evidenceprofile_scenario_confidencefactorset scenario.confidencefactors_increase scenarioRows|keyvalue:scenario.pk %}
-              {% evidenceprofile_scenario_confidencefactorset scenario.confidencefactors_decrease scenarioRows|keyvalue:scenario.pk %}
-
-              <td rowspan="{{scenarioRows|keyvalue:scenario.pk}}">
-                {{scenario.outcome|safe}}
+              <td>
+                {% for effect in scenario.studies %}
+                  <div class="smallTitle">{{effect.name}}</div>
+                  {% if effect.studies %}
+                    <ul style="padding-bottom:3px;">
+                      {% for study in effect.studies %}
+                        <li class="smallTextBlock"><span class="moveLILeft"><em>{{effect.studyTitles|keyvalue:study}}</em></li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <div class="smallNA" style="margin-top:-4px;">N/A</div>
+                  {% endif %}
+                {% endfor %}
               </td>
 
-              {% if forloop.first %}
-                <td rowspan="{{streamRows|keyvalue:stream.pk}}">
-                  {{stream.confidence_judgement|safe}}
+              <td>
+                {% evidenceprofile_listobjects scenario.confidencefactors_increase %}
+              </td>
+
+              <td>
+                {% evidenceprofile_listobjects scenario.confidencefactors_decrease %}
+              </td>
+
+              <td>
+                {% evidenceprofile_confidencejudgement scenario.outcome %}
+              </td>
+
+              {% if forloop.counter == 1 %}
+                <td rowspan="{{streamDataRows|keyvalue:stream.pk}}">
+                  {% evidenceprofile_confidencejudgement stream.confidence_judgement %}
                 </td>
               {% endif %}
             </tr>
-
-            {% for effect in scenario.studies %}
-              {% if forloop.counter > 1 %}
-                <tr class="bodyRow">
-                  <td>{{effect.name|safe}}</td>
-                  {% evidenceprofile_scenario_effect effect %}
-                </tr>
-              {% endif %}
-            {% endfor %}
           {% endfor %}
         {% else %}
           <tr class="bodyRow">
@@ -160,6 +166,7 @@
 
     tr.bodyRow td {
       font-weight: normal;
+      font-size: 0.85em;
       text-align: left;
       vertical-align: top;
       padding: 0 3px 0 3px;
@@ -167,6 +174,42 @@
 
     td.bodyCellStreamTitle {
       background: #DDDDDD;
+      font-size: 1.12em;
+      font-weight: bold;
+    }
+
+    i.judgementScore_pips {
+      padding-left: 0.5px;
+      padding-right: 0.5px;
+    }
+
+    div.judgementScore_name {
+      text-align: center;
+      font-weight: bold;
+    }
+
+    div.smallTitle {
+      text-align: center;
+      font-weight: bold;
+      font-size: 0.85em;
+      line-height: 0.87em;
+      padding: 0;
+    }
+
+    .smallTextBlock {
+      font-size: 0.85em;
+      line-height: 0.87em;
+      padding: 0 0 6px 0;
+    }
+
+    div.smallNA {
+      text-align: center;
+      padding-bottom: 3px;
+    }
+
+    span.moveLILeft {
+      position: relative;
+      left: -6px;
     }
   </style>
 {% endblock extrajs %}
