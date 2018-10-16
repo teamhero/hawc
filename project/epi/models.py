@@ -552,7 +552,8 @@ class Outcome(BaseEndpoint):
             child.copy_across_assessments(cw)
 
     def get_study(self):
-        return self.study_population.study
+        if self.study_population is not None:
+            return self.study_population.get_study()
 
 
 class ComparisonSet(models.Model):
@@ -657,7 +658,10 @@ class ComparisonSet(models.Model):
             child.copy_across_assessments(cw)
 
     def get_study(self):
-        return self.study_population.study
+        if self.study_population is not None:
+            return self.study_population.get_study()
+        elif self.outcome is not None:
+            return self.outcome.get_study()
 
 
 class Group(models.Model):
@@ -1087,7 +1091,8 @@ class Exposure(models.Model):
         cw[self.COPY_NAME][old_id] = self.id
 
     def get_study(self):
-        return self.study_population.study
+        if self.study_population is not None:
+            return self.study_population.get_study()
 
 
 class GroupNumericalDescriptions(models.Model):
@@ -1513,6 +1518,10 @@ class Result(models.Model):
         cw[self.COPY_NAME][old_id] = self.id
         for child in children:
             child.copy_across_assessments(cw)
+
+    def get_study(self):
+        if self.outcome is not None:
+            return self.outcome.get_study()
 
 
 class GroupResult(models.Model):
