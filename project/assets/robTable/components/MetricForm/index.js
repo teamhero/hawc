@@ -45,7 +45,7 @@ class MetricForm extends Component {
                     __html: metric.values[0].metric.description,
                 }} />
                 {config.display ==='final' ? this.renderScoreRow() : null}
-                <ScoreForm ref='form' score={formScore} addText={this.state.addText} updateNotesLeft={updateNotesLeft} endpoints={this.props.endpoints}/>
+                <ScoreForm ref='form' score={formScore} addText={this.state.addText} updateNotesLeft={updateNotesLeft}/>
             </div>
         );
     }
