@@ -2,7 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import ReactQuill from 'react-quill';
 
 import ScoreIcon from 'robTable/components/ScoreIcon';
-import EndpointScoreForm from 'robTable/components/EndpointScoreForm';
 import Select from 'shared/components/Select';
 import './ScoreForm.css';
 
@@ -32,8 +31,6 @@ class ScoreForm extends Component {
                 scoreShades: shades,
                 score: null,
                 notes: props.score.notes,
-				endpointChoices: this.props.endpoints,
-				endpointIDs: [],
             }
         }
         else {
@@ -57,17 +54,11 @@ class ScoreForm extends Component {
                 },
                 score: null,
                 notes: props.score.notes,
- 				endpointChoices: this.props.endpoints,
-				endpointIDs: [],
-           };
+            };
         }
-		
+        
         this.handleEditorInput = this.handleEditorInput.bind(this);
         this.selectScore = this.selectScore.bind(this);
-        this.selectEndpoint = this.selectEndpoint.bind(this);
-        this.addGenericEndpoint = this.addGenericEndpoint.bind(this);
-        this.handleEPEditorInput = this.handleEPEditorInput.bind(this);
-        this.selectEPScore = this.selectEPScore.bind(this);
     }
 
     componentWillMount(){
@@ -103,21 +94,8 @@ class ScoreForm extends Component {
         this.validateInput(score, this.state.notes);
     }
 
-    selectEPScore(score){
-        this.setState({
-            score,
-            selectedShade: this.state.scoreShades[score],
-            selectedSymbol: this.state.scoreSymbols[score],
-        });
-    }
-	
     handleEditorInput(event){
         this.setState({notes: event});
-        this.validateInput(this.state.score, event);
-    }
-
-    handleEPEditorInput(event){
-        this.setState({EPnotes: event});
         this.validateInput(this.state.score, event);
     }
 
@@ -129,66 +107,10 @@ class ScoreForm extends Component {
         }
     }
 
-    addGenericEndpoint(e){
-		e.preventDefault();
-		//console.log('generic endpoint selected');
-		this.state.endpointIDs.push(0);
-		this.forceUpdate();
-    }
-
-    selectEndpoint(endpoint){
-		this.state.endpointIDs.push(endpoint);
-		this.forceUpdate();
-    }
-
     render() {
-		const endpointScores = [];
-		//const EPButton = this.props.showEPButton;
-		
-        let endpointAddControl, { name } = this.props.score.metric,
-            { scoreChoices, scoreSymbols, scoreShades, score, notes, selectedSymbol, selectedShade, endpointChoices, endpointIDs } = this.state;
-
-		endpointAddControl = _.isEmpty(endpointChoices) ?
-		    <button onClick={this.addGenericEndpoint}>Endpoint TBA</button> :
-		    <Select choices={endpointChoices} id={name+'_ep'} handleSelect={this.selectEndpoint} />;
-			
-		if (this.props.showEPButton)
+        let { name } = this.props.score.metric,
+            { scoreChoices, score, notes, selectedSymbol, selectedShade } = this.state;
         return (
-			<div>
-            <div className='score-form'>
-                <div>
-                    <Select choices={scoreChoices}
-                          id={name}
-                          value={score}
-                          handleSelect={this.selectScore}/>
-                    <br/><br/>
-                    <ScoreIcon shade={selectedShade}
-                             symbol={selectedSymbol}/>
-					<br/>
-					Add notes for an endpoint:<br/>
-					{endpointAddControl}
-                </div>
-                <ReactQuill id={name}
-                         value={notes}
-                         onChange={this.handleEditorInput}
-                         toolbar={false}
-                         theme='snow'
-                         className='score-editor' />
-            </div>
-			<div>
-			{_.map(endpointIDs, (endpoint, index) => { //function(endpoint, index) {
-				console.log(endpoint+":"+index);
-				if (endpoint==0)
-					return <EndpointScoreForm ref={'epform'+endpoint+'.'+index} key={endpoint+'.'+index} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint+'.'+index} endpointText={'Endpoint Notes'} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} />;
-				else
-					return <EndpointScoreForm ref={'epform'+endpoint} key={endpoint} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint} endpointText={endpointChoices[endpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} />;
-            })}
-			</div>
-			</div>
-        );
-		else
-        return (
-			<div>
             <div className='score-form'>
                 <div>
                     <Select choices={scoreChoices}
@@ -206,15 +128,9 @@ class ScoreForm extends Component {
                          theme='snow'
                          className='score-editor' />
             </div>
-			<div>{endpointScores}</div>
-			</div>
         );
     }
 }
-
-ScoreForm.defaultProps = {
-	showEPButton: true,
-};
 
 ScoreForm.propTypes = {
     score: PropTypes.shape({
@@ -226,7 +142,6 @@ ScoreForm.propTypes = {
         }).isRequired,
     }).isRequired,
     updateNotesLeft: PropTypes.func.isRequired,
-	showEPButton: PropTypes.bool,
 };
 
 export default ScoreForm;

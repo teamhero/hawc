@@ -43,8 +43,6 @@ class RiskOfBiasManager(BaseManager):
 class RiskOfBiasScoreManager(BaseManager):
     assessment_relation = 'riskofbias__study__assessment'
 
-class RiskOfBiasScorePerEndpointManager(BaseManager):
-    assessment_relation = 'riskofbias__study__assessment'
-	
+
 class RiskOfBiasAssessmentManager(BaseManager):
     assessment_relation = 'assessment'
