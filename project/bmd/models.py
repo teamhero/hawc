@@ -312,7 +312,8 @@ class Session(models.Model):
             .filter(assessment=self.endpoint.assessment_id)
 
     def get_study(self):
-        return self.endpoint.animal_group.experiment.study
+        if self.endpoint is not None:
+            return self.endpoint.get_study()
 
 class Model(models.Model):
     objects = managers.ModelManager()

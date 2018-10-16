@@ -373,7 +373,8 @@ class MetaResult(models.Model):
         cw[self.COPY_NAME][old_id] = self.id
 
     def get_study(self):
-        return self.protocol.study
+        if self.protocol is not None:
+            return self.protocol.get_study()
 
 
 class SingleResult(models.Model):
@@ -487,7 +488,8 @@ class SingleResult(models.Model):
         cw[self.COPY_NAME][old_id] = self.id
 
     def get_study(self):
-        return self.meta_result.protocol.study
+        if self.meta_result is not None:
+            return self.meta_result.get_study()
 
 
 reversion.register(
