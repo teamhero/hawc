@@ -23,7 +23,8 @@ class AssessmentForm(forms.ModelForm):
                    'enable_data_extraction',
                    'enable_risk_of_bias',
                    'enable_bmd',
-                   'enable_summary_text')
+                   'enable_summary_text',
+                   'cloned')
         model = models.Assessment
 
     def __init__(self, *args, **kwargs):

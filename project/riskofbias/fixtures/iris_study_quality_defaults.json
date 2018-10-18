@@ -11,51 +11,7 @@
           "required_epi": false,
           "short_name": "Reporting",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -70,51 +26,7 @@
           "required_epi": true,
           "short_name": "Allocation",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         },
         {
           "name": "Blinding of investigators, particularly during outcome assessment",
@@ -123,51 +35,7 @@
           "required_epi": false,
           "short_name": "Blinding",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         },
         {
           "name": "Participant selection",
@@ -176,51 +44,7 @@
           "required_epi": true,
           "short_name": "Participant",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -235,51 +59,7 @@
           "required_epi": false,
           "short_name": "Control",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -294,51 +74,7 @@
           "required_epi": false,
           "short_name": "Lack of selective data",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -353,51 +89,7 @@
           "required_epi": false,
           "short_name": "Characterization",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         },
         {
           "name": "Utility of the exposure design for the endpoint of interest",
@@ -406,51 +98,7 @@
           "required_epi": false,
           "short_name": "Utility",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         },
         {
           "name": "Exposure measures",
@@ -459,51 +107,7 @@
           "required_epi": true,
           "short_name": "Measures",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -518,51 +122,7 @@
           "required_epi": false,
           "short_name": "Sensitivity",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         },
         {
           "name": "Presentation of results",
@@ -571,51 +131,7 @@
           "required_epi": false,
           "short_name": "Presentation",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         },
         {
           "name": "Outcome measures",
@@ -624,51 +140,7 @@
           "required_epi": true,
           "short_name": "Outcome",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -683,51 +155,7 @@
           "required_epi": true,
           "short_name": "Confounding",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -742,51 +170,7 @@
           "required_epi": true,
           "short_name": "Analysis",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -801,51 +185,7 @@
           "required_epi": true,
           "short_name": "Selective",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -860,51 +200,7 @@
           "required_epi": false,
           "short_name": "Internal validity",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -914,56 +210,12 @@
       "metrics": [
         {
           "name": "Are there concerns for study sensitivity",
-          "description": "<h3><span style='font-size: 14pt; font-family: Helvetica, sans-serif;'>Sensitivity</span></h3><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>EXAMPLE TEXT: Poor/Good. Small sample size/ Potential nondifferential misclassification of outcome and exposure. Low exposure levels. Range of exposure is narrow. Healthy worker effect.</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Add other concerns or limitations. </span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Add impact and direction to effect estimate, if applicable.</span></p><h4><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>RATING GUIDANCE: Are there concerns for study sensitivity?</span></h4><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>What exposure range is spanned in this study?&nbsp;What are the ages of participants (e.g., not too young in studies of pubertal development)?&nbsp;What is the length of follow-up (for outcomes with long latency periods)?&nbsp;Choice of referent&nbsp;group and the level of exposure contrast between groups (i.e., the extent to which the “unexposed group” is truly unexposed, and the prevalence of exposure in the group designated as “exposed”). Is the study relevant to the exposure and outcome of interest?</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>LINK to prompting questions.</span></p>",
+          "description": "<h3><span style='font-size: 14pt; font-family: Helvetica, sans-serif;'>Sensitivity</span></h3><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>EXAMPLE TEXT: Poor/Good. Small sample size/ Potential nondifferential misclassification of outcome and exposure. Low exposure levels. Range of exposure is narrow. Healthy worker effect.</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Add other concerns or limitations. </span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Add impact and direction to effect estimate, if applicable.</span></p><h4><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>RATING GUIDANCE: Are there concerns for study sensitivity?</span></h4><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>What exposure range is spanned in this study?&nbsp;What are the ages of participants (e.g., not too young in studies of pubertal development)?&nbsp;What is the length of follow-up (for outcomes with long latency periods)?&nbsp;Choice of referent&nbsp;group and the level of exposure contrast between groups (i.e., the extent to which the \"unexposed group\" is truly unexposed, and the prevalence of exposure in the group designated as \"exposed\"). Is the study relevant to the exposure and outcome of interest?</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>LINK to prompting questions.</span></p>",
           "required_animal": false,
           "required_epi": true,
           "short_name": "Study sensitivity",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     },
@@ -973,109 +225,21 @@
       "metrics": [
         {
           "name": "Overall confidence domain (animal)",
-          "description": "<p><span style='color: rgb(230, 0, 0);'>[Do not use the 'not reported' option]</span></p><p><strong style='color: rgb(0, 102, 204);'>EXAMPLE:</strong><span style='color: rgb(0, 102, 204);'>&nbsp;</span><strong style='color: rgb(0, 102, 204);'>Histopathology: (Low – females): </strong><span style='color: rgb(0, 102, 204);'>The lack of blinding or independent assessments of histopathology is a concern, which would typically be expected to overestimate effects, as is the lack of procedural details provided. </span><strong style='color: rgb(0, 102, 204);'>(Uninformative - males):</strong><span style='color: rgb(0, 102, 204);'> The lack of blinding or independent assessments of histopathology is a concern, as is the lack of procedural details provided. In addition, overt acute toxicity in males precludes interpretations regarding effects on the liver or kidneys following subchronic exposure. These findings may still provide some qualitative support for analyses of acute effects.</span></p><p><strong style='color: rgb(0, 102, 204);'>Biochemical and urinalysis measures: (Medium – females):</strong><span style='color: rgb(0, 102, 204);'> Concerns were raised regarding the procedural methods for biochemical and urinalysis measurements, and the data are presented without a measure of variability. However, the overall risk of bias is considered low. </span><strong style='color: rgb(0, 102, 204);'>(Uninformative – males):</strong><span style='color: rgb(0, 102, 204);'> Concerns were raised regarding the procedural methods for biochemical and urinalysis measurements, and the data are presented without a measure of variability. In addition, overt toxicity in males precludes interpretations regarding effects on the liver or kidneys following subchronic exposure. </span></p><p><strong style='color: rgb(0, 102, 204);'>Organ weights (Low/Medium - females):</strong><span style='color: rgb(0, 102, 204);'> Because this is a more objective outcome measure, there was less concern for the impact of the procedural limitations identified for histopathology. However, findings were only described in narrative (e.g., “significantly increased” or “not changed”) without presentation of numerical results. </span><strong style='color: rgb(0, 102, 204);'>(Uninformative - males): </strong><span style='color: rgb(0, 102, 204);'>Because this is a more objective outcome measure, there was less concern for the impact of the procedural limitations identified for histopathology. However, overt toxicity in males precludes interpretations regarding effects on the liver or kidneys following subchronic exposure.</span></p><p><span style='color: rgb(0, 102, 204);'>Overall, there is less concern for lack of blinding for the more objectively measured outcomes (mortality, body weight, organ weight, hematological, and blood biochemical measures) compared to the histopathology evaluations.&nbsp;</span></p><p><strong style='font-size: 10pt;'>RATING GUIDANCE:</strong>Once the evaluation domains have been classified, these ratings will be combined to reach an overall study confidence classification of <strong>High</strong>, <strong>Medium</strong>, <strong>Low</strong>, or <strong>Uninformative</strong>.</p><p>This classification will be based on the classifications in the evaluation domains, and will include consideration of the likely impact of the noted deficiencies in bias and sensitivity on the results. Studies with critical deficiencies in any evaluation domain will be classified as <strong>Uninformative</strong>. Other classifications will generally follow a sorting such that <strong>High</strong> <strong>Confidence</strong> studies would have the highest evaluation (“Good”) for all or most domains; <strong>Low Confidence </strong>studies would have a “Poor” evaluation for one or more domains (unless the impact of the particular limitation(s) is judged to be unlikely to be severe), and <strong>Medium Confidence </strong>studies are in between these groups (e.g., most domains receiving a mid-level <strong>Adequate</strong> evaluation, with no limitations judged to be severe.)&nbsp;Once initial evaluation has been performed with consensus between reviewers, the classifications will be re-evaluated, looking at the variability “within” and “between” levels to ensure that the separation between the levels of confidence are appropriate and that no additional criteria need to be considered.&nbsp;</p>",
+          "description": "<p><span style='color: rgb(230, 0, 0);'>[Do not use the 'not reported' option]</span></p><p><strong style='color: rgb(0, 102, 204);'>EXAMPLE:</strong><span style='color: rgb(0, 102, 204);'>&nbsp;</span><strong style='color: rgb(0, 102, 204);'>Histopathology: (Low – females): </strong><span style='color: rgb(0, 102, 204);'>The lack of blinding or independent assessments of histopathology is a concern, which would typically be expected to overestimate effects, as is the lack of procedural details provided. </span><strong style='color: rgb(0, 102, 204);'>(Uninformative - males):</strong><span style='color: rgb(0, 102, 204);'> The lack of blinding or independent assessments of histopathology is a concern, as is the lack of procedural details provided. In addition, overt acute toxicity in males precludes interpretations regarding effects on the liver or kidneys following subchronic exposure. These findings may still provide some qualitative support for analyses of acute effects.</span></p><p><strong style='color: rgb(0, 102, 204);'>Biochemical and urinalysis measures: (Medium – females):</strong><span style='color: rgb(0, 102, 204);'> Concerns were raised regarding the procedural methods for biochemical and urinalysis measurements, and the data are presented without a measure of variability. However, the overall risk of bias is considered low. </span><strong style='color: rgb(0, 102, 204);'>(Uninformative – males):</strong><span style='color: rgb(0, 102, 204);'> Concerns were raised regarding the procedural methods for biochemical and urinalysis measurements, and the data are presented without a measure of variability. In addition, overt toxicity in males precludes interpretations regarding effects on the liver or kidneys following subchronic exposure. </span></p><p><strong style='color: rgb(0, 102, 204);'>Organ weights (Low/Medium - females):</strong><span style='color: rgb(0, 102, 204);'> Because this is a more objective outcome measure, there was less concern for the impact of the procedural limitations identified for histopathology. However, findings were only described in narrative (e.g., \"significantly increased\" or \"not changed\") without presentation of numerical results. </span><strong style='color: rgb(0, 102, 204);'>(Uninformative - males): </strong><span style='color: rgb(0, 102, 204);'>Because this is a more objective outcome measure, there was less concern for the impact of the procedural limitations identified for histopathology. However, overt toxicity in males precludes interpretations regarding effects on the liver or kidneys following subchronic exposure.</span></p><p><span style='color: rgb(0, 102, 204);'>Overall, there is less concern for lack of blinding for the more objectively measured outcomes (mortality, body weight, organ weight, hematological, and blood biochemical measures) compared to the histopathology evaluations.&nbsp;</span></p><p><strong style='font-size: 10pt;'>RATING GUIDANCE:</strong>Once the evaluation domains have been classified, these ratings will be combined to reach an overall study confidence classification of <strong>High</strong>, <strong>Medium</strong>, <strong>Low</strong>, or <strong>Uninformative</strong>.</p><p>This classification will be based on the classifications in the evaluation domains, and will include consideration of the likely impact of the noted deficiencies in bias and sensitivity on the results. Studies with critical deficiencies in any evaluation domain will be classified as <strong>Uninformative</strong>. Other classifications will generally follow a sorting such that <strong>High</strong> <strong>Confidence</strong> studies would have the highest evaluation (\"Good\") for all or most domains; <strong>Low Confidence </strong>studies would have a \"Poor\" evaluation for one or more domains (unless the impact of the particular limitation(s) is judged to be unlikely to be severe), and <strong>Medium Confidence </strong>studies are in between these groups (e.g., most domains receiving a mid-level <strong>Adequate</strong> evaluation, with no limitations judged to be severe.)&nbsp;Once initial evaluation has been performed with consensus between reviewers, the classifications will be re-evaluated, looking at the variability \"within\" and \"between\" levels to ensure that the separation between the levels of confidence are appropriate and that no additional criteria need to be considered.&nbsp;</p>",
           "required_animal": true,
           "required_epi": false,
           "short_name": "Overall confidence",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         },
         {
           "name": "Overall study confidence domain (epi)",
-          "description": "<p><strong style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 112, 192);'>E</strong><strong style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>XAMPLE TEXT: Low confidence. </strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Give brief rationale for rating.</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Add other concerns or limitations. </span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Add impact and direction to effect estimate, if applicable.</span></p><p><strong style='font-size: 10.5pt;'>RATING GUIDANCE: </strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>Once the evaluation domains have been classified, these ratings will be combined to reach an overall study confidence classification of&nbsp;</span><strong>High</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>,&nbsp;</span><strong>Medium</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>,&nbsp;</span><strong>Low</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>, or&nbsp;</span><strong>Uninformative</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>.</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>This classification will be based on the classifications in the evaluation domains, and will include consideration of the likely impact of the noted deficiencies in bias and sensitivity on the results. Studies with critical deficiencies in any evaluation domain will be classified as&nbsp;</span><strong>Uninformative</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>. Other classifications will generally follow a sorting such that&nbsp;</span><strong>High</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>&nbsp;</span><strong>Confidence</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>&nbsp;studies would have the highest evaluation (“Good”) for all or most domains;&nbsp;</span><strong>Low Confidence&nbsp;</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>studies would have a “Poor” evaluation for one or more domains (unless the impact of the particular limitation(s) is judged to be unlikely to be severe), and&nbsp;</span><strong>Medium Confidence&nbsp;</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>studies are in between these groups (e.g., most domains receiving a mid-level&nbsp;</span><strong>Adequate</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>&nbsp;evaluation, with no limitations judged to be severe.)&nbsp;Once initial evaluation has been performed with consensus between reviewers, the classifications will be re-evaluated, looking at the variability “within” and “between” levels to ensure that the separation between the levels of confidence are appropriate and that no additional criteria need to be considered.&nbsp;</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>LINK to prompting questions.</span></p>",
+          "description": "<p><strong style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 112, 192);'>E</strong><strong style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>XAMPLE TEXT: Low confidence. </strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Give brief rationale for rating.</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Add other concerns or limitations. </span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif; color: rgb(0, 102, 204);'>Add impact and direction to effect estimate, if applicable.</span></p><p><strong style='font-size: 10.5pt;'>RATING GUIDANCE: </strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>Once the evaluation domains have been classified, these ratings will be combined to reach an overall study confidence classification of&nbsp;</span><strong>High</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>,&nbsp;</span><strong>Medium</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>,&nbsp;</span><strong>Low</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>, or&nbsp;</span><strong>Uninformative</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>.</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>This classification will be based on the classifications in the evaluation domains, and will include consideration of the likely impact of the noted deficiencies in bias and sensitivity on the results. Studies with critical deficiencies in any evaluation domain will be classified as&nbsp;</span><strong>Uninformative</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>. Other classifications will generally follow a sorting such that&nbsp;</span><strong>High</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>&nbsp;</span><strong>Confidence</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>&nbsp;studies would have the highest evaluation (\"Good\") for all or most domains;&nbsp;</span><strong>Low Confidence&nbsp;</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>studies would have a \"Poor\" evaluation for one or more domains (unless the impact of the particular limitation(s) is judged to be unlikely to be severe), and&nbsp;</span><strong>Medium Confidence&nbsp;</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>studies are in between these groups (e.g., most domains receiving a mid-level&nbsp;</span><strong>Adequate</strong><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>&nbsp;evaluation, with no limitations judged to be severe.)&nbsp;Once initial evaluation has been performed with consensus between reviewers, the classifications will be re-evaluated, looking at the variability \"within\" and \"between\" levels to ensure that the separation between the levels of confidence are appropriate and that no additional criteria need to be considered.&nbsp;</span></p><p><span style='font-size: 10.5pt; font-family: Helvetica, sans-serif;'>LINK to prompting questions.</span></p>",
           "required_animal": false,
           "required_epi": true,
           "short_name": "Overall confidence",
           "hide_description": false,
-          "use_short_name": false,
-          "answers": [
-            {
-              "choice": "Not reported",
-              "symbol": "NR",
-              "answer_score": 10,
-              "shade": "#FFCC00",
-              "order": 1
-            },
-            {
-              "choice": "Critically deficient",
-              "symbol": "--",
-              "answer_score": 1,
-              "shade": "#CC3333",
-              "order": 2
-            },
-            {
-              "choice": "Poor",
-              "symbol": "-",
-              "answer_score": 2,
-              "shade": "#FFCC00",
-              "order": 3
-            },
-            {
-              "choice": "Adequate",
-              "symbol": "+",
-              "answer_score": 3,
-              "shade": "#6FFF00",
-              "order": 4
-            },
-            {
-              "choice": "Good",
-              "symbol": "++",
-              "answer_score": 4,
-              "shade": "#00CC00",
-              "order": 5
-            },
-            {
-              "choice": "Not applicable",
-              "symbol": "-",
-              "answer_score": 0,
-              "shade": "#FFCC00",
-              "order": 6
-            }
-          ]
+          "use_short_name": false
         }
       ]
     }

@@ -308,18 +308,15 @@ class AssessmentClone(TeamMemberOrHigherMixin, MessageMixin, FormView):
         kwargs['assessment'] = self.assessment
         return kwargs
 
-    """
     def form_valid(self, form):
-        models.Study.copy_across_assessment(
-            form.cleaned_data['studies'],
+        models.Assessment.clone_assessment(
             form.cleaned_data['assessment'])
-        msg = "Studies copied!"
+        msg = "Assessment copied!"
         self.success_message = msg
         return super().form_valid(form)
-    """
 
     def get_success_url(self):
-        return reverse_lazy(self.assessment.get_absolute_url())
+        return reverse_lazy('assessment:detail', kwargs={'pk': self.assessment.id})
 
 
 # Attachment views
