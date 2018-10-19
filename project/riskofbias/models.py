@@ -72,10 +72,6 @@ class RiskOfBiasDomain(models.Model):
                 name=domain['name'],
                 description=domain['description'])
             RiskOfBiasMetric.build_metrics_for_one_domain(d, domain['metrics'])
-            for metric in objects['metrics']:
-                m = RiskOfBiasMetric.objects.get(metric.pk)
-                RiskOfBiasMetricAnswers.build_answers_for_one_metric(m, metric['answers'])
-
         
 
     @classmethod

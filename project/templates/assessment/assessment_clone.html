@@ -1,0 +1,17 @@
+{% extends 'portal.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}
+  Clone Assessment | HAWC
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li><a href="{{assessment.get_absolute_url}}">{{ assessment }}</a><span class="divider">/</span></li>
+    <li><a href="{% url 'assessment:detail' assessment.pk %}">Assessment Detail</a><span class="divider">/</span></li>
+    <li class="active">Clone Assessment<span class="divider">/</span></li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+    {% crispy form %}
+{% endblock %}

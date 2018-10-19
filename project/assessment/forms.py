@@ -1,5 +1,6 @@
 from django.core.mail import send_mail, mail_admins
 from django import forms
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.contenttypes.models import ContentType
@@ -22,7 +23,8 @@ class AssessmentForm(forms.ModelForm):
                    'enable_data_extraction',
                    'enable_risk_of_bias',
                    'enable_bmd',
-                   'enable_summary_text')
+                   'enable_summary_text',
+                   'cloned')
         model = models.Assessment
 
     def __init__(self, *args, **kwargs):
@@ -136,6 +138,36 @@ class AttachmentForm(forms.ModelForm):
         else:
             inputs = {"legend_text": "Create new attachment"}
         inputs["cancel_url"] = self.instance.get_absolute_url()
+
+        helper = BaseFormHelper(self, **inputs)
+        helper.form_class = None
+        return helper
+
+class AssessmentClone(forms.Form):
+    HELP_TEXT = """
+    Clone assessment to create a duplicate but still unique.
+    Clones are complete and include most nested data.
+    """
+
+    assessment = forms.ModelChoiceField(
+        queryset=models.Assessment.objects.all(),
+        help_text="Select assessment to clone.")
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        assessment = kwargs.pop('assessment')
+        super().__init__(*args, **kwargs)
+        self.fields['assessment'].queryset = self.fields['assessment']\
+            .queryset.model.objects.get_all_editable_assessments(user, assessment.id)
+        self.helper = self.setHelper(assessment)
+
+    def setHelper(self, assessment):
+
+        inputs = {
+            "legend_text": "Clone Assessment, {} or any editable assessment available".format(assessment),
+            "help_text": self.HELP_TEXT,
+            "cancel_url": reverse("assessment:clone", args=[assessment.id])
+        }
 
         helper = BaseFormHelper(self, **inputs)
         helper.form_class = None

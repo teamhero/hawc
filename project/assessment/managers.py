@@ -39,6 +39,14 @@ class AssessmentManager(BaseManager):
             .exclude(id=exclusion_id)\
             .distinct()
 
+    def get_all_editable_assessments(self, user, exclusion_id=None):
+        """
+        Return queryset of all assessments which that user is able to edit,
+        not including public assessments
+        """
+        return self.filter(Q(project_manager=user) | Q(team_members=user))\
+            .distinct()
+
 
 class AttachmentManager(BaseManager):
 
