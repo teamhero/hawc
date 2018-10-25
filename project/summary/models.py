@@ -3,7 +3,7 @@ from operator import methodcaller
 import json
 
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -848,6 +848,58 @@ class EvidenceProfileScenario(models.Model):
     class Meta:
         verbose_name_plural = "stream scenarios"
         ordering = ("outcome", "scenario_name", )
+
+    # This method returns the "stringified" version of this object (its name)
+    def __str__(self):
+        return self.scenario_name
+
+    # This method returns a link to the grand-parent EvidenceProfile's details page
+    def get_absolute_url(self):
+        return reverse('summary:evidenceprofile_detail', kwargs={'pk': self.assessment_id, 'slug': self.slug})
+
+    # This method returns the "update" URL for this EvidenceProfileScenario's grand-parent EvidenceProfile
+    def get_update_url(self):
+        return reverse('summary:evidenceprofile_update', kwargs={'pk': self.assessment_id, 'slug': self.slug})
+
+    def get_evidenceprofilestream(self):
+        return self.evidenceprofilestream
+
+    # This method returns the object's grand-parent EvidenceProfile
+    def get_evidenceprofile(self):
+        return self.evidencrprofilestream.evidenceprofile
+
+    # This method returns the object's great-grand-parent Assessment
+    def get_assessment(self):
+        return self.evidenceprofilestream.evidenceprofile.assessment
+
+
+# This object is the second-level object for an EvidenceProfile object (multiple EvidenceProfileStream objects
+# within an EvidenceProfile)
+class EvidenceProfileScenario_JSON(models.Model):
+    # Set the database interface manager for this object
+    objects = managers.EvidenceProfileScenarioManager()
+
+    # Declare the necessary foriegn key attributes for this object (relating back to the HAWC User who created this
+    # EvidenceProfileScenario and the parent EvidenceProfileStream)
+    hawcuser = models.ForeignKey(HAWCUser)
+    evidenceprofilestream = models.ForeignKey(EvidenceProfileStream, related_name='scenarios_jsonb')
+
+    # Declare the basic attributes for this object
+    order = models.PositiveSmallIntegerField()
+    outcome = JSONField(default='{}')
+    scenario_name = models.CharField(max_length=128, help_text="(optional) If a stream only has one scenario, there is no reason to give it a name", blank=True)
+    studies = JSONField(default='[]')
+    confidencefactors_increase = JSONField(default='[]')
+    confidencefactors_decrease = JSONField(default='[]')
+
+    # Track the date/time when this object was created and updated
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    # This method sets some basic commonly-used attributes for this object
+    class Meta:
+        verbose_name_plural = "stream scenarios"
+        ordering = ("scenario_name", )
 
     # This method returns the "stringified" version of this object (its name)
     def __str__(self):
