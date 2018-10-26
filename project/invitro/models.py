@@ -94,6 +94,8 @@ class IVChemical(models.Model):
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
 
+    def get_study(self):
+        return self.study
 
 class IVCellType(models.Model):
     objects = managers.IVCellTypeManager()
@@ -173,6 +175,9 @@ class IVCellType(models.Model):
         self.study_id = cw[Study.COPY_NAME][self.study_id]
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
+
+    def get_study(self):
+        return self.study
 
 
 class IVExperiment(models.Model):
@@ -273,6 +278,9 @@ class IVExperiment(models.Model):
         cw[self.COPY_NAME][old_id] = self.id
         for child in children:
             child.copy_across_assessments(cw)
+
+    def get_study(self):
+        return self.study
 
 
 class IVEndpointCategory(AssessmentRootedTagTree):

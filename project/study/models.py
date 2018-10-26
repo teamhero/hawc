@@ -128,6 +128,9 @@ class Study(Reference):
         help_text="This field is often left blank, but used to add comments on data extraction, "
                   "e.g., reference to full study reports or indicating which outcomes/endpoints "
                   "in a study were not extracted.")
+    editable = models.BooleanField(
+        default=True,
+        help_text='Project-managers and team-members are allowed to edit this study.')
 
     COPY_NAME = "studies"
 
@@ -308,7 +311,8 @@ class Study(Reference):
             'study-contact_author',
             'study-ask_author',
             'study-summary',
-            'study-published'
+            'study-published',
+            'study-editable'
         )
 
     @staticmethod
@@ -329,7 +333,8 @@ class Study(Reference):
             ser['contact_author'],
             ser['ask_author'],
             cleanHTML(ser['summary']),
-            ser['published']
+            ser['published'],
+            ser['editable']
         )
 
     @staticmethod
@@ -346,6 +351,12 @@ class Study(Reference):
 
     def get_crumbs(self):
         return get_crumbs(self, parent=self.assessment)
+    
+    def get_crumbs_icon(self):
+        if self.editable:
+            return None
+        else:
+            return '<i title="Study is locked" class="fa fa-lock" aria-hidden="true"></i>'
 
     def get_final_rob(self):
         try:
@@ -392,6 +403,18 @@ class Study(Reference):
                 'riskofbiases__scores__metric__domain',
             ).first()
 
+    def get_study(self):
+        return self
+
+    def user_can_edit_study(self, assessment, user):
+        if user.is_superuser:
+            return True
+        elif user.is_anonymous():
+            return False
+        else:
+            return (self.editable and
+                    (user in assessment.project_manager.all() or
+                     user in assessment.team_members.all()))
 
 class Attachment(models.Model):
     objects = managers.AttachmentManager()
