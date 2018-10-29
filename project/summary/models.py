@@ -834,11 +834,11 @@ class EvidenceProfileScenario(models.Model):
 
     # Declare the basic attributes for this object
     order = models.PositiveSmallIntegerField()
-    outcome = models.TextField(default="{}")
+    outcome = models.TextField(default={})
     scenario_name = models.CharField(max_length=128, help_text="(optional) If a stream only has one scenario, there is no reason to give it a name", blank=True)
-    studies = models.TextField(default="[]")
-    confidencefactors_increase = models.TextField(default="[]")
-    confidencefactors_decrease = models.TextField(default="[]")
+    studies = models.TextField(default=[])
+    confidencefactors_increase = models.TextField(default=[])
+    confidencefactors_decrease = models.TextField(default=[])
 
     # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
