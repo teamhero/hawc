@@ -291,7 +291,7 @@ class AnimalGroup(models.Model):
     name = models.CharField(
         max_length=80,
         help_text="""
-            Name should be: sex, common strain name, species and use Title Style 
+            Name should be: sex, common strain name, species (plural) and use Title Style 
             (e.g. Male Sprague Dawley Rat, Female C57BL/6 Mice, Male and Female 
             C57BL/6 Mice). For developmental studies, include the generation before 
             sex in title (e.g., F1 Male Sprague Dawley Rat or P0 Female C57 Mice)
@@ -541,7 +541,7 @@ class DosingRegime(models.Model):
         help_text="Primary route of exposure. If multiple primary-exposures, enter as a new dosing regimen.")
     duration_exposure = models.FloatField(
         verbose_name="Exposure duration (days)",
-        help_text="Length of exposure period (fractions allowed), used for sorting in visualizations",
+        help_text="Length of exposure period (fractions allowed), used for sorting in visualizations. For single-dose or multiple-dose/same day gavage studies, 1.",
         blank=True,
         null=True)
     duration_exposure_text = models.CharField(
@@ -555,7 +555,10 @@ class DosingRegime(models.Model):
                     "studies, also include hours per day and days per week, e.g., \"13wk "
                     "(6h/d, 7d/wk).\" This field is commonly used in visualizations, so "
                     "use abbreviations (h, d, wk, mon, y) and no spaces between numbers "
-                    "to save space.")
+                    "to save space. For reproductive and developmental studies, where "
+                    "possible instead include abbreviated age descriptions such as \"GD1-10\" "
+                    "or \"GD2-PND10\". For gavage studies, include the number of doses, e.g. "
+                    "\"1wk (1dose/d, 5d/wk)\" or \"2doses\" for a single-day experiment.")
     num_dose_groups = models.PositiveSmallIntegerField(
         default=4,
         validators=[MinValueValidator(1)],
