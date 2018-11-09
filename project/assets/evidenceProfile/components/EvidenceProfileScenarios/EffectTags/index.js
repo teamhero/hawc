@@ -48,8 +48,8 @@ class EffectTagsFormset extends Component {
             );
         }
 
-        if (iTo == 0) {
-            // This Scenario has no Studies (in Effect Tags) yet, push an empty Effect Tag onto the end of this.effectTags and increment iTo
+        if (this.props.profileId <= 0) {
+            // This formset is part of a new Evidence Profile, push an empty Effect Tag onto the end of this.effectTags and increment iTo
 
             this.effectTags.push(
                 {
@@ -96,6 +96,7 @@ class EffectTagsFormset extends Component {
                 index={i}
                 maxIndex={(iTo - 1)}
                 order={(i + 1)}
+                profileId={this.props.profileId}
                 pk={this.effectTags[i].id}
                 streamIndex={this.props.streamIndex}
                 scenarioIndex={this.props.scenarioIndex}
@@ -422,6 +423,7 @@ class EffectTagDiv extends Component {
        // First, call the super-class's constructor
         super(props);
 
+        // Copy syntactically valid versions of these properties to this object, defaulting to desired values if the property is missing or invalid
         this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
         this.name = (("name" in this.props) && (this.props.name !== null)) ? this.props.name : "";
 
@@ -580,7 +582,7 @@ class EffectTagDiv extends Component {
     }
 
     componentDidMount() {
-        renderStudiesFormset(this.props.studies, this.props.studyTitles, this.fieldPrefix + "_studiesFormset", this.props.studies_config);
+        renderStudiesFormset(this.props.profileId, this.props.studies, this.props.studyTitles, this.fieldPrefix + "_studiesFormset", this.props.studies_config);
     }
 }
 
@@ -683,7 +685,7 @@ class SelectEffectTag extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the Effect Tags
 // within this Scenario
-export function renderEffectTagsFormset(studies, divId, config) {
+export function renderEffectTagsFormset(profileId, studies, divId, config) {
     // First, look for the <div> element in the Stream Scenario that will hold the Effect Tags -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
@@ -703,13 +705,9 @@ export function renderEffectTagsFormset(studies, divId, config) {
 	            if (effectTagsFormsetDiv !== null) {
 	            	// The <div> element intended to hold this formset exists, render the formset
 
-                    console.log("In renderEffectTagsFormset()");
-                    console.log(studies);
-                    console.log(config);
-                    console.log("-----------------------------------------------");
-
                     ReactDOM.render(
                         <EffectTagsFormset
+                            profileId={profileId}
                             studies={studies}
                             streamIndex={indices[0]}
                             scenarioIndex={indices[1]}

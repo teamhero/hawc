@@ -24,7 +24,7 @@ class ConfidenceFactorsFormset extends Component {
     };
 
     constructor(props) {
-       // First, call the super-class's constructor
+        // First, call the super-class's constructor
         super(props);
 
         // Create a set of variables that need to be initialized within this constructor, along with the incoming regular expressions that will be used 
@@ -66,8 +66,8 @@ class ConfidenceFactorsFormset extends Component {
 	            );
     	    }
 
-        	if (iTo == 0) {
-            	// This Scenario has no Confidence Factors of this type yet, push an empty Confidence Factor onto the end of this.confidenceFactors and increment iTo
+        	if (this.props.profileId <= 0) {
+            	// This formset is part of a new Evidence Profile, push an empty Confidence Factor onto the end of this.confidenceFactors and increment iTo
 
 	            this.confidenceFactors.push(
     	            {
@@ -748,7 +748,7 @@ class TextAreaExplanation extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for a set of
 // Confidence Factors within this Scenario
-export function renderConfidenceFactorsFormset(type, confidenceFactors, divId, config) {
+export function renderConfidenceFactorsFormset(type, profileId, confidenceFactors, divId, config) {
     // First, look for the <div> element in the Stream Scenario that will hold this set of ConfidenceFactors -- this formset will placed be within that element
 
     // Make sure that type is a string, defaulting to an empty string
@@ -774,6 +774,7 @@ export function renderConfidenceFactorsFormset(type, confidenceFactors, divId, c
                 ReactDOM.render(
                     <ConfidenceFactorsFormset
                     	type={type}
+                        profileId={profileId}
                         confidenceFactors={confidenceFactors}
                         streamIndex={indices[0]}
                         scenarioIndex={indices[1]}
