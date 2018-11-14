@@ -4,6 +4,7 @@ from django.apps import apps
 from django.core import exceptions
 from django.core.urlresolvers import reverse
 from django.db.models import Count
+from django.template.defaultfilters import slugify
 
 from rest_framework import permissions, status, viewsets, decorators, filters
 from rest_framework.response import Response
@@ -36,7 +37,7 @@ def get_assessment_from_query(request):
 
 class AssessmentLevelPermissions(permissions.BasePermission):
 
-    list_actions = ['list', ]
+    list_actions = ['list', 'create']
 
     def has_object_permission(self, request, view, obj):
         if not hasattr(view, 'assessment'):
@@ -300,4 +301,132 @@ class AssessmentEndpointList(AssessmentViewset):
             .annotate(endpoint_count=Count('baseendpoint__endpoint'))\
             .annotate(outcome_count=Count('baseendpoint__outcome'))\
             .annotate(ivendpoint_count=Count('baseendpoint__ivendpoint'))
+        return queryset
+
+
+# This API ViewSet is used to search an Assessment's effect tags for ones that match the incoming 'term' string
+class EffectTagSearch(viewsets.ReadOnlyModelViewSet):
+    model = models.EffectTag
+
+    pagination_class = DisabledPagination
+    filter_backends = (filters.DjangoFilterBackend)
+    serializer_class = serializers.EffectTagSerializer
+
+    def list(self, request, *args, **kwargs):
+        # By default, return an empty list object
+        returnValue = []
+
+        # Run the search and handle the queryset returned
+        instance = self.get_queryset()
+        if (len(instance) > 0):
+            # At least one Study was returned by the search
+
+            # Iterate through the queryset, serialize each one and add it to returnValue
+            for effectTag in instance:
+                serializer = self.get_serializer(effectTag)
+                returnValue.append(serializer.data)
+
+        return Response(returnValue)
+
+    def get_queryset(self):
+        # By default, return an empty queryset
+        queryset = self.model.objects.none()
+
+        # Look for a term value, starting in the GET scope, then checking in the POST scope, and then finally defaulting to an empty string
+        term = (self.request.GET.get('term')) if ('term' in self.request.GET) else ((self.request.POST.get('term')) if ('term' in self.request.POST) else (''))
+        if (term != ''):
+            # A non-empty term was found, search the effect tags within the assessment, searching in the name field
+            queryset = self.model.objects.all().filter(name__icontains=term.lower()) | self.model.objects.all().filter(slug__icontains=term.lower())
+
+            try:
+                # Try to treat term like an integer and OR the current queryset with a search for this specific Study HAWC primary key
+                queryset = queryset | self.model.objects.all().filter(id=term)
+            except:
+                pass
+
+        return queryset
+
+
+# This API ViewSet is used to search an Assessment's effect tags for ones that match the incoming 'term' string
+# Unlike the 'EffectTagSearch' ViewSet, key/value pairs returned by this ViewSet are specifically named to correspond to what HAWC's ReactJS corresponding
+# <Autocomplete />-based tag expects
+class EffectTagAutoSuggest(EffectTagSearch):
+    model = models.EffectTag
+
+    def list(self, request, *args, **kwargs):
+        # By default, return an empty list object
+        returnValue = []
+
+        # Run the search and handle the queryset returned
+        instance = self.get_queryset()
+        if (len(instance) > 0):
+            # At least one Study was returned by the search
+
+            # Iterate through the queryset, serialize each one and add it to returnValue
+            for effectTag in instance:
+                serializer = self.get_serializer(effectTag)
+
+                returnValue.append(
+                    {
+                        'id': serializer.data['id'],
+                        'name': serializer.data['name'],
+                    }
+                )
+
+        return Response(returnValue)
+
+
+# This API ViewSet is used to create an Assessment's effect tags for ones that match the incoming 'term' string
+# Unlike the 'EffectTagSearch' ViewSet, key/value pairs returned by this ViewSet are specifically named to correspond to what HAWC's ReactJS corresponding
+# <Autocomplete />-based tag expects
+class EffectTagCreate(viewsets.ModelViewSet):
+    model = models.EffectTag
+
+    pagination_class = DisabledPagination
+    permission_classes = (AssessmentLevelPermissions, )
+    serializer_class = serializers.EffectTagSerializer
+
+    # This method attempts to create a new effect tag
+    # This is only attempted if the HTTP request is of type POST and the necessary CSRF token is included in the request
+    def create(self, request, *args, **kwargs):
+        # By default, return an empty list object
+        returnValue = []
+
+        # Look for a name value, first checking in the POST scope and then finally defaulting to an empty string
+        name = (self.request.POST.get("name")) if ("name" in self.request.POST) else ("")
+        if (name != ""):
+            # A name was found, check to see if it is already in the database as an effect tag
+            instance = self.get_queryset(name=name)
+
+            if (len(instance) == 0):
+                # This name is not used for an effect tag yet, add it to the database
+                effectTag = self.model(name=name, slug=slugify(name))
+                effectTag.save()
+
+                # Add the newly-created effect tag to the data being returned
+                serializer = self.get_serializer(effectTag)
+                returnValue.append(serializer.data)
+
+                print(returnValue)
+            else:
+                # This name is already used for an effect tag, return it instead
+                serializer = self.get_serializer(instance[0])
+                returnValue.append(serializer.data)
+
+        return Response(returnValue)
+
+    def get_queryset(self, name=""):
+        # By default, return an empty queryset
+        queryset = self.model.objects.none()
+
+        if (name != ""):
+            # name is not an empty argument, check to see if name is already in the database
+
+            queryset = self.model.objects.all().filter(name=name.lower()) | self.model.objects.all().filter(slug=name.lower())
+            try:
+                # Try to treat term like an integer and OR the current queryset with a search for this specific Study HAWC primary key
+                queryset = queryset | self.model.objects.all().filter(id=term)
+            except:
+                pass
+
         return queryset

@@ -109,6 +109,7 @@ class EvidenceProfileScenariosFormset extends Component {
                 buttonSetPrefix={this.buttonSetPrefix}
                 handleButtonClick={this.handleButtonClick}
                 scenarioReferences={this.scenarioReferences}
+                csrf_token={this.props.csrf_token}
             />;
         }
 
@@ -180,6 +181,7 @@ class EvidenceProfileScenariosFormset extends Component {
                     index={newDivIndex}
                     maxIndex={newDivIndex}
                     order={(newDivIndex + 1)}
+                    profileId={this.props.profileId}
                     streamIndex={this.props.streamIndex}
                     scenario_name={this.scenarios[scenarioIndex].scenario.object.scenario_name}
                     outcome={""}
@@ -196,6 +198,7 @@ class EvidenceProfileScenariosFormset extends Component {
                     buttonSetPrefix={this.buttonSetPrefix}
                     handleButtonClick={this.handleButtonClick}
                     scenarioReferences={this.scenarioReferences}
+                    csrf_token={this.props.csrf_token}
                 />;
 
                 // Set this.state.rows to the new inference rows array (inclding the new inference added to the end)
@@ -678,7 +681,7 @@ class ScenarioDiv extends Component {
     }
 
     componentDidMount() {
-        renderEffectTagsFormset(this.props.profileId, this.studies, this.fieldPrefix + "_effectTagsFormset", this.props.effectTags_config);
+        renderEffectTagsFormset(this.props.profileId, this.studies, this.fieldPrefix + "_effectTagsFormset", this.props.effectTags_config, this.props.csrf_token);
         renderConfidenceFactorsFormset("increase", this.props.profileId, this.confidencefactors_increase, this.fieldPrefix + "_confidenceFactorsIncreaseFormset", this.props.confidenceFactorsIncrease_config);
         renderConfidenceFactorsFormset("decrease", this.props.profileId, this.confidencefactors_decrease, this.fieldPrefix + "_confidenceFactorsDecreaseFormset", this.props.confidenceFactorsDecrease_config);
     }
@@ -904,7 +907,7 @@ class TextAreaSummaryOfFindingsExplanation extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the
 // Scenarios within an individual Evidence Profile Stream
-export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divId, config, confidenceJudgements) {
+export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divId, config, confidenceJudgements, csrf_token) {
     // First, look for the <div> element in the Evidence Profile Stream that will hold the Scenarios -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
@@ -925,6 +928,7 @@ export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divI
                         config={config}
                         streamIndex={streamIndex}
                         confidenceJudgements={confidenceJudgements}
+                        csrf_token={csrf_token}
                     />,
                     scenariosFormsetDiv
                 );

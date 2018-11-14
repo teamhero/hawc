@@ -1,7 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
+import AutoSuggest from 'react-autosuggest';
 
 import "./index.css";
+
+import fetch from 'isomorphic-fetch';
+import h from 'shared/utils/helpers';
 
 import {renderStudiesFormset} from "./Studies";
 
@@ -110,7 +114,11 @@ class EffectTagsFormset extends Component {
                 fieldPrefix={this.fieldPrefix}
                 buttonSetPrefix={this.buttonSetPrefix}
                 handleButtonClick={this.handleButtonClick}
+                effectTagSearchURL={this.props.config.effectTagSearchURL}
+                handleEffectTagSelection={this.handleEffectTagSelection}
                 effectTagReferences={this.effectTagReferences}
+                effectTagCreateURL={this.props.config.effectTagCreateURL}
+                csrf_token={this.props.csrf_token}
             />;
         }
 
@@ -185,6 +193,7 @@ class EffectTagsFormset extends Component {
                     index={newDivIndex}
                     maxIndex={newDivIndex}
                     order={(newDivIndex + 1)}
+                    profileId={this.props.profileId}
                     pk={this.effectTags[effectTagIndex].id}
                     streamIndex={this.props.streamIndex}
                     scenarioIndex={this.props.scenarioIndex}
@@ -197,7 +206,11 @@ class EffectTagsFormset extends Component {
                     fieldPrefix={this.fieldPrefix}
                     buttonSetPrefix={this.buttonSetPrefix}
                     handleButtonClick={this.handleButtonClick}
+                    effectTagSearchURL={this.props.config.effectTagSearchURL}
+                    handleEffectTagSelection={this.handleEffectTagSelection}
 	                effectTagReferences={this.effectTagReferences}
+                    effectTagCreateURL={this.props.config.effectTagCreateURL}
+                    csrf_token={this.props.csrf_token}
                 />;
 
                 // Set this.state.divs to the new divs array (including the new effectTag added to the end)
@@ -285,6 +298,33 @@ class EffectTagsFormset extends Component {
                 }
             }
         }
+    }
+
+    // This method is called when a study is selected within this formset
+    handleEffectTagSelection(id, effectTag) {
+        console.log(id);
+        console.log(effectTag);
+
+        /*
+        let idMatcher = new RegExp("^(stream_\\d+_\\d_\\d_effectTag)_suggest$", "gi");
+
+        if ((typeof(id) === "string") && (id != "") && (id.match(idMatcher)) && (typeof(study) === "object") && (study !== null) && ("id" in study) && (study.id != "")) {
+            // The id argument is a non-empty string that matches the expected naming convention, and the study argument is an object with a
+            // non-empty id attribute; attempt to find a similarly-named DOM element that holds a Study's ID value
+
+            let studyIdField = document.getElementById(id.replace(idMatcher, "$1_pk"));
+            if (studyIdField !== null) {
+                // The expected DOM element was found, set its value to the value of study.id
+                studyIdField.value = study.id;
+
+                let studyTitleField = document.getElementById(id.replace(idMatcher, "$1_title"));
+                if (studyTitleField !== null) {
+                    // The expected field that holds the title's text was found, place the selected suggestion's title and short citation in it
+                    studyTitleField.innerHTML = study.value;
+                }
+            }
+        }
+        */
     }
 
     // After this Component has been updated (i.e. a <div> added, removed or moved up/down), this method runs to re-color the <div>s and set
@@ -480,7 +520,21 @@ class EffectTagDiv extends Component {
                     </div>
 
                     <div className={"effectTagDiv_name"}>
-                        <label htmlFor={this.fieldPrefix + "_pk"} className="control-label">Tag</label>
+                        <input id={this.fieldPrefix + "_pk"} type="hidden" name={this.fieldPrefix + "_pk"} value={this.pk} />
+                        <span id={this.fieldPrefix + "_name"}>{this.name}</span>
+
+                        <label htmlFor={this.fieldPrefix + "_suggest"} className="control-label">{(this.pk !== "") ? "Change Effect Tag" : "Effect Tag"}</label>
+                        <EffectTagAutoSuggest
+                            id={this.fieldPrefix + "_suggest"}
+                            placeholder={"Effect Tag..."}
+                            effectTagSearchURL={this.props.effectTagSearchURL}
+                            handleEffectTagSelection={this.props.handleEffectTagSelection}
+                            value={""}
+                            csrf_token={this.props.csrf_token}
+                            effectTagCreateURL={this.props.effectTagCreateURL}
+                        />
+
+                        <label htmlFor={this.fieldPrefix + "_pk_old"} className="control-label">Tag</label>
                         <div className="controls">
                             <SelectEffectTag
                                 ref={
@@ -488,7 +542,7 @@ class EffectTagDiv extends Component {
                                         this.effectTagNameReference = input;
                                     }
                                 }
-                                id={this.fieldPrefix + "_pk"}
+                                id={this.fieldPrefix + "_pk_old"}
                                 value={this.pk}
                                 index={this.props.index}
                                 optionSet={this.props.effectTags_optionSet}
@@ -617,6 +671,141 @@ class InputOrder extends Component {
 }
 
 
+// This Component class is used to create an auto-suggest field for looking up an Effect Tag
+class EffectTagAutoSuggest extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor and properly bind its necessary methods
+        super(props);
+
+        this.onChange = this.onChange.bind(this);
+        this.onSuggestionsFetchRequested = this.onSuggestionsFetchRequested.bind(this);
+        this.onSuggestionsClearRequested = this.onSuggestionsClearRequested.bind(this);
+        this.onSuggestionSelected = this.onSuggestionSelected.bind(this);
+        this.getSuggestionValue = this.getSuggestionValue.bind(this);
+        this.renderSuggestion = this.renderSuggestion.bind(this);
+
+        this.state = {
+            value: this.props.value,
+            suggestions: [],
+        };
+    }
+
+    // This method is called whenever the value in the contained <input /> field is changed
+    onChange(event, {newValue, method}) {
+        this.setState(
+            {
+                value: newValue,
+            }
+        );
+    }
+
+    setSuggestions(suggestions) {
+        if ((typeof(suggestions == "object")) && (suggestions !== null) && (Array.isArray(suggestions))) {
+            // Suggestions is an array, iterate over it and build the set of suggestions that will be presented to the user
+
+            let managedSuggestions = [
+                {
+                    id: 0,
+                    value: this.state.value,
+                }
+            ];
+
+            let iTo = suggestions.length;
+            for (let i=0; i<iTo; i++) {
+                let suggestion = suggestions[i];
+
+                if ((typeof(suggestion) === "object") && ("id" in suggestion) && (!isNaN(suggestion.id))) {
+                    // So far, this suggestion seems okay, continue
+                    let id = parseInt(suggestion.id);
+
+                    if (id > 0) {
+                        // This suggestion has a syntactically value primary key, look for a name
+
+                        let value = (("name" in suggestion) && (suggestion.name !== "")) ? suggestion.name : "";
+                        if (value != "") {
+                            // This suggestion has a name, add it to the array of suggestions that will be presented to the user
+                            managedSuggestions.push(
+                                {
+                                    id: id,
+                                    value: value,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            this.setState(
+                {
+                    suggestions: managedSuggestions,
+                }
+            );
+        }
+    }
+
+    // This method is called whenever the component needs to update is list of suggestions
+    onSuggestionsFetchRequested(term) {
+        if (term.value != "") {
+            // The value in the contained <input /> field is not empty, call the appropriate HAWC Study API to get suggested Studies
+            // The API call returns a JSON-formatted array of objects with 'id' and 'value' keys
+
+            fetch(`${this.props.effectTagSearchURL}&term=${term.value}`, h.fetchGet)
+            .then(response => response.json())
+            .then(data => this.setSuggestions(data));
+        }
+    }
+
+    // This method is called whenever the component needs to clear its displayed list of suggestions
+    onSuggestionsClearRequested() {
+        this.setState(
+            {
+                suggestions: []
+            }
+        );
+    }
+
+    // This method is called whenever a Study is selected
+    // It is just a pass-thru that calls the injected method for handling the selected Study within the context of the overall Scenario object
+    onSuggestionSelected(event, selectedObject) {
+        this.onSuggestionsClearRequested();
+        this.props.handleEffectTagSelection(this.props.id, selectedObject.suggestion);
+    }
+
+    // This method is called whenever a suggestion's value is needed
+    getSuggestionValue(suggestion) {
+        return suggestion.value;
+    }
+
+    // This method renders a suggestion element within the list of options
+    renderSuggestion(suggestion) {
+        return (
+            <span>{suggestion.value}</span>
+        );
+    }
+
+    render() {
+        return(
+            <AutoSuggest
+                id={this.props.id}
+                suggestions={this.state.suggestions}
+                onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+                onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+                onSuggestionSelected={this.onSuggestionSelected}
+                getSuggestionValue={this.getSuggestionValue}
+                renderSuggestion={this.renderSuggestion}
+                inputProps={
+                    {
+                        placeholder: "Lookup Effect Tag",
+                        value: this.state.value,
+                        onChange: this.onChange,
+                    }
+                }
+            />
+        );
+    }
+}
+
+
 // This Component class is used to create a <select> field for a single effectTag's id/name combination
 class SelectEffectTag extends Component {
     constructor(props) {
@@ -685,7 +874,7 @@ class SelectEffectTag extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the Effect Tags
 // within this Scenario
-export function renderEffectTagsFormset(profileId, studies, divId, config) {
+export function renderEffectTagsFormset(profileId, studies, divId, config, csrf_token) {
     // First, look for the <div> element in the Stream Scenario that will hold the Effect Tags -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
@@ -712,6 +901,7 @@ export function renderEffectTagsFormset(profileId, studies, divId, config) {
                             streamIndex={indices[0]}
                             scenarioIndex={indices[1]}
                             config={config}
+                            csrf_token={csrf_token}
                         />,
                         effectTagsFormsetDiv
                     );

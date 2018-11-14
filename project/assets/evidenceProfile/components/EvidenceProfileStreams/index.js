@@ -99,6 +99,7 @@ class EvidenceProfileStreamsFormset extends Component {
                 scenariosFormsetConfig={this.props.config.scenariosFormset}
                 handleButtonClick={this.handleButtonClick}
                 streamReferences={this.streamReferences}
+                csrf_token={this.props.csrf_token}
             />;
         }
 
@@ -168,6 +169,7 @@ class EvidenceProfileStreamsFormset extends Component {
                         index={newDivIndex}
                         maxIndex={newDivIndex}
                         order={(newDivIndex + 1)}
+                        profileId={this.props.profileId}
                         stream_type={this.streams[streamIndex].stream.object.stream_type}
                         stream_type_optionSet={this.props.config.streamTypes}
                         stream_title={this.streams[streamIndex].stream.object.stream_title}
@@ -182,6 +184,7 @@ class EvidenceProfileStreamsFormset extends Component {
                         scenariosFormsetConfig={this.props.config.scenariosFormset}
                         handleButtonClick={this.handleButtonClick}
                         streamReferences={this.streamReferences}
+                        csrf_token={this.props.csrf_token}
                     />;
 
                     this.setState(
@@ -687,7 +690,14 @@ class StreamDiv extends Component {
     }
 
     componentDidMount() {
-        renderEvidenceProfileScenariosFormset(this.props.profileId, this.scenarios, this.fieldPrefix + "_scenariosFormset", this.props.scenariosFormsetConfig, this.props.confidenceJudgements, this.divReference);
+        renderEvidenceProfileScenariosFormset(
+            this.props.profileId,
+            this.scenarios,
+            this.fieldPrefix + "_scenariosFormset",
+            this.props.scenariosFormsetConfig,
+            this.props.confidenceJudgements,
+            this.props.csrf_token
+        );
     }
 }
 
@@ -955,7 +965,13 @@ export function renderEvidenceProfileStreamsFormset(profileId, streams, formConf
 
         captionDivList[0].insertAdjacentHTML("afterend", '<hr style="margin-top:32px; border-width:1px;" /><div id="' + streamsConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div><hr style="margin-top:-16px; margin-bottom:32px; border-width:2px;" />');
         ReactDOM.render(
-            <EvidenceProfileStreamsFormset profileId={profileId} streams={streams} config={streamsConfig} confidenceJudgements={formConfig.confidenceJudgements} />,
+            <EvidenceProfileStreamsFormset
+                profileId={profileId}
+                streams={streams}
+                config={streamsConfig}
+                confidenceJudgements={formConfig.confidenceJudgements}
+                csrf_token={formConfig.csrf_token}
+            />,
             document.getElementById(streamsConfig.divId)
         );
     }

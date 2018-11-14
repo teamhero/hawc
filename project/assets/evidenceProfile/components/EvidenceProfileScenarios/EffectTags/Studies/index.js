@@ -493,8 +493,8 @@ class StudyAutoSuggest extends Component {
         this.renderSuggestion = this.renderSuggestion.bind(this);
 
         this.state = {
-                value: this.props.value,
-                suggestions: [],
+            value: this.props.value,
+            suggestions: [],
         };
     }
 
