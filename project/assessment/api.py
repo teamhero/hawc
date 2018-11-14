@@ -359,8 +359,6 @@ class EffectTagCreate(viewsets.ModelViewSet):
                 # Add the newly-created effect tag to the data being returned
                 serializer = self.get_serializer(effectTag)
                 returnValue.append(serializer.data)
-
-                print(returnValue)
             else:
                 # This name is already used for an effect tag, return it instead
                 serializer = self.get_serializer(instance[0])
@@ -375,7 +373,7 @@ class EffectTagCreate(viewsets.ModelViewSet):
         if (name != ""):
             # name is not an empty argument, check to see if name is already in the database
 
-            queryset = self.model.objects.all().filter(name=name.lower()) | self.model.objects.all().filter(slug=name.lower())
+            queryset = self.model.objects.all().filter(name__iexact=name.lower()) | self.model.objects.all().filter(slug__iexact=name.lower())
             try:
                 # Try to treat term like an integer and OR the current queryset with a search for this specific Study HAWC primary key
                 queryset = queryset | self.model.objects.all().filter(id=term)
