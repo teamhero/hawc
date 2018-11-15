@@ -8,7 +8,7 @@ class DomainDisplay extends Component {
 
     constructor(props){
         super(props);
-		this.endpoints = [];
+		this.endpoints = {};
 		if (this.props.endpoints.length > 0) {
             for (var i=0; i < this.props.endpoints.length; i++) { 
 			    for (var j=0; j < this.props.endpoints[i].animal_groups.length; j++) {
@@ -20,8 +20,6 @@ class DomainDisplay extends Component {
 				}
             }
 		}
-		this.endpoints = this.endpoints.sort(SortByValue);
-		this.endpoints = Object.assign({}, this.endpoints);
 	}
 
     render(){

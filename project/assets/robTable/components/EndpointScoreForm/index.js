@@ -17,6 +17,7 @@ class EndpointScoreForm extends Component {
 			score: this.props.score,
 			metric: this.props.metric,
 			endpointID: this.props.endpointID,
+ 			robpeID: this.props.robpeID,
 			EPnotes: '',
 		}
         this.handleEPEditorInput = this.handleEPEditorInput.bind(this);
@@ -102,6 +103,7 @@ EndpointScoreForm.propTypes = {
     updateNotesLeft: PropTypes.func.isRequired,
 	endpointID: PropTypes.string,
 	endpointText: PropTypes.string,
+	robpeID: PropTypes.string,
 };
 
 export default EndpointScoreForm;

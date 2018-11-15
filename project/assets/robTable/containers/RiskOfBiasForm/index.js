@@ -41,6 +41,7 @@ class RiskOfBiasForm extends Component {
                 let { form } = metric.refs, metric_id = metric.props.metric.values[0].metric.id;
                 return _.map(form.refs, (endpoint) => {
 					return {
+						id: endpoint.state.robpeID,
 						endpoint: endpoint.state.endpointID,
 						notes: endpoint.state.EPnotes,
 						score: endpoint.state.score,

@@ -131,7 +131,6 @@ class ScoreForm extends Component {
 
     addGenericEndpoint(e){
 		e.preventDefault();
-		//console.log('generic endpoint selected');
 		this.state.endpointIDs.push(0);
 		this.forceUpdate();
     }
@@ -176,12 +175,11 @@ class ScoreForm extends Component {
                          className='score-editor' />
             </div>
 			<div>
-			{_.map(endpointIDs, (endpoint, index) => { //function(endpoint, index) {
-				console.log(endpoint+":"+index);
+			{_.map(endpointIDs, (endpoint, index) => { 
 				if (endpoint==0)
-					return <EndpointScoreForm ref={'epform'+endpoint+'.'+index} key={endpoint+'.'+index} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint+'.'+index} endpointText={'Endpoint Notes'} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} />;
+					return <EndpointScoreForm ref={'epform'+endpoint+'.'+index} key={endpoint+'.'+index} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint+'.'+index} endpointText={'Endpoint Notes'} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} robpeID={'0'} />;
 				else
-					return <EndpointScoreForm ref={'epform'+endpoint} key={endpoint} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint} endpointText={endpointChoices[endpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} />;
+					return <EndpointScoreForm ref={'epform'+endpoint} key={endpoint} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint} endpointText={endpointChoices[endpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} robpeID={(index/1000).toString()} />;
             })}
 			</div>
 			</div>

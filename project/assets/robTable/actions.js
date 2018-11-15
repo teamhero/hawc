@@ -45,7 +45,7 @@ function addNewEndpointNote(metric){
 	};
 }
 
-function formatOutgoingRiskOfBias(state, riskofbias){
+function formatOutgoingRiskOfBias(state, riskofbias, scoresperendpoint){
     let riskofbias_id = state.config.riskofbias.id,
         author,
         final,
@@ -67,6 +67,7 @@ function formatOutgoingRiskOfBias(state, riskofbias){
         author,
         final,
         scores,
+		scoresperendpoint,
         active: true,
         pk: parseInt(riskofbias_id),
         study: parseInt(state.config.study.id),
@@ -124,10 +125,10 @@ export function fetchFullStudyIfNeeded(){
     };
 }
 
-export function submitRiskOfBiasScores(scores){
+export function submitRiskOfBiasScores(scores, scoresperendpoint){
     return (dispatch, getState) => {
         let state = getState(),
-            patch = formatOutgoingRiskOfBias(state, scores),
+            patch = formatOutgoingRiskOfBias(state, scores, scoresperendpoint),
             opts = h.fetchPost(state.config.csrf, patch, 'PUT');
 
         dispatch(resetError());

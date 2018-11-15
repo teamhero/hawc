@@ -11,6 +11,7 @@ router.register(r'metrics', api.AssessmentMetricViewset, base_name='metrics')
 router.register(r'answers', api.AssessmentMetricAnswersViewSet, base_name='answers')
 router.register(r'metrics/scores', api.AssessmentMetricScoreViewset, base_name='metric_scores')
 router.register(r'scores', api.AssessmentScoreViewset, base_name='scores')
+router.register(r'scoreperendpoint', api.RiskOfBiasScorePerEndpoint, base_name='scoreperendpoint')
 
 urlpatterns = [
     url(r'^api/', include(router.urls, namespace='api')),

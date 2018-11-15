@@ -6,7 +6,6 @@ from utils.helper import SerializerHelper
 from myuser.serializers import HAWCUserSerializer
 from . import models
 
-
 class AssessmentMetricChoiceSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -95,19 +94,29 @@ class RiskOfBiasSerializer(serializers.ModelSerializer):
             for field, value in list(form_data.items()):
                 setattr(score, field, value)
             score.save()
-        scoreperendpoint_data = validated_data.pop('scoresperendpoint')
-        
-        """for spe in scoreperendpoint_data:
-            if spe.get('endpoint') < 1:
-                noEndpoint.push(spe)
-            else:
-                endpointUpdate.push(spe)
-				
-        for scoreperendpoint, form_data in zip(instance.scoresperendpoint.all(), spe_to_update):
-            for field, value in list(form_data.items()):
-                setattr(scoreperendpoint, field, value)
-            scoreperendpoint.save()""" 
+        scoreperendpoint_data = self.initial_data.pop('scoresperendpoint')
+        del validated_data['scoresperendpoint']
 		
+        endpoint_mapping = {riskofbiasperendpoint.id: riskofbiasperendpoint for riskofbiasperendpoint in instance.scoresperendpoint.all()}
+        data_mapping = {item['id']: item for item in scoreperendpoint_data}
+
+        # Perform creations and updates.
+        ret = []
+        for robpe_id, data in data_mapping.items():
+            robpe = endpoint_mapping.get(robpe_id, None) 
+            localvar = data['endpoint'] 
+            del data['endpoint']
+            if robpe is None:
+                del data['id']
+                models.RiskOfBiasScorePerEndpoint.objects.create(baseendpoint_id=localvar,riskofbiasperendpoint_id=self.initial_data['pk'],**data)
+            else:
+                ret.append(self.scoresperendpoint.update(robpe, data))
+
+        # Perform deletions.
+        for riskofbiasperendpoint_id, robpe in endpoint_mapping.items():
+            if riskofbiasperendpoint_id not in data_mapping:
+                robpe.delete()
+	
         return super().update(instance, validated_data)
 
 
