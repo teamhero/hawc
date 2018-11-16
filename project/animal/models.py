@@ -39,14 +39,6 @@ class Experiment(models.Model):
         ("Ot", "Other"),
         ("NR", "Not-reported"))
 
-    LITTER_EFFECT_CHOICES = (
-        ("NA", "Not applicable"),
-        ("NR", "Not reported"),
-        ("YS", "Yes, statistical control"),
-        ("YD", "Yes, study-design"),
-        ("N",  "No"),
-        ("O",  "Other"))
-
     PURITY_QUALIFIER_CHOICES = (
         ('>', '>'),
         ('≥', '≥'),
@@ -60,7 +52,6 @@ class Experiment(models.Model):
         'chemical_source',
         'vehicle',
         'description',
-        'litter_effect_notes',
         'guideline_compliance',
     )
 
@@ -129,18 +120,6 @@ class Experiment(models.Model):
             in study evaluation in the reporting quality domain, e.g., GLP study (OECD guidelines 
             414 and 412, 1981 versions). If not reported, then use state "not reported."
             """)
-    litter_effects = models.CharField(
-        max_length=2,
-        choices=LITTER_EFFECT_CHOICES,
-        default="NA",
-        help_text="Type of controls used for litter-effects. The \"No\" response " +
-                "will be infrequently used. More typically the information will be " +
-                "\"Not reported\" and assumed not considered. Only use \"No\" if it " +
-                "is explicitly mentioned in the study that litter was not controlled for.")
-    litter_effect_notes = models.CharField(
-        max_length=128,
-        help_text="Any additional notes describing how litter effects were controlled",
-        blank=True)
     description = models.TextField(
         blank=True,
         verbose_name="Comments",
@@ -187,8 +166,6 @@ class Experiment(models.Model):
             'experiment-purity_qualifier',
             'experiment-purity',
             'experiment-vehicle',
-            'experiment-litter_effects',
-            'experiment-litter_effect_notes',
             'experiment-guideline_compliance',
             'experiment-description'
         )
@@ -207,8 +184,6 @@ class Experiment(models.Model):
             ser['purity_qualifier'],
             ser['purity'],
             ser['vehicle'],
-            ser['litter_effects'],
-            ser['litter_effect_notes'],
             ser['guideline_compliance'],
             cleanHTML(ser['description'])
         )
@@ -739,6 +714,7 @@ class Endpoint(BaseEndpoint):
         'trend_value',
         'results_notes',
         'endpoint_notes',
+        'litter_effect_notes',
     )
 
     DATA_TYPE_CHOICES = (
@@ -795,6 +771,14 @@ class Endpoint(BaseEndpoint):
         (4, '---')
     )
 
+    LITTER_EFFECT_CHOICES = (
+        ("NA", "Not applicable"),
+        ("NR", "Not reported"),
+        ("YS", "Yes, statistical control"),
+        ("YD", "Yes, study-design"),
+        ("N",  "No"),
+        ("O",  "Other"))
+
     animal_group = models.ForeignKey(
         AnimalGroup,
         related_name="endpoints")
@@ -825,6 +809,18 @@ class Endpoint(BaseEndpoint):
                     "be \"Skeletal Malformation\", \"External Malformation\" \"Soft Tissue.\" "
                     "For organ weight effects, subtypes can be \"Absolute,\" \"Relative\" "
                     "(absolute can be inferred when it's not explicitly stated).")
+    litter_effects = models.CharField(
+        max_length=2,
+        choices=LITTER_EFFECT_CHOICES,
+        default="NA",
+        help_text="Type of controls used for litter-effects. The \"No\" response " +
+                "will be infrequently used. More typically the information will be " +
+                "\"Not reported\" and assumed not considered. Only use \"No\" if it " +
+                "is explicitly mentioned in the study that litter was not controlled for.")
+    litter_effect_notes = models.CharField(
+        max_length=128,
+        help_text="Any additional notes describing how litter effects were controlled",
+        blank=True)
     observation_time = models.FloatField(
         blank=True,
         null=True,
@@ -1035,6 +1031,8 @@ class Endpoint(BaseEndpoint):
             "endpoint-organ",
             "endpoint-effect",
             "endpoint-effect_subtype",
+            'endpoint-litter_effects',
+            'endpoint-litter_effect_notes',
             "endpoint-observation_time",
             "endpoint-observation_time_units",
             "endpoint-observation_time_text",
@@ -1069,6 +1067,8 @@ class Endpoint(BaseEndpoint):
             ser['organ'],
             ser['effect'],
             ser['effect_subtype'],
+            ser['litter_effects'],
+            ser['litter_effect_notes'],
             ser['observation_time'],
             ser['observation_time_units'],
             ser['observation_time_text'],

@@ -238,6 +238,19 @@
 
       })
 
+      // show/hide the litter_effects fields depending on the underlying experiment type
+      var litEff = $('#id_litter_effects'),
+        litEffNotes = $('#id_litter_effect_notes'),
+        litterDiv = litEff.parent().parent().parent();
+      if (["Rp", "Dv", "Ot"].indexOf("{{animal_group.experiment.type}}")>=0){
+        litterDiv.show();
+      } else {
+        litterDiv.hide();
+        litEff.val("NA");
+        litEffNotes.val("");
+      }
+
+
     });
   </script>
 

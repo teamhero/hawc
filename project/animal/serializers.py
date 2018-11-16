@@ -20,7 +20,6 @@ class ExperimentSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['url'] = instance.get_absolute_url()
         ret['type'] = instance.get_type_display()
-        ret['litter_effects'] = instance.get_litter_effects_display()
         ret['is_generational'] = instance.is_generational()
         ret['cas_url'] = instance.cas_url
         return ret
@@ -111,6 +110,7 @@ class EndpointSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+
         ret['url'] = instance.get_absolute_url()
         ret['dataset_increasing'] = instance.dataset_increasing
         ret['variance_name'] = instance.variance_name
@@ -120,6 +120,8 @@ class EndpointSerializer(serializers.ModelSerializer):
         ret['monotonicity'] = instance.get_monotonicity_display()
         ret['trend_result'] = instance.get_trend_result_display()
         ret['additional_fields'] = json.loads(instance.additional_fields)
+        ret['litter_effects_display'] = instance.get_litter_effects_display()
+        ret['experiment_type'] = instance.animal_group.experiment.type
         models.EndpointGroup.getStdevs(ret['variance_type'], ret['groups'])
         models.EndpointGroup.percentControl(ret['data_type'], ret['groups'])
         models.EndpointGroup.getConfidenceIntervals(ret['data_type'], ret['groups'])
