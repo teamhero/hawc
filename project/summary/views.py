@@ -462,6 +462,8 @@ class EvidenceProfileNew(BaseCreate):
                 hawcuser = self.request.user,
                 stream_type = stream["stream_type"],
                 stream_title = stream["stream_title"],
+                confidence_judgement = json.dumps(stream["confidence_judgement"]),
+                summary_of_findings = stream["summary_of_findings"],
                 order = stream["order"],
                 confidence_judgement = json.dumps(stream["confidence_judgement"]),
                 outcomes = json.dumps(stream["outcomes"]),
@@ -478,7 +480,7 @@ class EvidenceProfileNew(BaseCreate):
                         hawcuser = self.request.user,
                         scenario_name = scenario["scenario_name"],
                         outcome = json.dumps(scenario["outcome"]),
-                        summary_of_findings = json.dumps(scenario["summary_of_findings"]),
+                        summary_of_findings = scenario["summary_of_findings"],
                         studies = json.dumps(scenario["studies"]),
                         confidencefactors_increase = json.dumps(scenario["confidencefactors_increase"]),
                         confidencefactors_decrease = json.dumps(scenario["confidencefactors_decrease"]),
@@ -543,6 +545,8 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
             streamToSave.hawcuser = self.request.user
             streamToSave.stream_type = stream["stream_type"]
             streamToSave.stream_title = stream["stream_title"]
+            streamToSave.confidence_judgement = json.dumps(stream["confidence_judgement"])
+            streamToSave.summary_of_findings = stream["summary_of_findings"]
             streamToSave.order = stream["order"]
             streamToSave.confidence_judgement = json.dumps(stream["confidence_judgement"])
             streamToSave.outcomes = json.dumps(stream["outcomes"])
@@ -574,7 +578,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
                     scenarioToSave.hawcuser = self.request.user
                     scenarioToSave.scenario_name = scenario["scenario_name"]
                     scenarioToSave.outcome = json.dumps(scenario["outcome"])
-                    scenarioToSave.summary_of_findings = json.dumps(scenario["summary_of_findings"])
+                    scenarioToSave.summary_of_findings = scenario["summary_of_findings"]
                     scenarioToSave.studies = json.dumps(scenario["studies"])
                     scenarioToSave.confidencefactors_increase = json.dumps(scenario["confidencefactors_increase"])
                     scenarioToSave.confidencefactors_decrease = json.dumps(scenario["confidencefactors_decrease"])
@@ -679,7 +683,6 @@ def getEvidenceProfileDictionary(object):
         # profile's existing child streams
         returnValue = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
         returnValue["id"] = object.pk
-        print(returnValue)
 
         # Add a serialized version of the Evidence Profile object's streams to evidenceProfile, and copy the stream's primary key over into its
         # "fields" dictionary for retention in a later step
@@ -705,7 +708,6 @@ def getEvidenceProfileDictionary(object):
         # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, include an additional attribute for the profile's child streams
         returnValue = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
         returnValue["id"] = models.EvidenceProfile().pk
-        print(returnValue)
         returnValue["streams"] = []
 
     returnValue["cross_stream_confidence_judgement"] = json.loads(returnValue["cross_stream_confidence_judgement"])

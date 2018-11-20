@@ -89,7 +89,7 @@ class EvidenceProfileStreamsFormset extends Component {
                 stream_type_optionSet={this.props.config.streamTypes}
                 stream_title={this.streams[i].stream.object.stream_title}
                 confidence_judgement={this.streams[i].stream.object.confidence_judgement}
-                outcomes={this.streams[i].stream.object.outcomes}
+                summary_of_findings={this.streams[i].stream.object.summary_of_findings}
                 scenarios={this.streams[i].stream.object.scenarios}
                 confidenceJudgements={this.props.confidenceJudgements}
                 idPrefix={this.props.config.streamIdPrefix}
@@ -174,7 +174,7 @@ class EvidenceProfileStreamsFormset extends Component {
                         stream_type_optionSet={this.props.config.streamTypes}
                         stream_title={this.streams[streamIndex].stream.object.stream_title}
                         confidence_judgement={this.streams[streamIndex].stream.object.confidence_judgement}
-                        outcomes={this.streams[streamIndex].stream.object.outcomes}
+                        summary_of_findings={this.streams[streamIndex].stream.object.summary_of_findings}
                         scenarios={this.streams[streamIndex].stream.object.scenarios}
                         confidenceJudgements={this.props.confidenceJudgements}
                         idPrefix={this.props.config.streamIdPrefix}
@@ -407,17 +407,31 @@ class StreamDiv extends Component {
        // First, call the super-class's constructor
         super(props);
 
+        // Copy syntactically-valid values from this.props into this object, using default values if the versions in this.props are missing or invalid
         this.pk = (("pk" in props) && (props.pk !== null) && (typeof(props.pk) === "number")) ? props.pk : 0;
         this.stream_type = (("stream_type" in props) && (props.stream_type !== null)) ? props.stream_type : "";
         this.stream_title = (("stream_title" in props) && (props.stream_title !== null)) ? props.stream_title : "";
 
+        // Copy a syntactically-valid this.props.confidence_judgement to this object, defaulting to to an empty judgement if the version in props is missing or invalid
         this.confidence_judgement = (("confidence_judgement" in props) && (props.confidence_judgement !== null) && (typeof(props.confidence_judgement) === "object")) ? props.confidence_judgement : {
             title: "",
             score: "",
             explanation: "",
-        }
+        };
 
-        this.outcomes = (("outcomes" in props) && (props.outcomes !== null) && (typeof(props.outcomes) === "object") && (Array.isArray(props.outcomes))) ? props.outcomes : [];
+        // Copy a syntactically-valid this.props.summary_of_findings to this object, defaulting to to an empty summary if the version in props is missing or invalid
+        this.summary_of_findings = (
+            ("summary_of_findings" in this.props)
+            && (this.props.summary_of_findings !== null)
+            && (typeof(this.props.summary_of_findings) === "object")
+            && ("title" in this.props.summary_of_findings)
+            && ("summary" in this.props.summary_of_findings)
+        ) ? this.props.summary_of_findings : {
+            title: "",
+            summary: "",
+        };
+
+        // Copy a syntactically-valid this.props.scenarios to thios object, defualting to an empty array if the version in props is missing or invalid
         this.scenarios = (("scenarios" in props) && (props.scenarios !== null) && (typeof(props.scenarios) === "object") && (Array.isArray(props.scenarios))) ? props.scenarios : [];
 
         // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
@@ -588,7 +602,40 @@ class StreamDiv extends Component {
 
                 <br className={"streamsClearBoth"} />
 
-                <div className={"streamPartDiv"}>
+                <div className={"streamPartDiv streamsClearBoth"}>
+                    <div className={"streamPart_summaryOfFindings"}>
+                        <br />
+                        <label htmlFor={this.fieldPrefix + "_summary_of_findings_title"} className={"control-label"}>Within-Stream Summary of Findings<br /><span style={{fontSize:"0.8em",}}>Title/Short Summary</span></label>
+                        <div className={"controls"}>
+                            <InputSummaryOfFindingsTitle
+                                ref={
+                                    (input) => {
+                                        this.summaryOfFindingsTitleReference = input;
+                                    }
+                                }
+                                id={this.fieldPrefix + "_summary_of_findings_title"}
+                                value={this.summary_of_findings.title}
+                            />
+                        </div>
+
+                        <label htmlFor={this.fieldPrefix + "_summary_of_findings_summary"} className={"control-label"}><span style={{fontSize:"0.8em",}}>Full Summary</span></label>
+                        <div className={"controls"}>
+                            <TextAreaSummaryOfFindingsSummary
+                                ref={
+                                    (input) => {
+                                        this.summaryOfFindingsSummaryReference = input;
+                                    }
+                                }
+                                id={this.fieldPrefix + "_summary_of_findings_summary"}
+                                value={this.summary_of_findings.summary}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <br className={"streamsClearBoth"} />
+
+                <div className={"streamPartDiv streamsClearBoth"}>
                     <div className={"streamPart_leftConfidenceJudgement"}>
                         <label htmlFor={this.fieldPrefix + "_confidence_judgement_title"} className={"control-label"}>Within-Stream Confidence Judgement<br /><span style={{fontSize:"0.8em",}}>Title</span></label>
                         <div className={"controls"}>
@@ -823,7 +870,84 @@ class InputStreamTitle extends Component {
 }
 
 
-// This Component class is used to create an input field for the "Within-Stream" confidence judgment
+// This Component class is used to create an input field for the Stream's overall Summary-of-Findings title
+class InputSummaryOfFindingsTitle extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor and properly bind its updateField method
+        super(props);
+        this.updateField = this.updateField.bind(this);
+
+        this.state = {
+            value: props.value
+        };
+    }
+
+    // This method update the tag's state with the new value of the contained input
+    updateField(event) {
+        this.setState(
+            {
+                value: event.target.value
+            }
+        );
+    }
+
+    // This method generates the HTML code for this Component
+    render() {
+        return (
+            <input
+                id={this.props.id}
+                className={"span12 textinput textInput"}
+                type={"text"}
+                maxLength={"50"}
+                name={this.props.id}
+                value={this.state.value}
+                onChange={(e) => this.updateField(e)}
+            />
+        );
+    }
+}
+
+
+// This Component class is used to create a textarea field for a stream's Summary-of-Findings summary
+class TextAreaSummaryOfFindingsSummary extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor and properly bind its updateField method
+        super(props);
+        this.updateField = this.updateField.bind(this);
+
+        this.state = {
+            value: props.value
+        };
+    }
+
+    // Update the tag's state with the new value of the contained textarea
+    updateField(event) {
+        this.setState(
+            {
+                value: event.target.value
+            }
+        );
+    }
+
+    // Place the desired textarea on the page
+    render() {
+        return (
+            <textarea
+                id={this.props.id}
+                className={"span12"}
+                cols={"80"}
+                rows={"4"}
+                name={this.props.id}
+                value={this.state.value}
+                onChange={(e) => this.updateField(e)}
+            >
+            </textarea>
+        );
+    }
+}
+
+
+// This Component class is used to create an input field for the "Within-Stream" Confidence Judgment title
 class InputConfidenceJudgementTitle extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
