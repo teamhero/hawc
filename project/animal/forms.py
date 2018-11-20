@@ -82,17 +82,12 @@ class ExperimentForm(ModelForm):
         helper.add_fluid_row('name', 2, "span6")
         helper.add_fluid_row('chemical', 3, "span4")
         helper.add_fluid_row('purity_available', 4, ["span2", "span2", "span2", "span6"])
-        helper.add_fluid_row('litter_effects', 2, "span6")
         return helper
 
     PURITY_QUALIFIER_REQ = "Qualifier must be specified"
     PURITY_QUALIFIER_NOT_REQ = "Qualifier must be blank if purity is not available"
     PURITY_REQ = "A purity value must be specified"
     PURITY_NOT_REQ = "Purity must be blank if purity is not available"
-    LIT_EFF_REQ = "Litter effects required if a reproductive/developmental study"
-    LIT_EFF_NOT_REQ = "Litter effects must be NA if non-reproductive/developmental study"
-    LIT_EFF_NOTES_REQ = 'Notes are required if litter effects are "Other"'
-    LIT_EFF_NOTES_NOT_REQ = "Litter effect notes should be blank if effects are not-applicable"
 
     def clean(self):
         cleaned_data = super().clean()
@@ -101,8 +96,6 @@ class ExperimentForm(ModelForm):
         purity_qualifier = cleaned_data.get("purity_qualifier")
         purity = cleaned_data.get("purity")
         type_ = cleaned_data.get('type')
-        litter_effects = cleaned_data.get("litter_effects")
-        litter_effect_notes = cleaned_data.get("litter_effect_notes")
 
         if purity_available and purity_qualifier is "":
             self.add_error('purity_qualifier', self.PURITY_QUALIFIER_REQ)
@@ -115,18 +108,6 @@ class ExperimentForm(ModelForm):
 
         if not purity_available and purity is not None:
             self.add_error('purity', self.PURITY_NOT_REQ)
-
-        if type_ in ["Rp", "Dv"]:
-            if litter_effects == "NA":
-                self.add_error('litter_effects', self.LIT_EFF_REQ)
-        elif type_ != "Ot" and litter_effects != "NA":
-            self.add_error('litter_effects', self.LIT_EFF_NOT_REQ)
-
-        if litter_effects == "O" and litter_effect_notes == "":
-            self.add_error('litter_effect_notes', self.LIT_EFF_NOTES_REQ)
-
-        if litter_effects == "NA" and litter_effect_notes != "":
-            self.add_error('litter_effect_notes', self.LIT_EFF_NOTES_NOT_REQ)
 
         return cleaned_data
 
@@ -404,7 +385,7 @@ class EndpointForm(ModelForm):
                   'response_units', 'data_location', 'expected_adversity_direction',
                   'NOEL', 'LOEL', 'FEL', 'monotonicity',
                   'statistical_test', 'trend_result', 'trend_value',
-                  'power_notes', 'results_notes', 'endpoint_notes')
+                  'power_notes', 'results_notes', 'endpoint_notes', 'litter_effects', 'litter_effect_notes')
 
     def __init__(self, *args, **kwargs):
         animal_group = kwargs.pop('parent', None)
@@ -505,16 +486,24 @@ class EndpointForm(ModelForm):
         helper.add_fluid_row('response_units', 3, "span4")
         helper.add_fluid_row('NOEL', 4, "span3")
         helper.add_fluid_row('statistical_test', 3, ["span6", "span3", "span3"])
+        helper.add_fluid_row('litter_effects', 2, "span6")
 
         url = reverse('assessment:effect_tag_create', kwargs={'pk': self.instance.assessment.pk})
         helper.addBtnLayout(helper.layout[4], 0, url, "Add new effect tag", "span6")
 
         return helper
 
+    LIT_EFF_REQ = "Litter effects required if a reproductive/developmental study"
+    LIT_EFF_NOT_REQ = "Litter effects must be NA if non-reproductive/developmental study"
+    LIT_EFF_NOTES_REQ = 'Notes are required if litter effects are "Other"'
+    LIT_EFF_NOTES_NOT_REQ = "Litter effect notes should be blank if effects are not-applicable"
+
     def clean(self):
         cleaned_data = super().clean()
         obs_time = cleaned_data.get("observation_time")
         observation_time_units = cleaned_data.get("observation_time_units")
+        litter_effects = cleaned_data.get("litter_effects")
+        litter_effect_notes = cleaned_data.get("litter_effect_notes")
 
         if obs_time is not None and observation_time_units == 0:
             err = "If reporting an endpoint-observation time, time-units must be specified."
@@ -523,6 +512,22 @@ class EndpointForm(ModelForm):
         if obs_time is None and observation_time_units > 0:
             err = "An observation-time must be reported if time-units are specified"
             self.add_error('observation_time', err)
+
+        experiment_type = self.instance.animal_group.experiment.type
+
+        if experiment_type in ["Rp", "Dv"]:
+            if litter_effects == "NA":
+                self.add_error('litter_effects', self.LIT_EFF_REQ)
+        elif experiment_type != "Ot" and litter_effects != "NA":
+            self.add_error('litter_effects', self.LIT_EFF_NOT_REQ)
+
+        if litter_effects == "O" and litter_effect_notes == "":
+            self.add_error('litter_effect_notes', self.LIT_EFF_NOTES_REQ)
+
+        if litter_effects == "NA" and litter_effect_notes != "":
+            self.add_error('litter_effect_notes', self.LIT_EFF_NOTES_NOT_REQ)
+
+        return cleaned_data
 
     def clean_confidence_interval(self):
         confidence_interval = self.cleaned_data['confidence_interval']
