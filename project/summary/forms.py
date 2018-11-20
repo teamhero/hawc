@@ -719,7 +719,7 @@ class EvidenceProfileForm(forms.ModelForm):
     class Meta:
         # Set the base model and form fields for this form
         model = models.EvidenceProfile
-        fields = ('title', 'slug', 'caption', )
+        fields = ("title", "slug", "caption", )
 
     # This is the initialization method for this form object
     def __init__(self, *args, **kwargs):
@@ -727,7 +727,7 @@ class EvidenceProfileForm(forms.ModelForm):
         self.submitted_data = kwargs.get("data", None)
 
         # Attempt to get a reference to this object's parent Assessment object, and then run the superclass's initialization method
-        assessment = kwargs.pop('parent', None)
+        assessment = kwargs.pop("parent", None)
         super().__init__(*args, **kwargs)
 
         if (assessment):
@@ -866,7 +866,7 @@ class EvidenceProfileForm(forms.ModelForm):
             "evidence_profile_streams": {
                 "ordering_field": "order",
                 "retain_ordering_field": True,
-                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|order)$",
+                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|summary_of_findings_title|summary_of_findings_summary|order)$",
                 "re_replace_with": r"\1,\2",
                 "field_validation": {
                     "pk": {
@@ -901,6 +901,16 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "string",
                         "can_be_empty": True,
                     },
+                    "summary_of_findings_title": {
+                        "required": False,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                    "summary_of_findings_summary": {
+                        "required": False,
+                        "type": "strng",
+                        "can_be_empty": True,
+                    }
                 },
             },
             "stream_scenarios": {
@@ -908,7 +918,7 @@ class EvidenceProfileForm(forms.ModelForm):
                 "parent_field": "scenarios",
                 "ordering_field": "order",
                 "retain_ordering_field": True,
-                "re_match": r"^stream_(\d+)_(\d+)_scenario_(order|pk|scenario_name|outcome_score|outcome_title|outcome_explanation)$",
+                "re_match": r"^stream_(\d+)_(\d+)_scenario_(order|pk|scenario_name|outcome_score|outcome_title|outcome_explanation|summary_of_findings_title|summary_of_findings_summary)$",
                 "re_replace_with": r"\1,\2,\3",
                 "field_validation": {
                     "pk": {
@@ -936,6 +946,16 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "string",
                         "can_be_empty": True,
                     },
+                    "summary_of_findings_title": {
+                        "required": False,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                    "summary_of_findings_summary": {
+                        "required": False,
+                        "type": "strng",
+                        "can_be_empty": True,
+                    }
                 },
             },
             "effect_tags": {
@@ -1225,6 +1245,14 @@ class EvidenceProfileForm(forms.ModelForm):
                     scenario["confidencefactors_increase"] = []
                     scenario["confidencefactors_decrease"] = []
 
+                    scenario["summary_of_findings"] = {
+                        "title": scenario["summary_of_findings_title"],
+                        "summary": scenario["summary_of_findings_summary"]
+                    }
+
+                    del scenario["summary_of_findings_title"]
+                    del scenario["summary_of_findings_summary"]
+
                     if ("original_key" in scenario):
                         # This scenario includes an attribute named original_key
 
@@ -1303,6 +1331,10 @@ class EvidenceProfileForm(forms.ModelForm):
                     "score": stream["confidence_judgement_score"],
                     "name": confidence_judgement_dict[stream["confidence_judgement_score"]],
                     "explanation": stream["confidence_judgement_explanation"],
+                },
+                "summary_of_findings": {
+                    "title": stream["summary_of_findings_title"] if ("summary_of_findings_title" in stream) else "",
+                    "summary": stream["summary_of_findings_summary"] if ("summary_of_findings_summary" in stream) else "",
                 },
                 "scenarios": [{key:scenario[key] if (key != "order") else (scenario[key] * 10) for key in scenario} for scenario in stream["scenarios"]] if ("scenarios" in stream) else [],
             }

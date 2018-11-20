@@ -13,6 +13,7 @@ class EvidenceProfileScenario {
     objectAttributes = {
         pk: "number",
         outcome: "object",
+        summary_of_findings: "object",
         scenario_name: "string",
         studies: "array",
         confidencefactors_increase: "array",

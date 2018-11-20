@@ -3,7 +3,7 @@ from operator import methodcaller
 import json
 
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -789,6 +789,7 @@ class EvidenceProfileStream(models.Model):
     order = models.PositiveSmallIntegerField()
     stream_type = models.PositiveSmallIntegerField(choices=STUDY_TYPE_CHOICES, default=BIOASSAY)
     stream_title = models.CharField(max_length=128, help_text="Enter the title of this profile streaam (spaces and special-characters allowed).")
+    summary_of_findings = JSONField(default={})
     confidence_judgement = models.TextField(default="{}")
 
     # Track the date/time when this object was created and updated
@@ -835,6 +836,7 @@ class EvidenceProfileScenario(models.Model):
     # Declare the basic attributes for this object
     order = models.PositiveSmallIntegerField()
     outcome = models.TextField(default="{}")
+    summary_of_findings = JSONField(default={})
     scenario_name = models.CharField(max_length=128, help_text="(optional) If a stream only has one scenario, there is no reason to give it a name", blank=True)
     studies = models.TextField(default="[]")
     confidencefactors_increase = models.TextField(default="[]")
