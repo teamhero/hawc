@@ -719,7 +719,7 @@ class EvidenceProfileForm(forms.ModelForm):
     class Meta:
         # Set the base model and form fields for this form
         model = models.EvidenceProfile
-        fields = ("title", "slug", "caption", )
+        fields = ("title", "slug", "caption", "one_scenario_per_stream")
 
     # This is the initialization method for this form object
     def __init__(self, *args, **kwargs):
@@ -788,6 +788,11 @@ class EvidenceProfileForm(forms.ModelForm):
         # Iterate through the new set of fields and add them to self.fields
         for key, value in new_fields.items():
             self.fields[key] = value
+
+        self.fields["one_scenario_per_stream"].widget.attrs["onclick"] = "onlyOneScenarioPerStream(this)"
+
+        print(self.fields["one_scenario_per_stream"].initial)
+        print(self.fields["one_scenario_per_stream"].widget.attrs)
 
         # Set the desired helper classes, etc. for this form
         self.helper = self.setHelper()

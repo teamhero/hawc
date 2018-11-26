@@ -1032,7 +1032,7 @@ class TextAreaOutcomeExplanation extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the
 // Scenarios within an individual Evidence Profile Stream
-export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divId, config, confidenceJudgements, csrf_token) {
+export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divId, config, confidenceJudgements, csrf_token, onlyOneProfilePerStream) {
     // First, look for the <div> element in the Evidence Profile Stream that will hold the Scenarios -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
@@ -1045,6 +1045,8 @@ export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divI
             let scenariosFormsetDiv = document.getElementById(divId);
             if (scenariosFormsetDiv !== null) {
                 // The <div> element intended to hold this formset exists, render it
+
+                console.log(onlyOneProfilePerStream);
 
                 ReactDOM.render(
                     <EvidenceProfileScenariosFormset

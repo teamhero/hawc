@@ -720,6 +720,7 @@ class EvidenceProfile(models.Model):
     caption = models.TextField(default="", blank=True)
     cross_stream_confidence_judgement = models.TextField(default="{}")
     cross_stream_inferences = models.TextField(default="[]")
+    one_scenario_per_stream = models.BooleanField(default=False, verbose_name="Only One Scenario per Stream?", help_text="If checked, this evidence profile table wlll only have one outcome scenario per profile stream")
     published = models.BooleanField(default=False)
 
     # Track the date/time when this object was created and updated

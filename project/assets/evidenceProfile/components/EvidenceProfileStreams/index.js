@@ -9,6 +9,7 @@ import {renderEvidenceProfileScenariosFormset} from "../EvidenceProfileScenarios
 // Set the colors to be used as shades for the alternating streams
 let shade1 = "#F9F9F9";
 let shade2 = "#FFFFFF";
+let evidenceProfileStreamsFormset = undefined;
 
 // This Component object is the container for the entire Evidence Profile Stream formset
 class EvidenceProfileStreamsFormset extends Component {
@@ -89,6 +90,7 @@ class EvidenceProfileStreamsFormset extends Component {
                 stream_title={this.streams[i].stream.object.stream_title}
                 confidence_judgement={this.streams[i].stream.object.confidence_judgement}
                 summary_of_findings={this.streams[i].stream.object.summary_of_findings}
+                onlyOneScenarioPerStream={this.props.onlyOneScenarioPerStream}
                 scenarios={this.streams[i].stream.object.scenarios}
                 confidenceJudgements={this.props.confidenceJudgements}
                 idPrefix={this.props.config.streamIdPrefix}
@@ -405,9 +407,9 @@ class StreamDiv extends Component {
         super(props);
 
         // Copy syntactically-valid values from this.props into this object, using default values if the versions in this.props are missing or invalid
-        this.pk = (("pk" in props) && (props.pk !== null) && (typeof(props.pk) === "number")) ? props.pk : 0;
-        this.stream_type = (("stream_type" in props) && (props.stream_type !== null)) ? props.stream_type : "";
-        this.stream_title = (("stream_title" in props) && (props.stream_title !== null)) ? props.stream_title : "";
+        this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
+        this.stream_type = (("stream_type" in this.props) && (this.props.stream_type !== null)) ? this.props.stream_type : "";
+        this.stream_title = (("stream_title" in this.props) && (this.props.stream_title !== null)) ? this.props.stream_title : "";
 
         // Copy a syntactically-valid this.props.confidence_judgement to this object, defaulting to to an empty judgement if the version in props is missing or invalid
         this.confidence_judgement = (("confidence_judgement" in props) && (props.confidence_judgement !== null) && (typeof(props.confidence_judgement) === "object")) ? props.confidence_judgement : {
@@ -435,6 +437,10 @@ class StreamDiv extends Component {
         this.plusOne = this.props.index + 1;
         this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne;
         this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
+
+        this.state = {
+            "onlyOneScenarioPerStream": (("onlyOneScenarioPerStream" in this.props) && (this.props.onlyOneScenarioPerStream !== null) && (typeof(this.props.onlyOneScenarioPerStream) === "boolean")) ? this.props.onlyOneScenarioPerStream : false,
+        };
     }
 
     render() {
@@ -690,6 +696,7 @@ class StreamDiv extends Component {
         );
     }
 
+    // This method executes after this component has mounted (loaded) correctly
     componentDidMount() {
         renderEvidenceProfileScenariosFormset(
             this.props.profileId,
@@ -697,8 +704,17 @@ class StreamDiv extends Component {
             this.fieldPrefix + "_scenariosFormset",
             this.props.scenariosFormsetConfig,
             this.props.confidenceJudgements,
-            this.props.csrf_token
+            this.props.csrf_token,
+            this.props.onlyOneScenarioPerStream
         );
+    }
+
+    // This method executes after the component has been updated in some way
+    componentDidUpdate() {
+        if ((this.scenarios.length > 1) && (this.state.onlyOneScenarioPerStream)) {
+            // This stream has more than one scenario, and it is being limited to only one, chop the rest of the scenario objects
+            console.log("Removing Scenario(s)");
+        }
     }
 }
 
@@ -1034,25 +1050,57 @@ class TextAreaConfidenceJudgementExplanation extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the
 // individual Evidence Profile Streams
-export function renderEvidenceProfileStreamsFormset(profileId, streams, formConfig, streamsConfig) {
+export function renderEvidenceProfileStreamsFormset(profileId, streams, formConfig, streamsConfig, onlyOneScenarioPerStream) {
     // First, look for the <div> element in the Evidence Profile form that holds the profile's caption -- the Streams'  formset will be just
     // beneath the caption
-    let captionDivList = document.querySelectorAll("#" + formConfig.captionDiv);
-    if (captionDivList.length > 0) {
+    let targetDivList = document.querySelectorAll("#" + formConfig.oneScenarioPerStreamDiv);
+    if (targetDivList.length > 0) {
         // The desired element was found in the page, attempt to add the new element as desired
 
-        captionDivList[0].insertAdjacentHTML("afterend", '<hr style="margin-top:32px; border-width:1px;" /><div id="' + streamsConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div><hr style="margin-top:-16px; margin-bottom:32px; border-width:2px;" />');
-        ReactDOM.render(
+        targetDivList[0].insertAdjacentHTML("afterend", '<hr style="margin-top:32px; border-width:1px;" /><div id="' + streamsConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div><hr style="margin-top:-16px; margin-bottom:32px; border-width:2px;" />');
+        evidenceProfileStreamsFormset = ReactDOM.render(
             <EvidenceProfileStreamsFormset
                 profileId={profileId}
                 streams={streams}
                 config={streamsConfig}
                 confidenceJudgements={formConfig.confidenceJudgements}
+                onlyOneScenarioPerStream={onlyOneScenarioPerStream}
                 csrf_token={formConfig.csrf_token}
             />,
             document.getElementById(streamsConfig.divId)
         );
     }
 }
+
+
+// This function is used to either:
+//      * Limit each stream to only one child scenario object
+//      * Allow each stream to have multiple child scenario objects
+// THIS ACTIVITY CAN POTENTIALLy DELETE A LOT OF DATA IF YOU ARE NOT CAREFUL!!
+export function limitStreamsToOneScenario(element) {
+    if ((evidenceProfileStreamsFormset !== undefined) && (element !== undefined) && (typeof(element.checked) === "boolean")) {
+        // The Evidence Profile Stream Formset has been instantiated and the element argument has a Boolean "checked" attribute, continue
+
+        var iTo = evidenceProfileStreamsFormset.streams.length;
+        for (var i=0; i<iTo; i++) {
+            evidenceProfileStreamsFormset.streamReferences["div_" + evidenceProfileStreamsFormset.streams[i].div.props.index].setState(
+                {
+                    onlyOneScenarioPerStream: element.checked,
+                }
+            );
+       }
+
+        if (element.checked) {
+            // This element was checked, make sure the user wants to limit each stream to one scenario
+            // This is done because any excess scenarios will be chopped off and not retrievable without re-loading the form (without saving)
+            console.log("Limit To One");
+        }
+        else {
+            // This element was not checked, allow each stream to have more than one scenario
+            console.log("Allow Multiple");
+        }
+    }
+} 
+
 
 export default EvidenceProfileStreamsFormset;
