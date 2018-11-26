@@ -10,7 +10,7 @@ import {
 import Library from "./Library";
 import EvidenceProfileStream from "./EvidenceProfileStream";
 
-import {renderEvidenceProfileStreamsFormset} from "./components/EvidenceProfileStreams";
+import {renderEvidenceProfileStreamsFormset, limitStreamsToOneScenario} from "./components/EvidenceProfileStreams";
 import {renderCrossStreamInferencesFormset} from "./components/CrossStreamInferences";
 
 // This class is intended to hold an Evidence Profile object -- essentially all of the data needed to generate an Evidence Profile report,
@@ -48,6 +48,7 @@ class EvidenceProfile {
             caption: "string",
             cross_stream_conclusions: "object",
             streams: "array",
+            "one_scenario_per_stream": "boolean",
         };
 
         if (typeof(configuration) === "object") {
@@ -94,7 +95,7 @@ class EvidenceProfile {
                                 EvidenceProfile.object[attributeName] = [];
                                 break;
                             default:
-                                // The desired type was not handled (e.g. a number), set the object's attribute to null
+                                // The desired type was not handled (e.g. a Boolean), set the object's attribute to null
                                 EvidenceProfile.object[attributeName] = null;
                         }
                     }
@@ -124,12 +125,17 @@ class EvidenceProfile {
 
     // This function builds the formset for the "Evidence Profile Streams" portion of the Evidence Profile form
     static buildEvidenceProfileStreamsFormset() {
-        renderEvidenceProfileStreamsFormset(EvidenceProfile.object.id, EvidenceProfile.object.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams);
+        renderEvidenceProfileStreamsFormset(EvidenceProfile.object.id, EvidenceProfile.object.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams, EvidenceProfile.object.one_scenario_per_stream);
     }
 
     // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
     static buildCrossStreamInferencesFormset() {
         renderCrossStreamInferencesFormset(EvidenceProfile.object.id, EvidenceProfile.object.cross_stream_inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
+    }
+
+    // This function goes through all of the child streams and makes sure they are limited to one single scenario each
+    static onlyOneScenarioPerStream(element) {
+        limitStreamsToOneScenario(element);
     }
 }
 

@@ -1,6 +1,7 @@
 {% extends 'portal.html' %}
 {% load keyvalue %}
 {% load evidenceprofile_confidencejudgement %}
+{% load evidenceprofile_summaryoffindings %}
 {% load evidenceprofile_listobjects %}
 
 {% block title %}
@@ -127,11 +128,27 @@
 
               <td>
                 {% evidenceprofile_confidencejudgement scenario.outcome %}
+
+                {% if "title" in scenario.summary_of_findings and scenario.summary_of_findings.title != "" %}
+                  <br />
+                  <hr style="margin:-6px 0 0 0;" />
+                  <br />
+
+                  {% evidenceprofile_summaryoffindings scenario.summary_of_findings %}
+                {% endif %}
               </td>
 
               {% if forloop.counter == 1 %}
                 <td rowspan="{{streamDataRows|keyvalue:stream.pk}}">
                   {% evidenceprofile_confidencejudgement stream.confidence_judgement %}
+
+                  {% if "title" in stream.summary_of_findings and stream.summary_of_findings.title != "" %}
+                    <br />
+                    <hr style="margin:-6px 0 0 0;" />
+                    <br />
+
+                    {% evidenceprofile_summaryoffindings stream.summary_of_findings %}
+                  {% endif %}
                 </td>
               {% endif %}
             </tr>

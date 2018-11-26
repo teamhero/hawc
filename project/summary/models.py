@@ -705,7 +705,10 @@ class EvidenceProfile(models.Model):
     title = models.CharField(max_length=128, help_text="Enter the title of this evidence profile table (spaces and special-characters allowed).")
     slug = models.SlugField(verbose_name="URL Name", help_text="The URL (web address) used to describe this object (no spaces or special-characters).")
     caption = models.TextField(default="", blank=True)
-    cross_stream_conclusions = models.TextField(default="{}")
+    cross_stream_confidence_judgement = models.TextField(default="{}")
+    cross_stream_inferences = models.TextField(default="[]")
+    one_scenario_per_stream = models.BooleanField(default=False, verbose_name="Only One Scenario per Stream?", help_text="If checked, this evidence profile table wlll only have one outcome scenario per profile stream")
+    published = models.BooleanField(default=False)
 
     # Track the date/time when this object was created and updated
     created = models.DateTimeField(auto_now_add=True)
