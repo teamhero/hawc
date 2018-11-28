@@ -34,7 +34,7 @@ class EvidenceProfileScenariosFormset extends Component {
         // First, look for a "scenarios" object in the incoming props -- defaulting to an empty array if none is found
         let iterateOverScenarios = (("scenarios" in this.props) && (typeof(this.props.scenarios) === "object") && (this.props.scenarios !== null)) ? this.props.scenarios : [];
 
-        if ((this.onlyOneScenario) && (iterateOverScenarios.length > 1)) {
+        if ((this.props.onlyOneScenario) && (iterateOverScenarios.length > 1)) {
             // This parent stream is ony supposed to contain one scenario, but it contains more, only retain the first one
             iterateOverScenarios = [
                 iterateOverScenarios[0],
@@ -143,6 +143,11 @@ class EvidenceProfileScenariosFormset extends Component {
                     className="btn btn-primary pull-right"
                     type="button"
                     onClick={this.handleButtonClick}
+                    style={
+                        {
+                            visibility: ((this.state.onlyOneScenario) && (this.scenarios.length > 0)) ? "hidden" : "visible",
+                        }
+                    }
                 >
                     New Scenario
                 </button>
@@ -849,7 +854,6 @@ class InputScenarioName extends Component {
                 className="span12 textinput textInput"
                 type="text"
                 maxLength="50"
-                required="required"
                 name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
@@ -888,7 +892,6 @@ class InputSummaryOfFindingsTitle extends Component {
                 className={"span12 textinput textInput"}
                 type={"text"}
                 maxLength={"50"}
-                required={"required"}
                 name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
@@ -927,7 +930,6 @@ class TextAreaSummaryOfFindingsSummary extends Component {
                 className={"span12"}
                 cols={"80"}
                 rows={"4"}
-                required={"required"}
                 name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
@@ -967,7 +969,6 @@ class InputOutcomeTitle extends Component {
                 className={"span12 textinput textInput"}
                 type={"text"}
                 maxLength={"50"}
-                required={"required"}
                 name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
@@ -1018,7 +1019,6 @@ class SelectOutcomeScore extends Component {
             <select
                 id={this.props.id}
                 name={this.props.id}
-                required={"required"}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}
             >
@@ -1058,7 +1058,6 @@ class TextAreaOutcomeExplanation extends Component {
                 className="span12"
                 cols="40"
                 rows="4"
-                required="required"
                 name={this.props.id}
                 value={this.state.value}
                 onChange={(e) => this.updateField(e)}

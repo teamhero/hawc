@@ -600,6 +600,37 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
         # Get a JSON-friendly version of the available stream type options
         returnValue["stream_types"] = {type["value"]: type["name"] for type in models.get_serialized_stream_types()}
 
+        # Begin building a list of table cloumns that will be shown on the page, only include the outcome column (scenario name) if the evidence
+        # profile table's streams are not limited to only one scenario per stream
+        returnValue["columnsToShow"] = ["outcome"] if (not returnValue["evidenceProfile"]["one_scenario_per_stream"]) else []
+        returnValue["columnsToShow"].extend(["studies", "increaseConfidence", "decreaseConfidence"])
+
+        if (returnValue["evidenceProfile"]["one_scenario_per_stream"]):
+            # This evidence profile table's streams are limited to only one scenario per stream, check to see if the scenario confidence judgement column
+            # needs to be included in the table by iterating over each scenario within each stream and counting all those that include either a confidence
+            # judgement (outcome) or a summary of findings
+
+            scenarioConfidenceJudgementCount = 0
+            for stream in returnValue["evidenceProfile"]["streams"]:
+                for scenario in stream["scenarios"]:
+                    if ((scenario["outcome"] != {}) or (scenario["summary_of_findings"] != {})):
+                        scenarioConfidenceJudgementCount = scenarioConfidenceJudgementCount + 1
+
+            if (scenarioConfidenceJudgementCount > 0):
+                # At least one scenario had a confidence judgement or a summary of findings, add the scenario confidence judgement column to the table
+                returnValue["columnsToShow"].append("scenarioConfidenceJudgement")
+        else:
+            # This evidence profile table's streams are not limited to only one scenario per stream, add the scenario confidence judgement column to the table
+            returnValue["columnsToShow"].append("scenarioConfidenceJudgement")
+
+        # Add the remaining columns that will be included in the table
+        returnValue["columnsToShow"].extend(["streamConfidenceJudgement", "crossStreamInference", "crossStreamConfidenceJudgement"])
+
+        # The stream names will span two fewer columns than the total width
+        returnValue["streamNameSpan"] = len(returnValue["columnsToShow"]) - 2
+        returnValue["columnWidth"] = 100 / len(returnValue["columnsToShow"])
+        print(returnValue["columnWidth"])
+
         return returnValue
 
 
