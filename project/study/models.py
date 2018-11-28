@@ -334,7 +334,6 @@ class Study(Reference):
             ser['ask_author'],
             cleanHTML(ser['summary']),
             ser['published'],
-            ser['editable']
         )
 
     @staticmethod

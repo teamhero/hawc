@@ -436,6 +436,7 @@ class DataPivotUpload(DataPivot):
     excel_file = models.FileField(
         verbose_name="Excel file",
         upload_to="data_pivot_excel",
+        max_length=250,
         help_text="Upload an Excel file in XLSX format.",
     )
     worksheet_name = models.CharField(
