@@ -987,12 +987,12 @@ class EvidenceProfileForm(forms.ModelForm):
                      "outcome": {
                         "required": True,
                         "type": "string",
-                        "can_be_empty": False,
+                        "can_be_empty": True,
                     },
                     "scenario_name": {
                         "required": True,
                         "type": "string",
-                        "can_be_empty": False,
+                        "can_be_empty": True,
                     },
                     "summary_of_findings_score": {
                         "required": True,
@@ -1304,13 +1304,38 @@ class EvidenceProfileForm(forms.ModelForm):
                     scenario["confidencefactors_increase"] = []
                     scenario["confidencefactors_decrease"] = []
 
-                    scenario["summary_of_findings"] = {
-                        "title": scenario["summary_of_findings_title"],
-                        "summary": scenario["summary_of_findings_summary"]
-                    }
+                    if ((scenario["summary_of_findings_title"] != "") or (scenario["summary_of_findings_summary"] != "")):
+                        # The summary of findings is not empty, save it as an object
 
+                        scenario["summary_of_findings"] = {
+                            "title": scenario["summary_of_findings_title"],
+                            "summary": scenario["summary_of_findings_summary"]
+                        }
+                    else:
+                        # The summary of findings is empty, save an empty object instead
+                        scenario["summary_of_findings"] = {}
+
+                    # Remove the scenario fields related the the summary of findings
                     del scenario["summary_of_findings_title"]
                     del scenario["summary_of_findings_summary"]
+
+                    if ((scenario["outcome_title"] != "") or (scenario["outcome_explanation"] != "")):
+                        # The outcome is not empty, save it as an object
+
+                        scenario["outcome"] = {
+                            "title": scenario["outcome_title"],
+                            "explanation": scenario["outcome_explanation"],
+                            "score": scenario["outcome_score"],
+                            "name": confidence_judgement_dict[scenario["outcome_score"]] if (scenario["outcome_score"] in confidence_judgement_dict) else "",
+                        }
+                    else:
+                        # The outcome is empty, save an empty object instead
+                        scenario["outcome"] = {}
+
+                    # Delete the individual outcome-related fields from the cleaned submitted data (they were just combined into a single "outcome" attribute)
+                    del scenario["outcome_title"]
+                    del scenario["outcome_explanation"]
+                    del scenario["outcome_score"]
 
                     if ("original_key" in scenario):
                         # This scenario includes an attribute named original_key
@@ -1412,22 +1437,7 @@ class EvidenceProfileForm(forms.ModelForm):
         # stream's set of scenarios out to cleaned_data["scenarios"]
         # The scenarios are moved because they are child objects stored in a separate, related database table
         for index, stream in enumerate(unordered_types["evidence_profile_streams"]["desired_order"]):
-            streamOutcomes = {}
-            for outcome in stream["outcomes"]:
-                streamOutcomes[outcome["title"] + "|" + str(outcome["score"])] = outcome
-
-            for scenario in stream["scenarios"]:
-                scenario["outcome"] = streamOutcomes[scenario["outcome"]] if (scenario["outcome"] in streamOutcomes) else scenario["outcome"]
-
-                scenario["summary_of_findings"] = {
-                    "score": scenario["summary_of_findings_score"],
-                    "name": confidence_judgement_dict[scenario["summary_of_findings_score"]],
-                    "explanation": scenario["summary_of_findings_explanation"],
-                }
-
-                del scenario["summary_of_findings_score"]
-                del scenario["summary_of_findings_explanation"]
-
+            # Move this stream's scenario objects out to an object named cleaned_data["scenarios"] and remove it from this stream object
             cleaned_data["scenarios"][index] = stream["scenarios"]
             del stream["scenarios"]
 
