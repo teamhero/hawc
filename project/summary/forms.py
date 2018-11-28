@@ -821,9 +821,6 @@ class EvidenceProfileForm(forms.ModelForm):
 
         self.fields["one_scenario_per_stream"].widget.attrs["onclick"] = "onlyOneScenarioPerStream(this)"
 
-        print(self.fields["one_scenario_per_stream"].initial)
-        print(self.fields["one_scenario_per_stream"].widget.attrs)
-
         # Set the desired helper classes, etc. for this form
         self.helper = self.setHelper()
 

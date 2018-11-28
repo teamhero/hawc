@@ -21,17 +21,25 @@ class EvidenceProfileScenariosFormset extends Component {
         super(props);
 
         // Set some variables that will be used within this Component
-        this.addButtonId = props.config.addButtonIdPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
-        this.divId = props.config.divIdPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
-        this.fieldPrefix = props.config.fieldPrefixPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
-        this.scenarioIdPrefix = props.config.scenarioIdPrefixPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
-        this.buttonSetPrefix = props.config.buttonSetPrefixPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
+        this.addButtonId = this.props.config.addButtonIdPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
+        this.divId = this.props.config.divIdPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
+        this.fieldPrefix = this.props.config.fieldPrefixPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
+        this.scenarioIdPrefix = this.props.config.scenarioIdPrefixPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
+        this.buttonSetPrefix = this.props.config.buttonSetPrefixPattern.replace(/<<streamIndex>>/, this.props.streamIndex);
+        this.newScenarioButton = null;
 
         // Bind the desired class functions to this object
         this.handleButtonClick = this.handleButtonClick.bind(this);
 
         // First, look for a "scenarios" object in the incoming props -- defaulting to an empty array if none is found
-        let iterateOverScenarios = (("scenarios" in props) && (typeof(props.scenarios) === "object") && (props.scenarios !== null)) ? props.scenarios : [];
+        let iterateOverScenarios = (("scenarios" in this.props) && (typeof(this.props.scenarios) === "object") && (this.props.scenarios !== null)) ? this.props.scenarios : [];
+
+        if ((this.onlyOneScenario) && (iterateOverScenarios.length > 1)) {
+            // This parent stream is ony supposed to contain one scenario, but it contains more, only retain the first one
+            iterateOverScenarios = [
+                iterateOverScenarios[0],
+            ];
+        }
 
         // Iterate over the incoming scenarios and use them to build the object level "scenarios" and "scenarioReferences" attributes
         let iTo = iterateOverScenarios.length;
@@ -116,6 +124,7 @@ class EvidenceProfileScenariosFormset extends Component {
 
         // Initialize this object state's "div" to the initial set of divs from this.streams
         this.state = {
+            onlyOneScenario: this.props.onlyOneScenario,
             divs: this.buildDivs(),
         };
     }
@@ -124,8 +133,20 @@ class EvidenceProfileScenariosFormset extends Component {
     render() {
         return(
             <div id={this.divId}>
-                <strong className="control-label">Profile Stream Scenarios</strong>
-                <button id={this.addButtonId} className="btn btn-primary pull-right" type="button" onClick={this.handleButtonClick}>New Scenario</button>
+                <strong className="control-label scenariosSectionTitle">Profile Stream Scenarios</strong>
+                <button
+                    id={this.addButtonId}
+                    ref={
+                        (input) => {
+                            this.newScenarioButton = input;
+                        }
+                    }
+                    className="btn btn-primary pull-right"
+                    type="button"
+                    onClick={this.handleButtonClick}
+                >
+                    New Scenario
+                </button>
                 <br className="scenariosClearBoth" />
                 {this.state.divs}
             </div>
@@ -138,77 +159,82 @@ class EvidenceProfileScenariosFormset extends Component {
             // The click event's details were passed in, and the clicked-upon element has a non-empty ID attribute, continue checking
 
             if (event.target.id === this.addButtonId) {
-                // The element clicked upon is the "Add A New Scenario" button, add a new scenario to this.scenarios and this.scenarioReferences
+                // The element clicked upon is the "Add A New Scenario" button, see if this formset is able to add a new scenario
 
-                // Get values that will be used within props for the new scenario <div>
-                let newDivIndex = Math.max(...this.scenarios.map(scenario => scenario.div.props.index)) + 1;
-                let scenarioIndex = this.scenarios.length;
+                if ((!this.state.onlyOneScenario) || (this.scenarios.length < 1)) {
+                    // Either this formset can hold more than one scenario, or it is limited, but does not hold any scenarios; add a new scenario to
+                    // this.scenarios and this.scenarioReferences
 
-                // Push a new, empty scenario into this.scenarios
-                this.scenarios.push(
-                    {
-                        scenario: new EvidenceProfileScenario(),
-                        caption: null,
-                        div: null,
-                    }
-                );
+                    // Get values that will be used within props for the new scenario <div>
+                    let newDivIndex = (this.scenarios.length > 0) ? (Math.max(...this.scenarios.map(scenario => scenario.div.props.index)) + 1) : 0;
+                    let scenarioIndex = this.scenarios.length;
 
-                // Create the new ScenarioCaption component object
-                this.scenarios[scenarioIndex].caption = <ScenarioCaption
-                    key={(newDivIndex + 0.5)}
-                    ref={
-                        (input) => {
-                            this.scenarioReferences["caption_" + newDivIndex] = input;
+                    // Push a new, empty scenario into this.scenarios
+                    this.scenarios.push(
+                        {
+                            scenario: new EvidenceProfileScenario(),
+                            caption: null,
+                            div: null,
                         }
-                    }
-                    index={newDivIndex}
-                    maxIndex={newDivIndex}
-                    order={(newDivIndex + 1)}
-                    scenario_name={this.scenarios[scenarioIndex].scenario.object.scenario_name}
-                    divId={this.divId}
-                    idPrefix={this.scenarioIdPrefix}
-                    buttonSetPrefix={this.buttonSetPrefix}
-                    handleButtonClick={this.handleButtonClick}
-                />;
+                    );
 
-                // Create the new ScenarioDiv component object
-                this.scenarios[scenarioIndex].div = <ScenarioDiv
-                    key={newDivIndex}
-                    ref={
-                        (input) => {
-                            this.scenarioReferences["div_" + newDivIndex] = input;
+                    // Create the new ScenarioCaption component object
+                    this.scenarios[scenarioIndex].caption = <ScenarioCaption
+                        key={(newDivIndex + 0.5)}
+                        ref={
+                            (input) => {
+                                this.scenarioReferences["caption_" + newDivIndex] = input;
+                            }
                         }
-                    }
-                    index={newDivIndex}
-                    maxIndex={newDivIndex}
-                    order={(newDivIndex + 1)}
-                    profileId={this.props.profileId}
-                    streamIndex={this.props.streamIndex}
-                    scenario_name={this.scenarios[scenarioIndex].scenario.object.scenario_name}
-                    outcome={this.scenarios[scenarioIndex].scenario.object.outcome}
-                    summaryOfFindings={this.scenarios[scenarioIndex].scenario.object.summary_of_findings}
-                    confidenceJudgements={this.props.confidenceJudgements}
-                    studies={this.scenarios[scenarioIndex].scenario.object.studies}
-                    effectTags_config={this.props.config.effectTagsFormset}
-                    confidencefactors_increase={this.scenarios[scenarioIndex].scenario.object.confidencefactors_increase}
-                    confidenceFactorsIncrease_config={this.props.config.confidenceFactorsIncreaseFormset}
-                    confidenceFactors_decrease={this.scenarios[scenarioIndex].scenario.object.confidencefactors_decrease}
-                    confidenceFactorsDecrease_config={this.props.config.confidenceFactorsDecreaseFormset}
-                    divId={this.divId}
-                    idPrefix={this.scenarioIdPrefix}
-                    fieldPrefix={this.fieldPrefix}
-                    buttonSetPrefix={this.buttonSetPrefix}
-                    handleButtonClick={this.handleButtonClick}
-                    scenarioReferences={this.scenarioReferences}
-                    csrf_token={this.props.csrf_token}
-                />;
+                        index={newDivIndex}
+                        maxIndex={newDivIndex}
+                        order={(newDivIndex + 1)}
+                        scenario_name={this.scenarios[scenarioIndex].scenario.object.scenario_name}
+                        divId={this.divId}
+                        idPrefix={this.scenarioIdPrefix}
+                        buttonSetPrefix={this.buttonSetPrefix}
+                        handleButtonClick={this.handleButtonClick}
+                    />;
 
-                // Set this.state.rows to the new inference rows array (inclding the new inference added to the end)
-                this.setState(
-                    {
-                        divs: this.buildDivs(),
-                    }
-                );
+                    // Create the new ScenarioDiv component object
+                    this.scenarios[scenarioIndex].div = <ScenarioDiv
+                        key={newDivIndex}
+                        ref={
+                            (input) => {
+                                this.scenarioReferences["div_" + newDivIndex] = input;
+                            }
+                        }
+                        index={newDivIndex}
+                        maxIndex={newDivIndex}
+                        order={(newDivIndex + 1)}
+                        profileId={this.props.profileId}
+                        streamIndex={this.props.streamIndex}
+                        scenario_name={this.scenarios[scenarioIndex].scenario.object.scenario_name}
+                        outcome={this.scenarios[scenarioIndex].scenario.object.outcome}
+                        summaryOfFindings={this.scenarios[scenarioIndex].scenario.object.summary_of_findings}
+                        confidenceJudgements={this.props.confidenceJudgements}
+                        studies={this.scenarios[scenarioIndex].scenario.object.studies}
+                        effectTags_config={this.props.config.effectTagsFormset}
+                        confidencefactors_increase={this.scenarios[scenarioIndex].scenario.object.confidencefactors_increase}
+                        confidenceFactorsIncrease_config={this.props.config.confidenceFactorsIncreaseFormset}
+                        confidenceFactors_decrease={this.scenarios[scenarioIndex].scenario.object.confidencefactors_decrease}
+                        confidenceFactorsDecrease_config={this.props.config.confidenceFactorsDecreaseFormset}
+                        divId={this.divId}
+                        idPrefix={this.scenarioIdPrefix}
+                            fieldPrefix={this.fieldPrefix}
+                        buttonSetPrefix={this.buttonSetPrefix}
+                        handleButtonClick={this.handleButtonClick}
+                        scenarioReferences={this.scenarioReferences}
+                        csrf_token={this.props.csrf_token}
+                    />;
+
+                    // Set this.state.divs to the new divs array (including the new scenario added to the end)
+                    this.setState(
+                        {
+                            divs: this.buildDivs(),
+                        }
+                    );
+                }
             }
             else {
                 // The element clicked upon is either a "Move Up," "Move Down" or "Remove" button from a <div> within the formset, attempt
@@ -309,6 +335,19 @@ class EvidenceProfileScenariosFormset extends Component {
                     value: (i + 1),
                 }
             );
+        }
+
+        if (this.newScenarioButton !== null) {
+            // The formset's "New Scenario" button exists, see if it needs to be hidden or made visible
+
+            if ((this.newScenarioButton.style.visibility !== "hidden") && (this.state.onlyOneScenario) && (this.scenarios.length > 0)) {
+                // The button is visible, but the formset is now limited to only one scenario, and it already has one; hide the button
+                this.newScenarioButton.style.visibility = "hidden";
+            }
+            else if (this.newScenarioButton.style.visibility !== "visible") {
+                // The button is invisible, but the formset can hold more scenarios; make it visible
+                this.newScenarioButton.style.visibility = "visible";
+            }
         }
     }
 
@@ -1036,8 +1075,10 @@ class TextAreaSummaryOfFindingsExplanation extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the
 // Scenarios within an individual Evidence Profile Stream
-export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divId, config, confidenceJudgements, csrf_token, onlyOneProfilePerStream) {
+// This function returns the reference for the created element
+export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divId, config, confidenceJudgements, csrf_token, onlyOneScenario) {
     // First, look for the <div> element in the Evidence Profile Stream that will hold the Scenarios -- this formset will placed be within that element
+    let returnValue = null;
 
     if ((divId !== null) && (divId !== "")) {
         // divId is not null and is not an empty string, continue checking it
@@ -1046,16 +1087,18 @@ export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divI
         if ((!isNaN(streamIndex)) && (streamIndex > 0)) {
             // divId matched the desired naming convention and the parent stream's ID was extracted, continue
 
+        // Clean onlyOneScenario, defaulting to a Boolean false if it is invalid
+        onlyOneScenario = ((onlyOneScenario !== null) && (typeof(onlyOneScenario) === "boolean")) ? onlyOneScenario : false;
+
             let scenariosFormsetDiv = document.getElementById(divId);
             if (scenariosFormsetDiv !== null) {
                 // The <div> element intended to hold this formset exists, render it
 
-                console.log(onlyOneProfilePerStream);
-
-                ReactDOM.render(
+                returnValue = ReactDOM.render(
                     <EvidenceProfileScenariosFormset
                         profileId={profileId}
                         scenarios={scenarios}
+                        onlyOneScenario={onlyOneScenario}
                         config={config}
                         streamIndex={streamIndex}
                         confidenceJudgements={confidenceJudgements}
@@ -1066,6 +1109,8 @@ export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divI
             }
         }
     }
+
+    return returnValue;
 }
 
 export default EvidenceProfileScenariosFormset;
