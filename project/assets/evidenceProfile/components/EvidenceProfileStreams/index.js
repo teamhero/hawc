@@ -411,6 +411,9 @@ class StreamDiv extends Component {
         this.stream_type = (("stream_type" in this.props) && (this.props.stream_type !== null)) ? this.props.stream_type : "";
         this.stream_title = (("stream_title" in this.props) && (this.props.stream_title !== null)) ? this.props.stream_title : "";
 
+        // Initialize an empty reference for this stream's child scenario formset
+        this.scenariosFormset = null;
+
         // Copy a syntactically-valid this.props.confidence_judgement to this object, defaulting to to an empty judgement if the version in props is missing or invalid
         this.confidence_judgement = (("confidence_judgement" in props) && (props.confidence_judgement !== null) && (typeof(props.confidence_judgement) === "object")) ? props.confidence_judgement : {
             score: "",
@@ -698,7 +701,7 @@ class StreamDiv extends Component {
 
     // This method executes after this component has mounted (loaded) correctly
     componentDidMount() {
-        renderEvidenceProfileScenariosFormset(
+        this.scenariosFormset = renderEvidenceProfileScenariosFormset(
             this.props.profileId,
             this.scenarios,
             this.fieldPrefix + "_scenariosFormset",
@@ -711,9 +714,43 @@ class StreamDiv extends Component {
 
     // This method executes after the component has been updated in some way
     componentDidUpdate() {
-        if ((this.scenarios.length > 1) && (this.state.onlyOneScenarioPerStream)) {
-            // This stream has more than one scenario, and it is being limited to only one, chop the rest of the scenario objects
-            console.log("Removing Scenario(s)");
+        if (this.scenariosFormset !== null) {
+            // The reference to this stream's cchild scenarios formset is not empty, update its state
+
+            if (this.state.onlyOneScenarioPerStream) {
+                // This stream is now limited to only one scenario, update the formset's state
+
+                if (this.scenariosFormset.scenarios.length > 1) {
+                    // The formset currently contains more than one scenario, only retain the scenario at the top of the list and re-build the formset via its state
+
+                    this.scenariosFormset.scenarios = [
+                        this.scenariosFormset.scenarios[0],
+                    ];
+
+                    this.scenariosFormset.setState(
+                        {
+                            onlyOneScenario: true,
+                            divs: this.scenariosFormset.buildDivs(),
+                        }
+                    );
+                }
+                else {
+                    // The formset currently contains only one or zero scenarios, only update the onlyOneScenario Boolean flag in the formset's state
+                    this.scenariosFormset.setState(
+                        {
+                            onlyOneScenario: true,
+                        }
+                    );
+                }
+            }
+            else {
+                // The stream is no longer limited to only one scenario, update the formset's state
+                this.scenariosFormset.setState(
+                    {
+                        onlyOneScenario: true,
+                    }
+                );
+            }
         }
     }
 }
@@ -1057,6 +1094,9 @@ export function renderEvidenceProfileStreamsFormset(profileId, streams, formConf
     if (targetDivList.length > 0) {
         // The desired element was found in the page, attempt to add the new element as desired
 
+        // Clean onlyOneScenarioPerStream, defaulting to a Boolean false if it is invalid
+        onlyOneScenarioPerStream = ((onlyOneScenarioPerStream !== null) && (typeof(onlyOneScenarioPerStream) === "boolean")) ? onlyOneScenarioPerStream : false;
+
         targetDivList[0].insertAdjacentHTML("afterend", '<hr style="margin-top:32px; border-width:1px;" /><div id="' + streamsConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div><hr style="margin-top:-16px; margin-bottom:32px; border-width:2px;" />');
         evidenceProfileStreamsFormset = ReactDOM.render(
             <EvidenceProfileStreamsFormset
@@ -1082,25 +1122,53 @@ export function limitStreamsToOneScenario(element) {
         // The Evidence Profile Stream Formset has been instantiated and the element argument has a Boolean "checked" attribute, continue
 
         var iTo = evidenceProfileStreamsFormset.streams.length;
-        for (var i=0; i<iTo; i++) {
-            evidenceProfileStreamsFormset.streamReferences["div_" + evidenceProfileStreamsFormset.streams[i].div.props.index].setState(
-                {
-                    onlyOneScenarioPerStream: element.checked,
-                }
-            );
-       }
-
+        let okayToChange = false;
         if (element.checked) {
-            // This element was checked, make sure the user wants to limit each stream to one scenario
-            // This is done because any excess scenarios will be chopped off and not retrievable without re-loading the form (without saving)
-            console.log("Limit To One");
+            // The user checked the box -- this means each strimg can only hold one scenario
+
+            // First, check and see how many scenarios will be removed; iterate through the streams and see how many scenarios each one has
+            let toRemove = 0;
+            for (var i=0; i<iTo; i++) {
+                let scenarioCount = evidenceProfileStreamsFormset.streamReferences["div_" + evidenceProfileStreamsFormset.streams[i].div.props.index].scenariosFormset.scenarios.length;
+
+                if (scenarioCount > 1) {
+                    // This stream has more than one scenario, all but the first one will be removed
+                    toRemove = toRemove + (scenarioCount - 1);
+                }
+            }
+
+            if (toRemove > 0) {
+                // One or more scenarios will be removed, make sure that the user wishes to do this
+                okayToChange = confirm("This will remove " + toRemove + " scenario" + ((toRemove > 1) ? "s" : "") + " across " + iTo + " stream" + ((iTo > 1) ? "s" : ""));
+
+                if (!okayToChange) {
+                    // The user backed out of this, un-check the box
+                    element.checked = false;
+                }
+            }
+            else {
+                // No scenarios will be removed
+                okayToChange = true;
+            }
         }
         else {
-            // This element was not checked, allow each stream to have more than one scenario
-            console.log("Allow Multiple");
+            // The user un-checked the box -- this means each stream can hold multiple scenarios
+            okayToChange = true;
+        }
+
+        if (okayToChange) {
+            // All the checks came out okay, update every stream's state
+
+            for (var i=0; i<iTo; i++) {
+                evidenceProfileStreamsFormset.streamReferences["div_" + evidenceProfileStreamsFormset.streams[i].div.props.index].setState(
+                    {
+                        onlyOneScenarioPerStream: element.checked,
+                    }
+                );
+            }
         }
     }
-} 
+}
 
 
 export default EvidenceProfileStreamsFormset;

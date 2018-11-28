@@ -40,16 +40,40 @@ class EvidenceProfile {
         EvidenceProfile.configuration = {};
         EvidenceProfile.object = {};
 
-        // This defines the object attributes' names (key) and data types (value)
+        // This defines the object attributes' names (key), and data types and defaults (value)
         let objectAttributes = {
-            id: "number",
-            title: "string",
-            slug: "string",
-            caption: "string",
-            cross_stream_confidence_judgement: "object",
-            cross_stream_inferences: "array",
-            streams: "array",
-            "one_scenario_per_stream": "boolean",
+            id: {
+                type: "number",
+                default: 0,
+            },
+            title: {
+                type: "string",
+                default: "",
+            },
+            slug: {
+                type: "string",
+                default: "",
+            },
+            caption: {
+                type: "string",
+                default: "",
+            },
+            cross_stream_confidence_judgement: {
+                type: "object",
+                default: {},
+            },
+            cross_stream_inferences: {
+                type: "array",
+                default: [],
+            },
+            streams: {
+                type: "array",
+                default: [],
+            },
+            one_scenario_per_stream: {
+                type: "boolean",
+                default: false,
+            },
         };
 
         if (typeof(configuration) === "object") {
@@ -63,9 +87,9 @@ class EvidenceProfile {
                     if (
                         (attributeName in object)
                         && (
-                            (typeof(object[attributeName]) === objectAttributes[attributeName])
+                            (typeof(object[attributeName]) === objectAttributes[attributeName].type)
                             || (
-                                (objectAttributes[attributeName] === "array")
+                                (objectAttributes[attributeName].type === "array")
                                 && (Array.isArray(object[attributeName]))
                             )
                         )
@@ -75,30 +99,9 @@ class EvidenceProfile {
                         EvidenceProfile.object[attributeName] = object[attributeName];
                     }
                     else {
-                        // The object argument does not have the desired attribute name, or it is not of the desired type, set an empty counterpart
+                        // The object argument does not have the desired attribute name, or it is not of the desired type, set a default value
                         // in this object's object attribute
-
-                        switch (objectAttributes[attributeName]) {
-                            case "string":
-                                // The attribute should be a string
-                                EvidenceProfile.object[attributeName] = "";
-                                break;
-                            case "number":
-                                // The attribute should be a string
-                                EvidenceProfile.object[attributeName] = 0;
-                                break;
-                            case "object":
-                                // The attribute should be an object
-                                EvidenceProfile.object[attributeName] = {};
-                                break;
-                            case "array":
-                                // The attribute should be an array
-                                EvidenceProfile.object[attributeName] = [];
-                                break;
-                            default:
-                                // The desired type was not handled (e.g. a Boolean), set the object's attribute to null
-                                EvidenceProfile.object[attributeName] = null;
-                        }
+                        EvidenceProfile.object[attributeName] = objectAttributes[attributeName].default;
                     }
                 }
             }
