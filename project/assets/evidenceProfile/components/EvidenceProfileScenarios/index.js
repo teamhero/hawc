@@ -348,7 +348,7 @@ class EvidenceProfileScenariosFormset extends Component {
                 // The button is visible, but the formset is now limited to only one scenario, and it already has one; hide the button
                 this.newScenarioButton.style.visibility = "hidden";
             }
-            else if (this.newScenarioButton.style.visibility !== "visible") {
+            else if ((this.newScenarioButton.style.visibility !== "visible") && (!this.state.onlyOneScenario)) {
                 // The button is invisible, but the formset can hold more scenarios; make it visible
                 this.newScenarioButton.style.visibility = "visible";
             }
