@@ -45,8 +45,8 @@ class EvidenceProfileScenariosFormset extends Component {
             );
         }
 
-        if (iTo == 0) {
-            // This Stream has no Scenarios yet, push an empty one onto the end of this.scenarios and increment iTo
+        if (this.props.profileId <= 0) {
+            // This formset is part of a new Evidence Profile, push an empty Scenario onto the end of this.scenarios and increment iTo
 
             this.scenarios.push(
                 {
@@ -90,6 +90,7 @@ class EvidenceProfileScenariosFormset extends Component {
                 index={i}
                 maxIndex={(iTo - 1)}
                 order={(i + 1)}
+                profileId={this.props.profileId}
                 pk={this.scenarios[i].scenario.object.pk}
                 streamIndex={this.props.streamIndex}
                 scenario_name={this.scenarios[i].scenario.object.scenario_name}
@@ -107,6 +108,7 @@ class EvidenceProfileScenariosFormset extends Component {
                 buttonSetPrefix={this.buttonSetPrefix}
                 handleButtonClick={this.handleButtonClick}
                 scenarioReferences={this.scenarioReferences}
+                csrf_token={this.props.csrf_token}
             />;
         }
 
@@ -178,6 +180,7 @@ class EvidenceProfileScenariosFormset extends Component {
                     index={newDivIndex}
                     maxIndex={newDivIndex}
                     order={(newDivIndex + 1)}
+                    profileId={this.props.profileId}
                     streamIndex={this.props.streamIndex}
                     scenario_name={this.scenarios[scenarioIndex].scenario.object.scenario_name}
                     outcome={this.scenarios[scenarioIndex].scenario.object.outcome}
@@ -194,6 +197,7 @@ class EvidenceProfileScenariosFormset extends Component {
                     buttonSetPrefix={this.buttonSetPrefix}
                     handleButtonClick={this.handleButtonClick}
                     scenarioReferences={this.scenarioReferences}
+                    csrf_token={this.props.csrf_token}
                 />;
 
                 // Set this.state.divs to the new divs array (including the new scenario added to the end)
@@ -412,12 +416,13 @@ class ScenarioCaption extends Component {
 class ScenarioDiv extends Component {
     constructor(props) {
        // First, call the super-class's constructor
-
         super(props);
 
+        // Copy a set of syntactically-valid properties into this object, defaulting to certain values if they are missing or invalid
         this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
         this.scenario_name = (("scenario_name" in this.props) && (this.props.scenario_name !== null)) ? this.props.scenario_name : "";
 
+        // this.props.outcome needs a little more validity checking than the two properties above
         this.outcome = (
             ("outcome" in this.props)
             && (this.props.outcome !== null)
@@ -431,7 +436,8 @@ class ScenarioDiv extends Component {
             explanation: "",
         };
 
-        for (let i in {"studies":1, "effectTags":1, "confidencefactors_increase":1, "confidencefactors_decrease":1}) {
+        // Iterate over a set of property names an copy each one over to this object, defaulting to an empty array if they are missing or invalid
+        for (let i in {"studies":1, "confidencefactors_increase":1, "confidencefactors_decrease":1}) {
             this[i] = ((i in props) && (props[i] !== null) && (typeof(props.studies) === "object") && (Array.isArray(props.studies))) ? props[i] : [];
         }
 
@@ -673,9 +679,9 @@ class ScenarioDiv extends Component {
     }
 
     componentDidMount() {
-        renderEffectTagsFormset(this.studies, this.fieldPrefix + "_effectTagsFormset", this.props.effectTags_config);
-        renderConfidenceFactorsFormset("increase", this.confidencefactors_increase, this.fieldPrefix + "_confidenceFactorsIncreaseFormset", this.props.confidenceFactorsIncrease_config);
-        renderConfidenceFactorsFormset("decrease", this.confidencefactors_decrease, this.fieldPrefix + "_confidenceFactorsDecreaseFormset", this.props.confidenceFactorsDecrease_config);
+        renderEffectTagsFormset(this.props.profileId, this.studies, this.fieldPrefix + "_effectTagsFormset", this.props.effectTags_config, this.props.csrf_token);
+        renderConfidenceFactorsFormset("increase", this.props.profileId, this.confidencefactors_increase, this.fieldPrefix + "_confidenceFactorsIncreaseFormset", this.props.confidenceFactorsIncrease_config);
+        renderConfidenceFactorsFormset("decrease", this.props.profileId, this.confidencefactors_decrease, this.fieldPrefix + "_confidenceFactorsDecreaseFormset", this.props.confidenceFactorsDecrease_config);
     }
 }
 
@@ -897,7 +903,7 @@ class TextAreaOutcomeExplanation extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the
 // Scenarios within an individual Evidence Profile Stream
-export function renderEvidenceProfileScenariosFormset(scenarios, divId, config, confidenceJudgements) {
+export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divId, config, confidenceJudgements, csrf_token) {
     // First, look for the <div> element in the Evidence Profile Stream that will hold the Scenarios -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
@@ -913,10 +919,12 @@ export function renderEvidenceProfileScenariosFormset(scenarios, divId, config, 
 
                 ReactDOM.render(
                     <EvidenceProfileScenariosFormset
+                        profileId={profileId}
                         scenarios={scenarios}
                         config={config}
                         streamIndex={streamIndex}
                         confidenceJudgements={confidenceJudgements}
+                        csrf_token={csrf_token}
                     />,
                     scenariosFormsetDiv
                 );

@@ -1,4 +1,4 @@
-<div style="text-align:center;">{% for pip in pips %}<i class="fa judgementScore_pips">{{pip|safe}}</i>{% endfor %}</div>
+<div style="text-align:center; color:#{{pipColor|safe}};">{% for pip in pips %}<i class="fa judgementScore_pips">{{pip|safe}}</i>{% endfor %}</div>
 {% if "name" in confidenceJudgement %}
     <div class="judgementScore_name">{{confidenceJudgement.name}}</div>
 {% endif %}

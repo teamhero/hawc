@@ -52,8 +52,8 @@ class StudiesFormset extends Component {
             );
         }
 
-        if (iTo == 0) {
-            // This Effect Tag has no Studies yet, push an empty Study onto the end of this.studies and increment iTo
+        if (this.props.profileId <= 0) {
+            // This formset is part of a new Evidence Profile, push an empty Study onto the end of this.studies and increment iTo
 
             this.studies.push(
                 {
@@ -493,8 +493,8 @@ class StudyAutoSuggest extends Component {
         this.renderSuggestion = this.renderSuggestion.bind(this);
 
         this.state = {
-                value: this.props.value,
-                suggestions: [],
+            value: this.props.value,
+            suggestions: [],
         };
     }
 
@@ -614,7 +614,7 @@ class StudyAutoSuggest extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the Studies
 // within this EffectTag
-export function renderStudiesFormset(studies, studyTitles, divId, config) {
+export function renderStudiesFormset(profileId, studies, studyTitles, divId, config) {
     // First, look for the <div> element in the Scenario Effect Tag that will hold the Effect Tags -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
@@ -631,6 +631,7 @@ export function renderStudiesFormset(studies, studyTitles, divId, config) {
 
                 ReactDOM.render(
                     <StudiesFormset
+                        profileId={profileId}
                         studies={studies}
                         studyTitles={studyTitles}
                         streamIndex={indices[0]}

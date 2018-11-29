@@ -1,7 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
+import AutoSuggest from 'react-autosuggest';
 
 import "./index.css";
+
+import fetch from 'isomorphic-fetch';
+import h from 'shared/utils/helpers';
 
 import {renderStudiesFormset} from "./Studies";
 
@@ -48,8 +52,8 @@ class EffectTagsFormset extends Component {
             );
         }
 
-        if (iTo == 0) {
-            // This Scenario has no Studies (in Effect Tags) yet, push an empty Effect Tag onto the end of this.effectTags and increment iTo
+        if (this.props.profileId <= 0) {
+            // This formset is part of a new Evidence Profile, push an empty Effect Tag onto the end of this.effectTags and increment iTo
 
             this.effectTags.push(
                 {
@@ -96,6 +100,7 @@ class EffectTagsFormset extends Component {
                 index={i}
                 maxIndex={(iTo - 1)}
                 order={(i + 1)}
+                profileId={this.props.profileId}
                 pk={this.effectTags[i].id}
                 streamIndex={this.props.streamIndex}
                 scenarioIndex={this.props.scenarioIndex}
@@ -109,7 +114,11 @@ class EffectTagsFormset extends Component {
                 fieldPrefix={this.fieldPrefix}
                 buttonSetPrefix={this.buttonSetPrefix}
                 handleButtonClick={this.handleButtonClick}
+                effectTagSearchURL={this.props.config.effectTagSearchURL}
+                handleEffectTagSelection={this.handleEffectTagSelection}
                 effectTagReferences={this.effectTagReferences}
+                effectTagCreateURL={this.props.config.effectTagCreateURL}
+                csrf_token={this.props.csrf_token}
             />;
         }
 
@@ -184,6 +193,7 @@ class EffectTagsFormset extends Component {
                     index={newDivIndex}
                     maxIndex={newDivIndex}
                     order={(newDivIndex + 1)}
+                    profileId={this.props.profileId}
                     pk={this.effectTags[effectTagIndex].id}
                     streamIndex={this.props.streamIndex}
                     scenarioIndex={this.props.scenarioIndex}
@@ -196,7 +206,11 @@ class EffectTagsFormset extends Component {
                     fieldPrefix={this.fieldPrefix}
                     buttonSetPrefix={this.buttonSetPrefix}
                     handleButtonClick={this.handleButtonClick}
+                    effectTagSearchURL={this.props.config.effectTagSearchURL}
+                    handleEffectTagSelection={this.handleEffectTagSelection}
 	                effectTagReferences={this.effectTagReferences}
+                    effectTagCreateURL={this.props.config.effectTagCreateURL}
+                    csrf_token={this.props.csrf_token}
                 />;
 
                 // Set this.state.divs to the new divs array (including the new effectTag added to the end)
@@ -280,6 +294,130 @@ class EffectTagsFormset extends Component {
                                 this.effectTagReferences["div_" + this.effectTags[effectTagIndex].div.props.index].effectTagReference.style.display = "none";
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    // This method is called when an Effect Tag is selected within this formset
+    handleEffectTagSelection(id, effectTag, effectTagCaption, effectTagCreateURL, csrf_token) {
+        let idMatcher = new RegExp("^(stream_\\d+_\\d_\\d_effectTag)_suggest$", "gi");
+
+        if (
+            (typeof(id) === "string") && (id != "") && (id.match(idMatcher))
+            && (typeof(effectTag) === "object") && (effectTag !== null)
+            && ("id" in effectTag) && (typeof(effectTag.id) === "number") && (effectTag.id >= 0)
+            && ("value" in effectTag) && (effectTag.value !== "")
+        ) {
+            // The following things are true about the incoming arguments:
+            //      * id is a non-empty string that matches the expected naming convention
+            //      * effectTag is an non-NULL object
+            //      * effectTag.id is a number zero or greater
+            //      * effectTag.value is a non-empty string
+            // Handle this tag selection
+
+            let effectTagIdField = document.getElementById(id.replace(idMatcher, "$1_pk"));
+            if (effectTagIdField !== null) {
+                // The expected DOM element was found, do some more checking
+
+                if (effectTag.id === 0) {
+                    // This is a new Effect Tag, confirm that the user wants to add this new tag
+                    if (confirm('Confirm that you want to create a new Effect Tag named "' + effectTag.value + '"')) {
+                        let errorMessage = [];
+
+                        if ((effectTagCreateURL === null) || (effectTagCreateURL === "")) {
+                            // effectTagCreateURL is either NULL or an empty string, set errorMessage accordingly
+                            errorMessage[errorMessage.length] = "No API URL Was Found For Adding A New Effect Tag";
+                        }
+
+                        if ((csrf_token === null) || (csrf_token === "")) {
+                            // csrf_token is either NULL or an empty string, set errorMessage accordingly
+                            errorMessage[errorMessage.length] = "No Anti-Forgery (CSRF) Token Was Found For Adding A New Effect Tag";
+                        }
+
+                        if (errorMessage.length === 0) {
+                            // No error messages where generated, attempt to submit it to HAWC for creating and then set effectTag.id accordingly
+
+                            // Build an object containing the data to be submitted to HAWC for creating this new EffectTag
+                            let formData = new FormData();
+                            formData.append("csrfmiddlewaretoken", csrf_token);
+                            formData.append("name", effectTag.value);
+
+                            // Submit the data to HAWC and them handle the response
+                            fetch(
+                                effectTagCreateURL,
+                                {
+                                    method: "post",
+                                    body: formData,
+                                }
+                            )
+                            .then(response => response.json())
+                            .then(
+                                function(data) {
+                                    if (
+                                        (data !== null) && (typeof(data) === "object") && (Array.isArray(data))
+                                        && (data.length >= 1) && (data[0] !== null) && (typeof(data[0]) === "object")
+                                        && ("id" in data[0]) && (typeof(data[0].id) === "number") &&(data[0].id >= 1)
+                                    ) {
+                                        // The data returned from the HAWC server had the following qualities:
+                                        //      * Is it an array with at least one element
+                                        //      * The first element in the array is a non-empty object
+                                        //      * The first element in the array includes a numeric ID value that is one or greater (i.e. it is a syntactically-valid
+                                        //        primary key value in HAWK)
+                                        // This new Effect Tag was created successfully (or the original was returned if this "new" tag was a duplicate), copy its
+                                        // new(?) primary key to effectTag.id
+
+                                        // The code below is very similar to code executed whenever the incoming effectTag's id value is already greater than zero
+                                        // This is because the fetch() process is asynchronous, and was not processed by the time the code got to where code
+                                        // could be executed for either situation
+                                        // This can be abstracted out into a separate function at some point, but only being used in two places isn't a tragedy
+
+                                        effectTagIdField.value = Math.floor(data[0].id);
+
+                                        let effectTagNameField = document.getElementById(id.replace(idMatcher, "$1_name"));
+                                        if (effectTagNameField !== null) {
+                                            // The expected field that holds the tag name's text was found, place the selected suggestion's name in it
+                                            effectTagNameField.innerHTML = effectTag.value;
+                                        }
+
+                                        // Look for a reference to this parent Effect Tag's companion caption object
+                                        if ((typeof(effectTagCaption) === "object") && (effectTagCaption !== null)) {
+                                            // effectTagCaption is a non-NULL object, attempt to set its state with the value of this name
+                                            effectTagCaption.setState(
+                                                {
+                                                    name: effectTag.value,
+                                                }
+                                            );
+                                        }
+                                    }
+                                }
+                            );
+                        }
+                        else {
+                            // At least one error message was generated, display them in an alert
+                            alert(errorMessage.join("\n"));
+                        }
+                    }
+                }
+                else {
+                    // This is an existing Effect Tag, copy its id value to the relevant DOM element
+                    effectTagIdField.value = Math.floor(effectTag.id);
+
+                    let effectTagNameField = document.getElementById(id.replace(idMatcher, "$1_name"));
+                    if (effectTagNameField !== null) {
+                        // The expected field that holds the tag name's text was found, place the selected suggestion's name in it
+                        effectTagNameField.innerHTML = effectTag.value;
+                    }
+
+                    // Look for a reference to this parent Effect Tag's companion caption object
+                    if ((typeof(effectTagCaption) === "object") && (effectTagCaption !== null)) {
+                        // effectTagCaption is a non-NULL object, attempt to set its state with the value of this name
+                        effectTagCaption.setState(
+                            {
+                                name: effectTag.value,
+                            }
+                        );
                     }
                 }
             }
@@ -422,6 +560,7 @@ class EffectTagDiv extends Component {
        // First, call the super-class's constructor
         super(props);
 
+        // Copy syntactically valid versions of these properties to this object, defaulting to desired values if the property is missing or invalid
         this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
         this.name = (("name" in this.props) && (this.props.name !== null)) ? this.props.name : "";
 
@@ -478,21 +617,21 @@ class EffectTagDiv extends Component {
                     </div>
 
                     <div className={"effectTagDiv_name"}>
-                        <label htmlFor={this.fieldPrefix + "_pk"} className="control-label">Tag</label>
-                        <div className="controls">
-                            <SelectEffectTag
-                                ref={
-                                    (input) => {
-                                        this.effectTagNameReference = input;
-                                    }
-                                }
-                                id={this.fieldPrefix + "_pk"}
-                                value={this.pk}
-                                index={this.props.index}
-                                optionSet={this.props.effectTags_optionSet}
-                                effectTagReferences={this.props.effectTagReferences}
-                            />
-                        </div>
+                        <input id={this.fieldPrefix + "_pk"} type="hidden" name={this.fieldPrefix + "_pk"} value={this.pk} />
+                        <span id={this.fieldPrefix + "_name"}>{this.name}</span>
+
+                        <label htmlFor={this.fieldPrefix + "_suggest"} className="control-label">{((this.pk !== "") && (this.pk >= 1)) ? "Change Effect Tag" : "Effect Tag"}</label>
+                        <EffectTagAutoSuggest
+                            id={this.fieldPrefix + "_suggest"}
+                            placeholder={"Effect Tag..."}
+                            effectTagSearchURL={this.props.effectTagSearchURL}
+                            handleEffectTagSelection={this.props.handleEffectTagSelection}
+                            value={""}
+                            csrf_token={this.props.csrf_token}
+                            effectTagCreateURL={this.props.effectTagCreateURL}
+                            index={this.props.index}
+                            effectTagReferences={this.props.effectTagReferences}
+                        />
                     </div>
 
                     <div className={"effectTagDiv_rightButtons"}>
@@ -580,7 +719,7 @@ class EffectTagDiv extends Component {
     }
 
     componentDidMount() {
-        renderStudiesFormset(this.props.studies, this.props.studyTitles, this.fieldPrefix + "_studiesFormset", this.props.studies_config);
+        renderStudiesFormset(this.props.profileId, this.props.studies, this.props.studyTitles, this.fieldPrefix + "_studiesFormset", this.props.studies_config);
     }
 }
 
@@ -615,67 +754,154 @@ class InputOrder extends Component {
 }
 
 
-// This Component class is used to create a <select> field for a single effectTag's id/name combination
-class SelectEffectTag extends Component {
+// This Component class is used to create an auto-suggest field for looking up an Effect Tag
+class EffectTagAutoSuggest extends Component {
     constructor(props) {
-        // First, call the super-class's constructor and properly bind its updateField method
+        // First, call the super-class's constructor and properly bind its necessary methods
         super(props);
-        this.updateField = this.updateField.bind(this);
 
-        // Initialize the set of <option>s for this <select> with an empty "Select Type" value
-        this.optionSet = [<option key={0} value={""}>Select Effect Tag</option>];
+        this.onChange = this.onChange.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
+        this.onSuggestionsFetchRequested = this.onSuggestionsFetchRequested.bind(this);
+        this.onSuggestionsClearRequested = this.onSuggestionsClearRequested.bind(this);
+        this.onSuggestionSelected = this.onSuggestionSelected.bind(this);
+        this.getSuggestionValue = this.getSuggestionValue.bind(this);
+        this.renderSuggestion = this.renderSuggestion.bind(this);
 
-        if (("optionSet" in props) && (typeof(props.optionSet) === "object")) {
-            // The incoming props includes an "optionSet" object, iterate through its ordered value array to build the set of
-            // <option>s for this <select>
-
-            let iTo = props.optionSet.tags.length;
-            for (let i=0; i<iTo; i++) {
-                this.optionSet.push(<option key={(i + 1)} value={props.optionSet.tags[i].value}>{props.optionSet.tags[i].name}</option>);
-            }
-        }
-
-        // Set the initial state of this object to the incoming props.value, defaulting to an empty string if it isn't present
         this.state = {
-            value: (("value" in props) && (props.value !== null)) ? props.value : ""
+            value: this.props.value,
+            suggestions: [],
         };
     }
 
-    // This method updates the tag's state with the new value of the contained input
-    updateField(event) {
+    // This method is called whenever the value in the contained <input /> field is changed
+    onChange(event, {newValue, method}) {
         this.setState(
             {
-                value: event.target.value
+                value: newValue,
             }
         );
+    }
 
-        // Look for a reference to this parent scenario's companion caption object
-        let referenceKey = "caption_" + this.props.index;
-        if (
-            (typeof(this.props.effectTagReferences) === "object")
-            && (referenceKey in this.props.effectTagReferences)
-            && (typeof(this.props.effectTagReferences[referenceKey]) === "object")
-        ) {
-            // The companion caption was found update its state with the value of this title
-            this.props.effectTagReferences[referenceKey].setState(
+    // This method is called whenever a key is pressed while the cursor is in this field, it is intended to intersecpt any "Enter" key presses and
+    // prevent them from submitting the form
+    onKeyDown(event) {
+        if (event.key === "Enter") {
+            // The enter key was pressed, prevent its default activity (i.e. submission of the form)
+            event.preventDefault();
+        }
+    }
+
+    setSuggestions(suggestions) {
+        if ((typeof(suggestions == "object")) && (suggestions !== null) && (Array.isArray(suggestions))) {
+            // Suggestions is an array, iterate over it and build the set of suggestions that will be presented to the user
+
+            let managedSuggestions = [
                 {
-                    name: (event.target.value === "") ? "[No Tag Yet]" : this.props.optionSet.index[event.target.value],
+                    id: 0,
+                    value: this.state.value,
+                }
+            ];
+
+            let iTo = suggestions.length;
+            for (let i=0; i<iTo; i++) {
+                let suggestion = suggestions[i];
+
+                if ((typeof(suggestion) === "object") && ("id" in suggestion) && (!isNaN(suggestion.id))) {
+                    // So far, this suggestion seems okay, continue
+                    let id = parseInt(suggestion.id);
+
+                    if (id > 0) {
+                        // This suggestion has a syntactically value primary key, look for a name
+
+                        let value = (("name" in suggestion) && (suggestion.name !== "")) ? suggestion.name : "";
+                        if (value != "") {
+                            // This suggestion has a name, add it to the array of suggestions that will be presented to the user
+                            managedSuggestions.push(
+                                {
+                                    id: id,
+                                    value: value,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            this.setState(
+                {
+                    suggestions: managedSuggestions,
                 }
             );
         }
     }
 
-    // The method generates this <select> tag's HTML code for this Component
-    render() {
+    // This method is called whenever the component needs to update is list of suggestions
+    onSuggestionsFetchRequested(term) {
+        if (term.value != "") {
+            // The value in the contained <input /> field is not empty, call the appropriate HAWC Study API to get suggested Studies
+            // The API call returns a JSON-formatted array of objects with 'id' and 'value' keys
+
+            fetch(`${this.props.effectTagSearchURL}&term=${term.value}`, h.fetchGet)
+            .then(response => response.json())
+            .then(data => this.setSuggestions(data));
+        }
+    }
+
+    // This method is called whenever the component needs to clear its displayed list of suggestions
+    onSuggestionsClearRequested() {
+        this.setState(
+            {
+                suggestions: []
+            }
+        );
+    }
+
+    // This method is called whenever a Study is selected
+    // It is just a pass-thru that calls the injected method for handling the selected Study within the context of the overall Scenario object
+    onSuggestionSelected(event, selectedObject) {
+        this.onSuggestionsClearRequested();
+
+        this.props.handleEffectTagSelection(
+            this.props.id,
+            selectedObject.suggestion,
+            this.props.effectTagReferences["caption_" + this.props.index],
+            this.props.effectTagCreateURL,
+            this.props.csrf_token
+        );
+    }
+
+    // This method is called whenever a suggestion's value is needed
+    getSuggestionValue(suggestion) {
+        return suggestion.value;
+    }
+
+    // This method renders a suggestion element within the list of options
+    renderSuggestion(suggestion) {
         return (
-            <select
+            <span>{suggestion.value}</span>
+        );
+    }
+
+    render() {
+        return(
+            <AutoSuggest
                 id={this.props.id}
-                name={this.props.id}
-                value={this.state.value}
-                onChange={(e) => this.updateField(e)}
-            >
-                {this.optionSet}
-            </select>
+                suggestions={this.state.suggestions}
+                onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+                onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+                onSuggestionSelected={this.onSuggestionSelected}
+                getSuggestionValue={this.getSuggestionValue}
+                renderSuggestion={this.renderSuggestion}
+                inputProps={
+                    {
+                        placeholder: "Lookup Effect Tag",
+                        value: this.state.value,
+                        onChange: this.onChange,
+                        onKeyDown: this.onKeyDown,
+                    }
+                }
+            />
         );
     }
 }
@@ -683,7 +909,7 @@ class SelectEffectTag extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the Effect Tags
 // within this Scenario
-export function renderEffectTagsFormset(studies, divId, config) {
+export function renderEffectTagsFormset(profileId, studies, divId, config, csrf_token) {
     // First, look for the <div> element in the Stream Scenario that will hold the Effect Tags -- this formset will placed be within that element
 
     if ((divId !== null) && (divId !== "")) {
@@ -703,17 +929,14 @@ export function renderEffectTagsFormset(studies, divId, config) {
 	            if (effectTagsFormsetDiv !== null) {
 	            	// The <div> element intended to hold this formset exists, render the formset
 
-                    console.log("In renderEffectTagsFormset()");
-                    console.log(studies);
-                    console.log(config);
-                    console.log("-----------------------------------------------");
-
                     ReactDOM.render(
                         <EffectTagsFormset
+                            profileId={profileId}
                             studies={studies}
                             streamIndex={indices[0]}
                             scenarioIndex={indices[1]}
                             config={config}
+                            csrf_token={csrf_token}
                         />,
                         effectTagsFormsetDiv
                     );

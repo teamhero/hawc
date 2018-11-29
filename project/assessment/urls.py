@@ -7,6 +7,8 @@ from . import views, api
 
 router = DefaultRouter()
 router.register(r'endpoints', api.AssessmentEndpointList, base_name='endpoint_type')
+router.register(r'effecttag-autosuggest', api.EffectTagAutoSuggest, base_name='effecttag-autosuggest')
+router.register(r'effecttag-create', api.EffectTagCreate, base_name='effecttag-create')
 
 urlpatterns = [
 

@@ -98,6 +98,7 @@
                   captionDiv: "div_id_caption",
                   actionsClass: "form-actions",
                   confidenceJudgements: evidenceProfile.Library.setConfidenceJudgements({{confidence_judgements|safe}}),
+                  csrf_token: "{{csrf_token}}",
                 },
                 streams: {
                   divId: "div_id_streams",
@@ -121,6 +122,8 @@
                       fieldPrefixPattern: "stream_<<streamIndex>>_<<scenarioIndex>>",
                       effectTagIdPrefixPattern: "div_effectTag_<<streamIndex>>_<<scenarioIndex>>",
                       buttonSetRegEx: new RegExp("^btn_effectTag_(\\d+)_(\\d+)_(\\d+)_(moveup|movedown|remove|showeffecttag|hideeffecttag)$", "gi"),
+                      effectTagSearchURL: "/assessment/api/effecttag-autosuggest/?format=json",
+                      effectTagCreateURL: "/assessment/api/effecttag-create/?format=json&assessment_id={{assessment.id}}",
                       effectTags: evidenceProfile.Library.setEffectTags({{effect_tags|safe}}),
                       studiesFormset: {
                         tableIdPattern: "table_studies_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",

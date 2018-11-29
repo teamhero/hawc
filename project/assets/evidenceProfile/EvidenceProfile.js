@@ -42,9 +42,9 @@ class EvidenceProfile {
 
         // This defines the object attributes' names (key) and data types (value)
         let objectAttributes = {
+            id: "number",
             title: "string",
             slug: "string",
-            settings: "object",
             caption: "string",
             cross_stream_confidence_judgement: "object",
             cross_stream_inferences: "array",
@@ -81,6 +81,10 @@ class EvidenceProfile {
                             case "string":
                                 // The attribute should be a string
                                 EvidenceProfile.object[attributeName] = "";
+                                break;
+                            case "number":
+                                // The attribute should be a string
+                                EvidenceProfile.object[attributeName] = 0;
                                 break;
                             case "object":
                                 // The attribute should be an object
@@ -121,12 +125,12 @@ class EvidenceProfile {
 
     // This function builds the formset for the "Evidence Profile Streams" portion of the Evidence Profile form
     static buildEvidenceProfileStreamsFormset() {
-        renderEvidenceProfileStreamsFormset(EvidenceProfile.object.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams);
+        renderEvidenceProfileStreamsFormset(EvidenceProfile.object.id, EvidenceProfile.object.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams);
     }
 
     // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
     static buildCrossStreamInferencesFormset() {
-        renderCrossStreamInferencesFormset(EvidenceProfile.object.cross_stream_inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
+        renderCrossStreamInferencesFormset(EvidenceProfile.object.id, EvidenceProfile.object.cross_stream_inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
     }
 }
 
