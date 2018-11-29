@@ -768,7 +768,7 @@ class StreamDiv extends Component {
                 // The stream is no longer limited to only one scenario, update the formset's state
                 this.scenariosFormset.setState(
                     {
-                        onlyOneScenario: true,
+                        onlyOneScenario: false,
                     }
                 );
             }
