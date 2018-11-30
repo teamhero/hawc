@@ -1,6 +1,7 @@
 {% extends 'portal.html' %}
 {% load keyvalue %}
 {% load evidenceprofile_confidencejudgement %}
+{% load evidenceprofile_summaryoffindings %}
 {% load evidenceprofile_listobjects %}
 
 {% block title %}
@@ -40,18 +41,22 @@
   {% block evidence_profile_table %}
     <table id="evidenceProfileTable">
       <tr class="headerRow">
-        <td style="width:12.5%;">Outcome</td>
-        <td style="width:12.5%;">Studies</td>
-        <td style="width:12.5%;">Factors That <em>Increase</em> Confidence</td>
-        <td style="width:12.5%;">Factors That <em>Decrease</em> Confidence</td>
-        <td style="width:12.5%; font-size:0.9em;">Summary of Findings and Confidence Judgement for Individual Outcome</td>
-        <td style="width:12.5%;">Within-Stream Confidence Judgement</td>
-        <td style="width:12.5%;">Inference Across Streams</td>
-        <td style="width:12.5%;">Across-Stream Confidence Judgement</td>
+        {% if "outcome" in columnsToShow %}
+          <td style="width:{{columnWidth}}%;">Outcome</td>
+        {% endif %}
+        <td style="width:{{columnWidth}}%;">Studies</td>
+        <td style="width:{{columnWidth}}%;">Factors That <em>Increase</em> Confidence</td>
+        <td style="width:{{columnWidth}}%;">Factors That <em>Decrease</em> Confidence</td>
+        {% if "scenarioConfidenceJudgement" in columnsToShow %}
+          <td style="width:{{columnWidth}}%; font-size:0.9em;">Confidence Judgement and Summary of Findings for Individual Outcome</td>
+        {% endif %}
+        <td style="width:{{columnWidth}}%;">Within-Stream Confidence Judgement and Summary of Findings</td>
+        <td style="width:{{columnWidth}}%;">Inference Across Streams</td>
+        <td style="width:{{columnWidth}}%;">Across-Stream Confidence Judgement</td>
       </tr>
 
       <tr class="bodyRow">
-        <td colspan="6" class="bodyCellStreamTitle">
+        <td colspan="{{streamNameSpan}}" class="bodyCellStreamTitle">
           {% if tableBodyRows > 1 %}
             {% with stream=evidenceProfile.streams|first %}
               {% if stream.stream_title == "" %}
@@ -78,7 +83,7 @@
       {% for stream in evidenceProfile.streams %}
         {% if forloop.counter > 1 %}
           <tr class="bodyRow">
-            <td colspan="6" class="bodyCellStreamTitle">
+            <td colspan={{streamNameSpan}} class="bodyCellStreamTitle">
               {% if stream.stream_title == "" %}
                 Stream Has No Title
               {% else %}
@@ -94,13 +99,15 @@
         {% if stream.scenarios %}
           {% for scenario in stream.scenarios %}
             <tr class="bodyRow">
-              <td>
-                {% if scenario.scenario_name == "" %}
-                  Scenario Has No Name
-                {% else %}
-                  {{scenario.scenario_name|safe}}
-                {% endif %}
-              </td>
+              {% if "outcome" in columnsToShow %}
+                <td>
+                  {% if scenario.scenario_name == "" %}
+                    Scenario Has No Name
+                  {% else %}
+                    {{scenario.scenario_name|safe}}
+                  {% endif %}
+                </td>
+              {% endif %}
 
               <td>
                 {% for effect in scenario.studies %}
@@ -125,13 +132,31 @@
                 {% evidenceprofile_listobjects scenario.confidencefactors_decrease %}
               </td>
 
-              <td>
-                {% evidenceprofile_confidencejudgement scenario.outcome %}
-              </td>
+              {% if "scenarioConfidenceJudgement" in columnsToShow %}
+                <td>
+                  {% evidenceprofile_confidencejudgement scenario.outcome %}
+
+                  {% if "title" in scenario.summary_of_findings and scenario.summary_of_findings.title != "" %}
+                    <br />
+                    <hr style="margin:-6px 0 0 0;" />
+                    <br />
+
+                    {% evidenceprofile_summaryoffindings scenario.summary_of_findings %}
+                  {% endif %}
+                </td>
+              {% endif %}
 
               {% if forloop.counter == 1 %}
                 <td rowspan="{{streamDataRows|keyvalue:stream.pk}}">
                   {% evidenceprofile_confidencejudgement stream.confidence_judgement %}
+
+                  {% if "title" in stream.summary_of_findings and stream.summary_of_findings.title != "" %}
+                    <br />
+                    <hr style="margin:-6px 0 0 0;" />
+                    <br />
+
+                    {% evidenceprofile_summaryoffindings stream.summary_of_findings %}
+                  {% endif %}
                 </td>
               {% endif %}
             </tr>
@@ -153,6 +178,7 @@
 {% block extrajs %}
   <style>
     #evidenceProfileTable {
+      width: 100%;
       font-size: 0.9em;
     }
 

@@ -719,7 +719,7 @@ class EvidenceProfileForm(forms.ModelForm):
     class Meta:
         # Set the base model and form fields for this form
         model = models.EvidenceProfile
-        fields = ('title', 'slug', 'caption', )
+        fields = ("title", "slug", "caption", "one_scenario_per_stream")
 
     # This is the initialization method for this form object
     def __init__(self, *args, **kwargs):
@@ -727,7 +727,7 @@ class EvidenceProfileForm(forms.ModelForm):
         self.submitted_data = kwargs.get("data", None)
 
         # Attempt to get a reference to this object's parent Assessment object, and then run the superclass's initialization method
-        assessment = kwargs.pop('parent', None)
+        assessment = kwargs.pop("parent", None)
         super().__init__(*args, **kwargs)
 
         if (assessment):
@@ -788,6 +788,8 @@ class EvidenceProfileForm(forms.ModelForm):
         # Iterate through the new set of fields and add them to self.fields
         for key, value in new_fields.items():
             self.fields[key] = value
+
+        self.fields["one_scenario_per_stream"].widget.attrs["onclick"] = "onlyOneScenarioPerStream(this)"
 
         # Set the desired helper classes, etc. for this form
         self.helper = self.setHelper()
@@ -866,7 +868,7 @@ class EvidenceProfileForm(forms.ModelForm):
             "evidence_profile_streams": {
                 "ordering_field": "order",
                 "retain_ordering_field": True,
-                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|order)$",
+                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|summary_of_findings_title|summary_of_findings_summary|order)$",
                 "re_replace_with": r"\1,\2",
                 "field_validation": {
                     "pk": {
@@ -901,6 +903,16 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "string",
                         "can_be_empty": True,
                     },
+                    "summary_of_findings_title": {
+                        "required": False,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                    "summary_of_findings_summary": {
+                        "required": False,
+                        "type": "strng",
+                        "can_be_empty": True,
+                    }
                 },
             },
             "stream_scenarios": {
@@ -908,7 +920,7 @@ class EvidenceProfileForm(forms.ModelForm):
                 "parent_field": "scenarios",
                 "ordering_field": "order",
                 "retain_ordering_field": True,
-                "re_match": r"^stream_(\d+)_(\d+)_scenario_(order|pk|scenario_name|outcome_score|outcome_title|outcome_explanation)$",
+                "re_match": r"^stream_(\d+)_(\d+)_scenario_(order|pk|scenario_name|outcome_score|outcome_title|outcome_explanation|summary_of_findings_title|summary_of_findings_summary)$",
                 "re_replace_with": r"\1,\2,\3",
                 "field_validation": {
                     "pk": {
@@ -919,12 +931,12 @@ class EvidenceProfileForm(forms.ModelForm):
                     "scenario_name": {
                         "required": True,
                         "type": "string",
-                        "can_be_empty": False,
+                        "can_be_empty": True,
                     },
                     "outcome_title": {
                         "required": True,
                         "type": "string",
-                        "can_be_empty": False,
+                        "can_be_empty": True,
                     },
                     "outcome_score": {
                         "required": False,
@@ -936,6 +948,16 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "string",
                         "can_be_empty": True,
                     },
+                    "summary_of_findings_title": {
+                        "required": False,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                    "summary_of_findings_summary": {
+                        "required": False,
+                        "type": "strng",
+                        "can_be_empty": True,
+                    }
                 },
             },
             "effect_tags": {
@@ -1225,6 +1247,39 @@ class EvidenceProfileForm(forms.ModelForm):
                     scenario["confidencefactors_increase"] = []
                     scenario["confidencefactors_decrease"] = []
 
+                    if ((scenario["summary_of_findings_title"] != "") or (scenario["summary_of_findings_summary"] != "")):
+                        # The summary of findings is not empty, save it as an object
+
+                        scenario["summary_of_findings"] = {
+                            "title": scenario["summary_of_findings_title"],
+                            "summary": scenario["summary_of_findings_summary"]
+                        }
+                    else:
+                        # The summary of findings is empty, save an empty object instead
+                        scenario["summary_of_findings"] = {}
+
+                    # Remove the scenario fields related the the summary of findings
+                    del scenario["summary_of_findings_title"]
+                    del scenario["summary_of_findings_summary"]
+
+                    if ((scenario["outcome_title"] != "") or (scenario["outcome_explanation"] != "")):
+                        # The outcome is not empty, save it as an object
+
+                        scenario["outcome"] = {
+                            "title": scenario["outcome_title"],
+                            "explanation": scenario["outcome_explanation"],
+                            "score": scenario["outcome_score"],
+                            "name": confidence_judgement_dict[scenario["outcome_score"]] if (scenario["outcome_score"] in confidence_judgement_dict) else "",
+                        }
+                    else:
+                        # The outcome is empty, save an empty object instead
+                        scenario["outcome"] = {}
+
+                    # Delete the individual outcome-related fields from the cleaned submitted data (they were just combined into a single "outcome" attribute)
+                    del scenario["outcome_title"]
+                    del scenario["outcome_explanation"]
+                    del scenario["outcome_score"]
+
                     if ("original_key" in scenario):
                         # This scenario includes an attribute named original_key
 
@@ -1304,6 +1359,10 @@ class EvidenceProfileForm(forms.ModelForm):
                     "name": confidence_judgement_dict[stream["confidence_judgement_score"]],
                     "explanation": stream["confidence_judgement_explanation"],
                 },
+                "summary_of_findings": {
+                    "title": stream["summary_of_findings_title"] if ("summary_of_findings_title" in stream) else "",
+                    "summary": stream["summary_of_findings_summary"] if ("summary_of_findings_summary" in stream) else "",
+                },
                 "scenarios": [{key:scenario[key] if (key != "order") else (scenario[key] * 10) for key in scenario} for scenario in stream["scenarios"]] if ("scenarios" in stream) else [],
             }
             for index, stream
@@ -1316,22 +1375,7 @@ class EvidenceProfileForm(forms.ModelForm):
         # stream's set of scenarios out to cleaned_data["scenarios"]
         # The scenarios are moved because they are child objects stored in a separate, related database table
         for index, stream in enumerate(unordered_types["evidence_profile_streams"]["desired_order"]):
-            for scenario in stream["scenarios"]:
-                # Create an "outcome" attribute object that holds the outcome-related fields from the cleaned submitted data
-                scenario["outcome"] = {
-                    "title": scenario["outcome_title"],
-                    "explanation": scenario["outcome_explanation"],
-                    "score": scenario["outcome_score"],
-                    "name": confidence_judgement_dict[scenario["outcome_score"]],
-                }
-
-                # Delete the individual outcome-related fields from the cleaned submitted data (they were just combined into a single "outcome" attribute)
-                del scenario["outcome_title"]
-                del scenario["outcome_explanation"]
-                del scenario["outcome_score"]
-
-            # Done iterating through the stream's secenario objects, now move this stream's scenario objects out to an object
-            # named cleaned_data["scenarios"] and remove it from this stream object
+            # Move this stream's scenario objects out to an object named cleaned_data["scenarios"] and remove it from this stream object
             cleaned_data["scenarios"][index] = stream["scenarios"]
             del stream["scenarios"]
 

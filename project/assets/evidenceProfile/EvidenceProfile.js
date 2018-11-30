@@ -10,7 +10,7 @@ import {
 import Library from "./Library";
 import EvidenceProfileStream from "./EvidenceProfileStream";
 
-import {renderEvidenceProfileStreamsFormset} from "./components/EvidenceProfileStreams";
+import {renderEvidenceProfileStreamsFormset, limitStreamsToOneScenario} from "./components/EvidenceProfileStreams";
 import {renderCrossStreamInferencesFormset} from "./components/CrossStreamInferences";
 
 // This class is intended to hold an Evidence Profile object -- essentially all of the data needed to generate an Evidence Profile report,
@@ -40,15 +40,40 @@ class EvidenceProfile {
         EvidenceProfile.configuration = {};
         EvidenceProfile.object = {};
 
-        // This defines the object attributes' names (key) and data types (value)
+        // This defines the object attributes' names (key), and data types and defaults (value)
         let objectAttributes = {
-            id: "number",
-            title: "string",
-            slug: "string",
-            caption: "string",
-            cross_stream_confidence_judgement: "object",
-            cross_stream_inferences: "array",
-            streams: "array",
+            id: {
+                type: "number",
+                default: 0,
+            },
+            title: {
+                type: "string",
+                default: "",
+            },
+            slug: {
+                type: "string",
+                default: "",
+            },
+            caption: {
+                type: "string",
+                default: "",
+            },
+            cross_stream_confidence_judgement: {
+                type: "object",
+                default: {},
+            },
+            cross_stream_inferences: {
+                type: "array",
+                default: [],
+            },
+            streams: {
+                type: "array",
+                default: [],
+            },
+            one_scenario_per_stream: {
+                type: "boolean",
+                default: false,
+            },
         };
 
         if (typeof(configuration) === "object") {
@@ -62,9 +87,9 @@ class EvidenceProfile {
                     if (
                         (attributeName in object)
                         && (
-                            (typeof(object[attributeName]) === objectAttributes[attributeName])
+                            (typeof(object[attributeName]) === objectAttributes[attributeName].type)
                             || (
-                                (objectAttributes[attributeName] === "array")
+                                (objectAttributes[attributeName].type === "array")
                                 && (Array.isArray(object[attributeName]))
                             )
                         )
@@ -74,30 +99,9 @@ class EvidenceProfile {
                         EvidenceProfile.object[attributeName] = object[attributeName];
                     }
                     else {
-                        // The object argument does not have the desired attribute name, or it is not of the desired type, set an empty counterpart
+                        // The object argument does not have the desired attribute name, or it is not of the desired type, set a default value
                         // in this object's object attribute
-
-                        switch (objectAttributes[attributeName]) {
-                            case "string":
-                                // The attribute should be a string
-                                EvidenceProfile.object[attributeName] = "";
-                                break;
-                            case "number":
-                                // The attribute should be a string
-                                EvidenceProfile.object[attributeName] = 0;
-                                break;
-                            case "object":
-                                // The attribute should be an object
-                                EvidenceProfile.object[attributeName] = {};
-                                break;
-                            case "array":
-                                // The attribute should be an array
-                                EvidenceProfile.object[attributeName] = [];
-                                break;
-                            default:
-                                // The desired type was not handled (e.g. a number), set the object's attribute to null
-                                EvidenceProfile.object[attributeName] = null;
-                        }
+                        EvidenceProfile.object[attributeName] = objectAttributes[attributeName].default;
                     }
                 }
             }
@@ -125,12 +129,17 @@ class EvidenceProfile {
 
     // This function builds the formset for the "Evidence Profile Streams" portion of the Evidence Profile form
     static buildEvidenceProfileStreamsFormset() {
-        renderEvidenceProfileStreamsFormset(EvidenceProfile.object.id, EvidenceProfile.object.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams);
+        renderEvidenceProfileStreamsFormset(EvidenceProfile.object.id, EvidenceProfile.object.streams, EvidenceProfile.configuration.form, EvidenceProfile.configuration.streams, EvidenceProfile.object.one_scenario_per_stream);
     }
 
     // This function builds the formset for the "Cross-Stream Inferences" portion of the Evidence Profile form
     static buildCrossStreamInferencesFormset() {
         renderCrossStreamInferencesFormset(EvidenceProfile.object.id, EvidenceProfile.object.cross_stream_inferences, EvidenceProfile.configuration.form, EvidenceProfile.configuration.crossStreamInferences);
+    }
+
+    // This function goes through all of the child streams and makes sure they are limited to one single scenario each
+    static onlyOneScenarioPerStream(element) {
+        limitStreamsToOneScenario(element);
     }
 }
 

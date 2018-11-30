@@ -67,6 +67,12 @@
 	padding: 0 0 0 5px;
 }
 
+.scenarioDiv_summaryOfFindings {
+    width: 94%;
+    float: left;
+    margin: 12px 4px 16px 0;
+}
+
 .scenarioDiv_leftOutcome {
     width: 47%;
     float: left;

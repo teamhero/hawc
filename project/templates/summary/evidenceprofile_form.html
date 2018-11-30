@@ -96,6 +96,7 @@
                 form: {
                   id: "evidenceProfileForm",
                   captionDiv: "div_id_caption",
+                  oneScenarioPerStreamDiv: "div_id_one_scenario_per_stream",
                   actionsClass: "form-actions",
                   confidenceJudgements: evidenceProfile.Library.setConfidenceJudgements({{confidence_judgements|safe}}),
                   csrf_token: "{{csrf_token}}",
@@ -176,6 +177,8 @@
 
             // Create the Cross-Stream Inferences formset and add it to the Evidence Profile form
             evidenceProfile.EvidenceProfile.buildCrossStreamInferencesFormset();
+
+            this.onlyOneScenarioPerStream = evidenceProfile.EvidenceProfile.onlyOneScenarioPerStream;
           }
         );
       }

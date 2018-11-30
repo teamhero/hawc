@@ -3,7 +3,7 @@ from operator import methodcaller
 import json
 
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -720,6 +720,7 @@ class EvidenceProfile(models.Model):
     caption = models.TextField(default="", blank=True)
     cross_stream_confidence_judgement = models.TextField(default="{}")
     cross_stream_inferences = models.TextField(default="[]")
+    one_scenario_per_stream = models.BooleanField(default=False, verbose_name="Only One Scenario per Stream?", help_text="If checked, this evidence profile table wlll only have one outcome scenario per profile stream")
     published = models.BooleanField(default=False)
 
     # Track the date/time when this object was created and updated
@@ -789,6 +790,7 @@ class EvidenceProfileStream(models.Model):
     order = models.PositiveSmallIntegerField()
     stream_type = models.PositiveSmallIntegerField(choices=STUDY_TYPE_CHOICES, default=BIOASSAY)
     stream_title = models.CharField(max_length=128, help_text="Enter the title of this profile streaam (spaces and special-characters allowed).")
+    summary_of_findings = JSONField(default={})
     confidence_judgement = models.TextField(default="{}")
 
     # Track the date/time when this object was created and updated
@@ -835,6 +837,7 @@ class EvidenceProfileScenario(models.Model):
     # Declare the basic attributes for this object
     order = models.PositiveSmallIntegerField()
     outcome = models.TextField(default="{}")
+    summary_of_findings = JSONField(default={})
     scenario_name = models.CharField(max_length=128, help_text="(optional) If a stream only has one scenario, there is no reason to give it a name", blank=True)
     studies = models.TextField(default="[]")
     confidencefactors_increase = models.TextField(default="[]")

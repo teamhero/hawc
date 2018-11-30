@@ -439,6 +439,7 @@ class EvidenceProfileNew(BaseCreate):
                 stream_type = stream["stream_type"],
                 stream_title = stream["stream_title"],
                 confidence_judgement = json.dumps(stream["confidence_judgement"]),
+                summary_of_findings = stream["summary_of_findings"],
                 order = stream["order"],
             )
 
@@ -453,6 +454,7 @@ class EvidenceProfileNew(BaseCreate):
                         hawcuser = self.request.user,
                         scenario_name = scenario["scenario_name"],
                         outcome = json.dumps(scenario["outcome"]),
+                        summary_of_findings = scenario["summary_of_findings"],
                         studies = json.dumps(scenario["studies"]),
                         confidencefactors_increase = json.dumps(scenario["confidencefactors_increase"]),
                         confidencefactors_decrease = json.dumps(scenario["confidencefactors_decrease"]),
@@ -519,6 +521,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
             streamToSave.stream_type = stream["stream_type"]
             streamToSave.stream_title = stream["stream_title"]
             streamToSave.confidence_judgement = json.dumps(stream["confidence_judgement"])
+            streamToSave.summary_of_findings = stream["summary_of_findings"]
             streamToSave.order = stream["order"]
 
             streamToSave.save()
@@ -548,6 +551,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
                     scenarioToSave.hawcuser = self.request.user
                     scenarioToSave.scenario_name = scenario["scenario_name"]
                     scenarioToSave.outcome = json.dumps(scenario["outcome"])
+                    scenarioToSave.summary_of_findings = scenario["summary_of_findings"]
                     scenarioToSave.studies = json.dumps(scenario["studies"])
                     scenarioToSave.confidencefactors_increase = json.dumps(scenario["confidencefactors_increase"])
                     scenarioToSave.confidencefactors_decrease = json.dumps(scenario["confidencefactors_decrease"])
@@ -595,6 +599,37 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
 
         # Get a JSON-friendly version of the available stream type options
         returnValue["stream_types"] = {type["value"]: type["name"] for type in models.get_serialized_stream_types()}
+
+        # Begin building a list of table cloumns that will be shown on the page, only include the outcome column (scenario name) if the evidence
+        # profile table's streams are not limited to only one scenario per stream
+        returnValue["columnsToShow"] = ["outcome"] if (not returnValue["evidenceProfile"]["one_scenario_per_stream"]) else []
+        returnValue["columnsToShow"].extend(["studies", "increaseConfidence", "decreaseConfidence"])
+
+        if (returnValue["evidenceProfile"]["one_scenario_per_stream"]):
+            # This evidence profile table's streams are limited to only one scenario per stream, check to see if the scenario confidence judgement column
+            # needs to be included in the table by iterating over each scenario within each stream and counting all those that include either a confidence
+            # judgement (outcome) or a summary of findings
+
+            scenarioConfidenceJudgementCount = 0
+            for stream in returnValue["evidenceProfile"]["streams"]:
+                for scenario in stream["scenarios"]:
+                    if ((scenario["outcome"] != {}) or (scenario["summary_of_findings"] != {})):
+                        scenarioConfidenceJudgementCount = scenarioConfidenceJudgementCount + 1
+
+            if (scenarioConfidenceJudgementCount > 0):
+                # At least one scenario had a confidence judgement or a summary of findings, add the scenario confidence judgement column to the table
+                returnValue["columnsToShow"].append("scenarioConfidenceJudgement")
+        else:
+            # This evidence profile table's streams are not limited to only one scenario per stream, add the scenario confidence judgement column to the table
+            returnValue["columnsToShow"].append("scenarioConfidenceJudgement")
+
+        # Add the remaining columns that will be included in the table
+        returnValue["columnsToShow"].extend(["streamConfidenceJudgement", "crossStreamInference", "crossStreamConfidenceJudgement"])
+
+        # The stream names will span two fewer columns than the total width
+        returnValue["streamNameSpan"] = len(returnValue["columnsToShow"]) - 2
+        returnValue["columnWidth"] = 100 / len(returnValue["columnsToShow"])
+        print(returnValue["columnWidth"])
 
         return returnValue
 
@@ -652,7 +687,6 @@ def getEvidenceProfileDictionary(object):
         # profile's existing child streams
         returnValue = json.loads(serializers.serialize("json", [object, ]))[0]["fields"]
         returnValue["id"] = object.pk
-        print(returnValue)
 
         # Add a serialized version of the Evidence Profile object's streams to evidenceProfile, and copy the stream's primary key over into its
         # "fields" dictionary for retention in a later step
@@ -678,7 +712,6 @@ def getEvidenceProfileDictionary(object):
         # The incoming object is empty (creating a new object), create a JSON-friendly base model for it, include an additional attribute for the profile's child streams
         returnValue = json.loads(serializers.serialize("json", [models.EvidenceProfile(), ]))[0]["fields"]
         returnValue["id"] = models.EvidenceProfile().pk
-        print(returnValue)
         returnValue["streams"] = []
 
     returnValue["cross_stream_confidence_judgement"] = json.loads(returnValue["cross_stream_confidence_judgement"])
