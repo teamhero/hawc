@@ -14,18 +14,20 @@ class EndpointScoreForm extends Component {
 			scoreChoices: this.props.scoreChoices,
 			scoreShades: this.props.scoreShades,
             scoreSymbols: this.props.scoreSymbols,
-			score: this.props.score,
-			metric: this.props.metric,
-			endpointID: this.props.endpointID,
- 			robpeID: this.props.robpeID,
-			EPnotes: '',
+			score: this.props.endpoint.score,
+			metric: this.props.endpoint.metric.id,
+			endpointID: this.props.endpoint.id,
+			baseEndpointId: this.props.endpoint.baseendpoint,
+			notes: this.props.endpoint.notes,
 		}
+		if (this.state.endpointID == 0)
+			this.state.endpointID = this.state.endpointID+"."+this.props.index;
         this.handleEPEditorInput = this.handleEPEditorInput.bind(this);
         this.selectEPScore = this.selectEPScore.bind(this);
     }
 
     componentWillMount(){
-        this.selectEPScore(this.props.score);
+        this.selectEPScore(this.props.endpoint.score);
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -33,31 +35,32 @@ class EndpointScoreForm extends Component {
         // (usually by copying notes over from another form)
         if(nextProps.addText !== this.props.addText){
             this.setState({
-                EPnotes: this.state.EPnotes + nextProps.addText,
+                notes: this.state.notes + nextProps.addText,
             });
         }
         // if score notes is changed, change notes to new notes
-        if(nextProps.score.EPnotes !== this.props.score.EPnotes){
+        if(nextProps.endpoint.notes !== this.state.notes){
             this.setState({
-                EPnotes: nextProps.score.EPnotes,
+                notes: nextProps.endpoint.notes,
             });
         }
         // if score is changed, change to new score
-        if (nextProps.score.score !== this.props.score.score) {
-            this.selectScore(nextProps.score.score);
+        if (nextProps.endpoint.score !== this.state.score) {
+            this.selectScore(nextProps.endpoint.score);
         }
     }
 
     handleEPEditorInput(event){
-        this.setState({EPnotes: event});
-        this.validateInput(this.state.score, event);
+		var tempNotes = event.toString();
+        this.state.notes = tempNotes;
+        //this.validateInput(this.state.score, event);
     }
 
-    validateInput(score, EPnotes){
-        if (this.state.EPnotes.replace(/<\/?[^>]+(>|$)/g, '') == '' && score != 0) {
-            this.props.updateNotesLeft(this.props.score.id, 'add');
+    validateInput(score, notes){
+        if (this.state.notes.replace(/<\/?[^>]+(>|$)/g, '') == '' && score != 0) {
+            this.props.updateNotesLeft(this.props.endpoint.id, 'add');
         } else {
-            this.props.updateNotesLeft(this.props.score.id, 'clear');
+            this.props.updateNotesLeft(this.props.endpoint.id, 'clear');
         }
     }
 
@@ -72,7 +75,7 @@ class EndpointScoreForm extends Component {
 	
     render() {
         let { updateNotesLeft, endpointText, score} = this.props, empty = {score:0, notes:'', metric:{name:'',},};
-        let { scoreChoices, scoreSymbols, scoreShades, selectedSymbol, selectedShade, EPnotes, metric, } = this.state;
+        let { scoreChoices, scoreSymbols, scoreShades, selectedSymbol, selectedShade, notes, metric, } = this.state;
 
         return (
             <fieldset>
@@ -87,8 +90,8 @@ class EndpointScoreForm extends Component {
 						<ScoreIcon shade={selectedShade}
 								 symbol={selectedSymbol}/>
 					</div>
-					<ReactQuill id={this.state.metric+".notes"+this.state.endpointID}
-							 value={EPnotes}
+					<ReactQuill id={this.state.metric+"notes"+this.state.endpointID}
+							 value={notes}
 							 onChange={this.handleEPEditorInput}
 							 toolbar={false}
 							 theme='snow'
@@ -100,10 +103,17 @@ class EndpointScoreForm extends Component {
 }
 
 EndpointScoreForm.propTypes = {
+    endpoint: PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        score: PropTypes.number.isRequired,
+        notes: PropTypes.string,
+        baseendpoint: PropTypes.number.isRequired,
+		metric: PropTypes.shape({
+            name: PropTypes.string,
+            answers: PropTypes.array,
+        }),
+    }).isRequired,
     updateNotesLeft: PropTypes.func.isRequired,
-	endpointID: PropTypes.string,
-	endpointText: PropTypes.string,
-	robpeID: PropTypes.string,
 };
 
 export default EndpointScoreForm;

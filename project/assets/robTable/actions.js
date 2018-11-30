@@ -84,6 +84,7 @@ function formatIncomingStudy(study){
                     final: riskofbias.final,
                     domain_name: score.metric.domain.name,
                     domain_id: score.metric.domain.id,
+					endpointscores: _.filter(riskofbias.scoresperendpoint, (spe) => {return spe.metric.id === score.metric.id}),
                 });
             });
         })),

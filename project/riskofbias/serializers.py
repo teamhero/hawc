@@ -5,6 +5,8 @@ from utils.helper import SerializerHelper
 
 from myuser.serializers import HAWCUserSerializer
 from . import models
+import logging
+logger = logging.getLogger(__name__)
 
 class AssessmentMetricChoiceSerializer(serializers.ModelSerializer):
 
@@ -94,6 +96,7 @@ class RiskOfBiasSerializer(serializers.ModelSerializer):
             for field, value in list(form_data.items()):
                 setattr(score, field, value)
             score.save()
+			
         scoreperendpoint_data = self.initial_data.pop('scoresperendpoint')
         del validated_data['scoresperendpoint']
 		
@@ -101,22 +104,22 @@ class RiskOfBiasSerializer(serializers.ModelSerializer):
         data_mapping = {item['id']: item for item in scoreperendpoint_data}
 
         # Perform creations and updates.
-        ret = []
         for robpe_id, data in data_mapping.items():
             robpe = endpoint_mapping.get(robpe_id, None) 
-            localvar = data['endpoint'] 
-            del data['endpoint']
+            localvar = data['baseendpoint'] 
+            del data['baseendpoint']
+            del data['id']
             if robpe is None:
-                del data['id']
                 models.RiskOfBiasScorePerEndpoint.objects.create(baseendpoint_id=localvar,riskofbiasperendpoint_id=self.initial_data['pk'],**data)
             else:
-                ret.append(self.scoresperendpoint.update(robpe, data))
+                logger.info("in update robpe=%s. data is %s", robpe_id, data)
+                models.RiskOfBiasScorePerEndpoint.objects.filter(id=robpe_id).update(**data)
 
         # Perform deletions.
         for riskofbiasperendpoint_id, robpe in endpoint_mapping.items():
             if riskofbiasperendpoint_id not in data_mapping:
                 robpe.delete()
-	
+				
         return super().update(instance, validated_data)
 
 

@@ -40,7 +40,7 @@ class RiskOfBias(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.model.objects.all()\
-            .prefetch_related('study', 'author', 'scores__metric__domain','scoresperendpoint')
+            .prefetch_related('study', 'author', 'scores__metric__domain')
 
     def perform_update(self, serializer):
         super().perform_update(serializer)
@@ -58,17 +58,6 @@ class RiskOfBias(viewsets.ModelViewSet):
                 serializer.instance,
                 serializer.instance.get_assessment().id
             )
-			
-class RiskOfBiasScorePerEndpoint(viewsets.ModelViewSet):
-    assessment_filter_args = 'riskofbias__study__assessment'
-    model = models.RiskOfBiasScorePerEndpoint
-    pagination_class = DisabledPagination
-    permission_classes = (AssessmentLevelPermissions,)
-    filter_backends = (InAssessmentFilter, filters.DjangoFilterBackend)
-    serializer_class = serializers.RiskOfBiasScorePerEndpointSerializer
-
-    def get_queryset(self):
-        return self.model.objects.all()
 
 class AssessmentMetricAnswersViewSet(viewsets.ReadOnlyModelViewSet):
     model = models.RiskOfBiasMetricAnswers

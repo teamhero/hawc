@@ -20,6 +20,14 @@ class DomainDisplay extends Component {
 				}
             }
 		}
+		this.endpointscores = _.flatten(_.map(this.props.scoresperendpoint, (spe) => {
+			return {
+				spe_id: spe.id,
+				baseendpoint: spe.baseendpoint,
+				notes: spe.notes,
+				score: spe.state.score,
+				metric_id: spe.metric.id };
+        }));
 	}
 
     render(){
@@ -31,6 +39,7 @@ class DomainDisplay extends Component {
                     let props = {
                         key: metric.key,
                         ref: _.last(metric.values).id,
+						metric_id: metric.values[0].metric.id,
                         metric,
                         config};
                     return config.isForm ?

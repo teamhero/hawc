@@ -33,7 +33,7 @@ class ScoreForm extends Component {
                 score: null,
                 notes: props.score.notes,
 				endpointChoices: this.props.endpoints,
-				endpointIDs: [],
+				endpointIDs: props.score.endpointscores,
             }
         }
         else {
@@ -58,7 +58,7 @@ class ScoreForm extends Component {
                 score: null,
                 notes: props.score.notes,
  				endpointChoices: this.props.endpoints,
-				endpointIDs: [],
+				endpointIDs: props.score.endpointscores,
            };
         }
 		
@@ -66,8 +66,6 @@ class ScoreForm extends Component {
         this.selectScore = this.selectScore.bind(this);
         this.selectEndpoint = this.selectEndpoint.bind(this);
         this.addGenericEndpoint = this.addGenericEndpoint.bind(this);
-        this.handleEPEditorInput = this.handleEPEditorInput.bind(this);
-        this.selectEPScore = this.selectEPScore.bind(this);
     }
 
     componentWillMount(){
@@ -103,21 +101,8 @@ class ScoreForm extends Component {
         this.validateInput(score, this.state.notes);
     }
 
-    selectEPScore(score){
-        this.setState({
-            score,
-            selectedShade: this.state.scoreShades[score],
-            selectedSymbol: this.state.scoreSymbols[score],
-        });
-    }
-	
     handleEditorInput(event){
         this.setState({notes: event});
-        this.validateInput(this.state.score, event);
-    }
-
-    handleEPEditorInput(event){
-        this.setState({EPnotes: event});
         this.validateInput(this.state.score, event);
     }
 
@@ -131,12 +116,12 @@ class ScoreForm extends Component {
 
     addGenericEndpoint(e){
 		e.preventDefault();
-		this.state.endpointIDs.push(0);
+		this.state.endpointIDs.push({id:0,baseendpoint:0,score:this.state.score,metric:this.props.score.metric,});
 		this.forceUpdate();
     }
 
     selectEndpoint(endpoint){
-		this.state.endpointIDs.push(endpoint);
+		this.state.endpointIDs.push({id:0,baseendpoint:parseInt(endpoint),score:this.state.score,metric:this.props.score.metric,});
 		this.forceUpdate();
     }
 
@@ -175,11 +160,8 @@ class ScoreForm extends Component {
                          className='score-editor' />
             </div>
 			<div>
-			{_.map(endpointIDs, (endpoint, index) => { 
-				if (endpoint==0)
-					return <EndpointScoreForm ref={'epform'+endpoint+'.'+index} key={endpoint+'.'+index} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint+'.'+index} endpointText={'Endpoint Notes'} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} robpeID={'0'} />;
-				else
-					return <EndpointScoreForm ref={'epform'+endpoint} key={endpoint} updateNotesLeft={this.props.updateNotesLeft} endpointID={endpoint} endpointText={endpointChoices[endpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} score={score} robpeID={(index/1000).toString()} />;
+			{_.map(endpointIDs, (endpoint, index) => { //function(endpoint, index) {
+				return <EndpointScoreForm ref={endpoint.id==0?'epform'+endpoint.id+'.'+index:'epform'+endpoint.id} key={endpoint.id==0?endpoint.id+'.'+index:endpoint.id} index={index} updateNotesLeft={this.props.updateNotesLeft} endpoint={endpoint} endpointText={endpoint.baseendpoint==0?'Endpoint Notes':endpointChoices[endpoint.baseendpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} />;
             })}
 			</div>
 			</div>

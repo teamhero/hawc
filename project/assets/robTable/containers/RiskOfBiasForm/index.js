@@ -41,9 +41,9 @@ class RiskOfBiasForm extends Component {
                 let { form } = metric.refs, metric_id = metric.props.metric.values[0].metric.id;
                 return _.map(form.refs, (endpoint) => {
 					return {
-						id: endpoint.state.robpeID,
-						endpoint: endpoint.state.endpointID,
-						notes: endpoint.state.EPnotes,
+						id: endpoint.state.endpointID,
+						baseendpoint: endpoint.state.baseEndpointId,
+						notes: endpoint.state.notes,
 						score: endpoint.state.score,
 						metric_id: metric_id };
 				});	
@@ -71,6 +71,7 @@ class RiskOfBiasForm extends Component {
     render(){
         let { itemsLoaded, riskofbiases, error, config } = this.props;
         if (!itemsLoaded) return <Loading />;
+
         return (
             <div className='riskofbias-display'>
                 <ScrollToErrorBox error={error} />
@@ -103,6 +104,7 @@ function mapStateToProps(state){
         itemsLoaded: state.study.itemsLoaded,
         riskofbiases: state.study.riskofbiases,
 		experiments: state.study.experiments,
+		scoresperendpoint: state.study.scoresperendpoint,
         error: state.study.error,
     };
 }
