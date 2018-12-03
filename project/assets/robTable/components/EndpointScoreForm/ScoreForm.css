@@ -1,0 +1,26 @@
+.score-form {
+    display: flex;
+    flex-flow: row;
+    margin: 10px;
+    overflow: hidden;
+}
+
+.score-editor {
+    flex: 4;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.score-editor .ql-toolbar {
+    box-shadow: 0 5px 5px -5px black;
+}
+.score-editor .ql-editor {
+    min-height: 80px;
+}
+.score-editor .ql-toolbar.ql-snow {
+    border: none;
+ }
+.score-editor .ql-container.ql-snow {
+    border: none;
+}

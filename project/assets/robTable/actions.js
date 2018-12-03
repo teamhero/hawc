@@ -37,7 +37,19 @@ function updateFinalScores(scores){
     };
 }
 
+<<<<<<< HEAD
+function addNewEndpointNote(metric){
+	let numEndpointScores = numEndpointScores++;
+	return {
+		type: type.ADD_NEW_EP_NOTE,
+		metric,
+	};
+}
+
+function formatOutgoingRiskOfBias(state, riskofbias, scoresperendpoint){
+=======
 function formatOutgoingRiskOfBias(state, riskofbias){
+>>>>>>> develop
     let riskofbias_id = state.config.riskofbias.id,
         author,
         final,
@@ -59,6 +71,7 @@ function formatOutgoingRiskOfBias(state, riskofbias){
         author,
         final,
         scores,
+		scoresperendpoint,
         active: true,
         pk: parseInt(riskofbias_id),
         study: parseInt(state.config.study.id),
@@ -75,6 +88,7 @@ function formatIncomingStudy(study){
                     final: riskofbias.final,
                     domain_name: score.metric.domain.name,
                     domain_id: score.metric.domain.id,
+					endpointscores: _.filter(riskofbias.scoresperendpoint, (spe) => {return spe.metric.id === score.metric.id}),
                 });
             });
         })),
@@ -116,10 +130,10 @@ export function fetchFullStudyIfNeeded(){
     };
 }
 
-export function submitRiskOfBiasScores(scores){
+export function submitRiskOfBiasScores(scores, scoresperendpoint){
     return (dispatch, getState) => {
         let state = getState(),
-            patch = formatOutgoingRiskOfBias(state, scores),
+            patch = formatOutgoingRiskOfBias(state, scores, scoresperendpoint),
             opts = h.fetchPost(state.config.csrf, patch, 'PUT');
 
         dispatch(resetError());
