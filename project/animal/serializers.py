@@ -160,4 +160,25 @@ class EndpointCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSeria
         cleanup_fields = model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
 
+class EndpointLookupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Endpoint
+        fields = model.LOOKUP_FIELDS
+
+class AnimalGroupLookupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    endpoints = EndpointLookupFieldsSerializer(many=True)
+
+    class Meta:
+        model = models.AnimalGroup
+        fields = model.LOOKUP_FIELDS +('endpoints',)
+
+class ExperimentLookupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    animal_groups = AnimalGroupLookupFieldsSerializer(many=True)
+
+    class Meta:
+        model = models.Experiment
+        fields = model.LOOKUP_FIELDS +('animal_groups',)
+
 SerializerHelper.add_serializer(models.Endpoint, EndpointSerializer)
+SerializerHelper.add_serializer(models.Experiment, ExperimentLookupFieldsSerializer)

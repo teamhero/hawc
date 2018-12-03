@@ -61,6 +61,11 @@ class Experiment(models.Model):
         'vehicle',
     )
 
+    LOOKUP_FIELDS = (
+        'id',
+		'name',
+    )
+
     study = models.ForeignKey(
         'study.Study',
         related_name='experiments')
@@ -221,6 +226,11 @@ class Experiment(models.Model):
 
 class AnimalGroup(models.Model):
     objects = managers.AnimalGroupManager()
+
+    LOOKUP_FIELDS = (
+        'id',
+		'name',
+    )
 
     SEX_SYMBOLS = {
         "M": "♂",
@@ -644,6 +654,11 @@ class Endpoint(BaseEndpoint):
         'data_location',
         'response_units',
         'statistical_test',
+    )
+
+    LOOKUP_FIELDS = (
+        'id',
+		'name',
     )
 
     DATA_TYPE_CHOICES = (

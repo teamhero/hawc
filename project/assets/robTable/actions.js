@@ -37,19 +37,7 @@ function updateFinalScores(scores){
     };
 }
 
-<<<<<<< HEAD
-function addNewEndpointNote(metric){
-	let numEndpointScores = numEndpointScores++;
-	return {
-		type: type.ADD_NEW_EP_NOTE,
-		metric,
-	};
-}
-
 function formatOutgoingRiskOfBias(state, riskofbias, scoresperendpoint){
-=======
-function formatOutgoingRiskOfBias(state, riskofbias){
->>>>>>> develop
     let riskofbias_id = state.config.riskofbias.id,
         author,
         final,
