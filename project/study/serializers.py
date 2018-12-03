@@ -37,10 +37,12 @@ class StudyAssessmentSerializer(serializers.ModelSerializer):
         model = models.Study
         fields = ('id', 'url', 'assessment', 'short_citation')
 
+from animal.serializers import ExperimentLookupFieldsSerializer
 
 class VerboseStudySerializer(StudySerializer):
     assessment = serializers.PrimaryKeyRelatedField(read_only=True)
     searches = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    experiments = ExperimentLookupFieldsSerializer(many=True)
     riskofbiases = RiskOfBiasSerializer(many=True, read_only=True)
     identifiers = IdentifiersSerializer(many=True)
     tags = ReferenceTagsSerializer()
