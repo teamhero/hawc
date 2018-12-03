@@ -27,8 +27,8 @@ class CrossStreamInferencesFormset extends Component {
             this.inferences[i]["row"] = null;
         }
 
-        if (iTo == 0) {
-            // This Evidence Profile has no cross-stream inferences yet, push an empty one onto the end of this.inferences and increment iTo
+        if (this.props.profileId <= 0) {
+            // This formset is part of a new Evidence Profile, push an empty Cross-Stream Inference onto the end of this.inferences and increment iTo
 
             this.inferences.push(
                 {
@@ -694,14 +694,14 @@ class TextAreaDescription extends Component {
 
 
 // This exported function attempts to build a Cross-Stream Inferences formset in the locations specified by the incoming arguments
-export function renderCrossStreamInferencesFormset(inferences, formConfig, inferencesConfig) {
+export function renderCrossStreamInferencesFormset(profileId, inferences, formConfig, inferencesConfig) {
     let formActionsList = document.querySelectorAll("#" + formConfig.id + " ." + formConfig.actionsClass);
     if (formActionsList.length > 0) {
         // The desired element was found in the page, attempt to add the new element as desired
 
-        formActionsList[0].insertAdjacentHTML("beforebegin", '<hr style="margin-top:-12px; border-width:1px;" /><div id="' + inferencesConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div>');
+        formActionsList[0].insertAdjacentHTML("beforebegin", '<hr style="border-width:1px;" /><div id="' + inferencesConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div>');
         ReactDOM.render(
-            <CrossStreamInferencesFormset inferences={inferences} config={inferencesConfig} />,
+            <CrossStreamInferencesFormset profileId={profileId} inferences={inferences} config={inferencesConfig} />,
             document.getElementById(inferencesConfig.divId)
         );
     }

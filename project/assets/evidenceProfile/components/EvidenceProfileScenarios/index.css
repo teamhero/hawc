@@ -67,6 +67,12 @@
 	padding: 0 0 0 5px;
 }
 
+.scenarioDiv_summaryOfFindings {
+    width: 94%;
+    float: left;
+    margin: 12px 4px 16px 0;
+}
+
 .scenarioDiv_leftOutcome {
     width: 47%;
     float: left;
@@ -92,4 +98,25 @@
 	margin: 0 0 0 0;
 	padding: 0 0 0 5px;
 
+}
+
+.scenarioDiv_effectTagsFormset {
+	width: 100%;
+	margin: 0 0 0 0;
+	padding: 10px 0 0 5px;
+    background-color: #CCFFFF;
+}
+
+.scenarioDiv_confidenceFactorsIncreaseFormset {
+	width: 100%;
+	margin: 0 0 0 0;
+	padding: 10px 0 0 5px;
+    background-color: #E9FFE9;
+}
+
+.scenarioDiv_confidenceFactorsDecreaseFormset {
+	width: 100%;
+	margin: 0 0 0 0;
+	padding: 10px 0 0 5px;
+    background-color: #FFE0E0;
 }

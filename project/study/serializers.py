@@ -37,12 +37,10 @@ class StudyAssessmentSerializer(serializers.ModelSerializer):
         model = models.Study
         fields = ('id', 'url', 'assessment', 'short_citation')
 
-from animal.serializers import ExperimentLookupFieldsSerializer
 
 class VerboseStudySerializer(StudySerializer):
     assessment = serializers.PrimaryKeyRelatedField(read_only=True)
     searches = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    experiments = ExperimentLookupFieldsSerializer(many=True)
     riskofbiases = RiskOfBiasSerializer(many=True, read_only=True)
     identifiers = IdentifiersSerializer(many=True)
     tags = ReferenceTagsSerializer()
@@ -72,6 +70,16 @@ class StudyCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializ
         model = models.Study
         cleanup_fields = model.TEXT_CLEANUP_FIELDS
         fields = ('id', 'short_citation', ) + cleanup_fields
+
+
+class StudyPredictiveLookup(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return ret
+
+    class Meta:
+        model = models.Study
+        fields = ('id', 'title', 'authors', 'year', 'short_citation', 'full_citation', )
 
 
 SerializerHelper.add_serializer(models.Study, VerboseStudySerializer)

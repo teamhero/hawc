@@ -1,8 +1,12 @@
 from collections import OrderedDict
 import json
 import os
+import logging
+import collections
+import itertools
 
-from django.db import models
+from django.db import models, transaction
+from django.apps import apps
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.core.validators import MinValueValidator
@@ -133,6 +137,9 @@ class Assessment(models.Model):
         help_text="Describe the funding-source(s) for this assessment.")
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    cloned = models.BooleanField(
+        default=False
+    )
 
     COPY_NAME = 'assessments'
 
@@ -220,6 +227,57 @@ class Assessment(models.Model):
 
     def get_crumbs(self):
         return get_crumbs(self)
+    
+    @classmethod
+    def clone_assessment(self, assessment):
+        # Imports to not cause circular dependencies.
+        from animal.models import Experiment, AnimalGroup, DoseGroup, Endpoint, EndpointGroup
+        from epi.models import Criteria, Country, AdjustmentFactor, Ethnicity, StudyPopulationCriteria, Outcome, ComparisonSet, Group, Exposure, GroupNumericalDescriptions, ResultMetric, ResultAdjustmentFactor, Result, GroupResult
+        from epimeta.models import MetaProtocol, MetaResult, SingleResult
+        from invitro.models import IVEndpointCategory, IVEndpoint, IVEndpointGroup, IVBenchmark
+        from lit.models import Search, PubMedQuery, ReferenceTags, Reference
+        from mgmt.models import Task
+        from myuser.models import HAWCUser
+        from riskofbias.models import RiskOfBias
+        from study.models import Study
+        from summary.models import SummaryText, Visual, DataPivot, EvidenceProfile, EvidenceProfileStream, EvidenceProfileScenario
+
+        # Copying selected assessment from the form and showing assessment being cloned to true.
+        assessment.cloned = True
+        assessment.save()
+        source_assessment = Assessment.objects.get(pk=assessment.pk)
+
+        """Cloning selected assessment from the form."""
+        
+        # Get the Many-to-Many fields
+        pms = source_assessment.project_manager.all()
+        ts = source_assessment.team_members.all()
+        rs = source_assessment.reviewers.all()
+        
+        # Actual cloning
+        assessment_clone = assessment
+        assessment_clone.pk = None
+        assessment_clone.name = assessment_clone.name + " CLONED"
+        assessment_clone.save()
+
+        # Add Many-to-Many fields to cloned Assessment.
+        assessment_clone.project_manager.add(*pms)
+        assessment_clone.team_members.add(*ts)
+        assessment_clone.reviewers.add(*rs)
+        
+        # Cloned Target Assesment
+        target_assessment = Assessment.objects.get(pk=assessment_clone.pk)
+
+        # Check if Assessment even has studies
+        """if Study.objects.filter(
+                assessment=source_assessment
+            ).count() > 0:"""
+        # Copy existing studies over to cloned assessment
+        studies = Study.objects.filter(assessment=source_assessment)
+        Study.copy_across_assessment(studies, target_assessment)
+
+        # Copy Risk of Bias Information 
+        RiskOfBias.copy_riskofbias(target_assessment, source_assessment)
 
 
 class Attachment(models.Model):

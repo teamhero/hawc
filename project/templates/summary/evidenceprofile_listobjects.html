@@ -1,0 +1,14 @@
+{% if list %}
+  <ul style="padding-top:4px;">
+    {% for object in list %}
+      <li class="smallTextBlock">
+        <span class="moveLILeft">
+          <strong>{% if "name" in object %}{{object.name|safe}}{% elif "title" in object %}{{object.title|safe}}{% endif %}</strong><br />
+          <div style="padding-top:4px;">{% if "explanation" in object %}{{object.explanation|safe}}{% elif "description" in object %}{{object.description|safe}}{% endif %}</div>
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <div class="smallNA">N/A</div>
+{% endif %}

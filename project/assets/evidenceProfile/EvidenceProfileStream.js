@@ -18,6 +18,7 @@ class EvidenceProfileStream {
         stream_type: "number",
         stream_title: "string",
         confidence_judgement: "object",
+        summary_of_findings: "object",
     };
 
     // This constructor takes in an object and attempts to copy the desired attributes to this object's object-level "object" attribute

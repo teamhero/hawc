@@ -26,7 +26,7 @@ class Endpoint(AssessmentViewset):
     assessment_filter_args = "assessment"
     model = models.Endpoint
     serializer_class = serializers.EndpointSerializer
-    list_actions = ['list', 'effects', 'rob_filter', 'lookup_filter']
+    list_actions = ['list', 'effects', 'rob_filter', ]
 
     def get_queryset(self):
         return self.model.objects.optimized_qs()
@@ -58,27 +58,6 @@ class Endpoint(AssessmentViewset):
             raise NotAcceptable("Must contain < 100 endpoints")
 
         serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
-
-    @list_route()
-    def lookup_filter(self, request):
-        params = self.request.query_params
-
-        assessment_id = tryParseInt(params.get('assessment_id'), -1)
-        query = Q(assessment_id=assessment_id)
-
-        effects = params.get('effect[]')
-        if effects:
-            query &= Q(effect__in=effects.split(','))
-
-        study_ids = params.get('study_id[]')
-        if study_ids:
-            query &= Q(animal_group__experiment__study__in=study_ids.split(','))
-
-        qs = models.Endpoint.objects.filter(query)
-
-        serializer = serializers.EndpointLookupFieldsSerializer(qs, many=True)
-		
         return Response(serializer.data)
 
 

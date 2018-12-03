@@ -286,6 +286,38 @@ class AssessmentEmailManagers(MessageMixin, FormView):
         form.send_email()
         return super().form_valid(form)
 
+class AssessmentClone(TeamMemberOrHigherMixin, MessageMixin, FormView):
+    """
+    Clone assessment to create a duplicate but still unique.
+    Clones are complete and include most nested data.
+    """
+    model = models.Assessment
+    template_name = "assessment/assessment_clone.html"
+    form_class = forms.AssessmentClone 
+
+    def get_assessment(self, request, *args, **kwargs):
+        return get_object_or_404(models.Assessment, pk=self.kwargs.get('pk'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        kwargs['assessment'] = self.assessment
+        return kwargs
+
+    def form_valid(self, form):
+        models.Assessment.clone_assessment(
+            form.cleaned_data['assessment'])
+        msg = "Assessment copied!"
+        self.success_message = msg
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('assessment:detail', kwargs={'pk': self.assessment.id})
+
 
 # Attachment views
 class AttachmentCreate(BaseCreate):

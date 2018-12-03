@@ -53,10 +53,6 @@ class DomainDisplay extends Component {
 
 }
 
-    function SortByValue(x,y) {
-        return ((x[1] == y[1]) ? 0 : ((x[1] > y[1]) ? 1 : -1 ));
-    }
-
 DomainDisplay.propTypes = {
     domain: PropTypes.shape({
         key: PropTypes.string.isRequired,

@@ -72,10 +72,6 @@ class RiskOfBiasDomain(models.Model):
                 name=domain['name'],
                 description=domain['description'])
             RiskOfBiasMetric.build_metrics_for_one_domain(d, domain['metrics'])
-            for metric in objects['metrics']:
-                m = RiskOfBiasMetric.objects.get(metric.pk)
-                RiskOfBiasMetricAnswers.build_answers_for_one_metric(m, metric['answers'])
-
         
 
     @classmethod
@@ -208,7 +204,6 @@ class RiskOfBiasMetric(models.Model):
 
     def get_assessment(self):
         return self.domain.get_assessment()
-
     @classmethod
     def build_metrics_for_one_domain(cls, domain, metrics):
         """
@@ -458,7 +453,6 @@ class RiskOfBiasScore(models.Model):
         RiskOfBiasMetric,
         related_name='scores')
     score = models.PositiveSmallIntegerField(
-        choices=RISK_OF_BIAS_SCORE_CHOICES,
         default=10)
     notes = models.TextField(
         blank=True)
@@ -607,104 +601,6 @@ class RiskOfBiasMetricAnswers(models.Model):
             objs.append(obj)
         RiskOfBiasMetricAnswers.objects.bulk_create(objs)
 
-class RiskOfBiasScorePerEndpoint(models.Model):
-    objects = managers.RiskOfBiasScorePerEndpointManager()
-
-    RISK_OF_BIAS_SCORE_CHOICES = (
-        (10, 'Not reported'),
-        (1, 'Critically deficient'),
-        (2, 'Poor'),
-        (3, 'Adequate'),
-        (4, 'Good'),
-        (0, 'Not applicable'))
-
-    SCORE_SYMBOLS = {
-        1: '--',
-        2: '-',
-        3: '+',
-        4: '++',
-        0: '-',
-        10: 'NR',
-    }
-
-    SCORE_SHADES = {
-        1: '#CC3333',
-        2: '#FFCC00',
-        3: '#6FFF00',
-        4: '#00CC00',
-        0: '#FFCC00',
-        10: '#FFCC00',
-    }
-
-    riskofbiasperendpoint = models.ForeignKey(
-        RiskOfBias,
-        related_name='scoresperendpoint')
-    baseendpoint = models.ForeignKey(
-        'animal.Endpoint',
-        related_name='riskofbiasesperendpoint',
-        null=True)
-    metric = models.ForeignKey(
-        RiskOfBiasMetric,
-        related_name='scoresperendpoint')
-    score = models.PositiveSmallIntegerField(
-        choices=RISK_OF_BIAS_SCORE_CHOICES,
-        default=10)
-    notes = models.TextField(
-        blank=True)
-
-    class Meta:
-        ordering = ('metric', 'id')
-
-    def __str__(self):
-        return '{} {}'.format(self.riskofbiasperendpoint, self.metric)
-
-    def get_assessment(self):
-        return self.metric.get_assessment()
-
-    @staticmethod
-    def flat_complete_header_row():
-        return (
-            'rob-domain_id',
-            'rob-domain_name',
-            'rob-domain_description',
-            'rob-metric_id',
-            'rob-metric_name',
-            'rob-metric_description',
-            'rob-score_id',
-            'rob-score_score',
-            'rob-score_description',
-            'rob-score_notes',
-        )
-
-    @staticmethod
-    def flat_complete_data_row(ser):
-        return (
-            ser['metric']['domain']['id'],
-            ser['metric']['domain']['name'],
-            ser['metric']['domain']['description'],
-            ser['metric']['id'],
-            ser['metric']['name'],
-            ser['metric']['description'],
-            ser['id'],
-            ser['score'],
-            ser['score_description'],
-            cleanHTML(ser['notes']),
-        )
-
-    @property
-    def score_symbol(self):
-        return self.SCORE_SYMBOLS[self.score]
-
-    @property
-    def score_shade(self):
-        return self.SCORE_SHADES[self.score]
-
-    @classmethod
-    def delete_caches(cls, ids):
-        id_lists = [(score.riskofbiasperendpoint.id, score.riskofbiasperendpoint.endpoint_id) for score in cls.objects.filter(id__in=ids)]
-        rob_ids, endpoint_ids = list(zip(*id_lists))
-        RiskOfBiasPerEndpoint.delete_caches(rob_ids)
-        #Study.delete_caches(study_ids)
 
 class RiskOfBiasAssessment(models.Model):
     objects = managers.RiskOfBiasAssessmentManager()
@@ -728,4 +624,3 @@ reversion.register(RiskOfBiasMetric)
 reversion.register(RiskOfBiasMetricAnswers)
 reversion.register(RiskOfBias)
 reversion.register(RiskOfBiasScore)
-reversion.register(RiskOfBiasScorePerEndpoint)

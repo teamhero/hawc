@@ -1,0 +1,24 @@
+{% extends 'summary/evidenceprofile_detail.html' %}
+
+{% block title %}
+  {{assessment}} | Endpoints | Evidence Profile | {{object}} | Delete | HAWC
+{% endblock title %}
+
+{% block dp_content %}
+
+  {{ block.super }}
+
+  <div class="alert alert-block">
+    <h4>Warning!</h4>
+    Are you sure you want to delete this evidence profile? All evidence profile settings will be removed
+  </div>
+  <form action="." method="post">
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">{{ crud }} Evidence Profile</button>
+      <a href="{{object.get_absolute_url}}" class="btn">Cancel</a>
+    </div>
+    {% csrf_token %}
+    </fieldset>
+  </form>
+
+{% endblock dp_content %}

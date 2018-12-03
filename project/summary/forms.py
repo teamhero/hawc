@@ -719,7 +719,7 @@ class EvidenceProfileForm(forms.ModelForm):
     class Meta:
         # Set the base model and form fields for this form
         model = models.EvidenceProfile
-        fields = ('title', 'slug', 'settings', 'caption', )
+        fields = ("title", "slug", "caption", "one_scenario_per_stream")
 
     # This is the initialization method for this form object
     def __init__(self, *args, **kwargs):
@@ -727,7 +727,7 @@ class EvidenceProfileForm(forms.ModelForm):
         self.submitted_data = kwargs.get("data", None)
 
         # Attempt to get a reference to this object's parent Assessment object, and then run the superclass's initialization method
-        assessment = kwargs.pop('parent', None)
+        assessment = kwargs.pop("parent", None)
         super().__init__(*args, **kwargs)
 
         if (assessment):
@@ -750,44 +750,46 @@ class EvidenceProfileForm(forms.ModelForm):
         new_fields.update(
             [
                 (
-                    "confidence_judgement_score"
-                    ,forms.ChoiceField(
-                        required = False
-                        ,label = "Total Judgement Score Across All Streams"
-                        ,choices = confidenceJudgementChoices
-                        ,initial = initial_confidence_judgement["score"] if ("score" in initial_confidence_judgement) else ""
-                        ,widget = forms.Select(
+                    "confidence_judgement_score",
+                    forms.ChoiceField(
+                        required = False,
+                        label = "Total Judgement Score Across All Streams",
+                        choices = confidenceJudgementChoices,
+                        initial = initial_confidence_judgement["score"] if ("score" in initial_confidence_judgement) else "",
+                        widget = forms.Select(
                             attrs={
                                 "style": "width:175px;"
                             }
-                        )
-                    )
-                )
-                ,(
-                    "confidence_judgement_title"
-                    ,forms.CharField(
-                        required = True
-                        ,label = "Title/Short Explanation"
-                        ,initial = initial_confidence_judgement["title"] if ("title" in initial_confidence_judgement) else ""
-                        ,widget = forms.TextInput()
-                    )
-                )
-                ,(
-                    "confidence_judgement_explanation"
-                    ,forms.CharField(
-                        required = False
-                        ,label = "Full Explanation"
-                        ,initial = initial_confidence_judgement["explanation"] if ("explanation" in initial_confidence_judgement) else ""
-                        ,help_text = "Explain why you selected the overall judgement score you did"
-                        ,widget = forms.Textarea()
-                    )
-                )
+                        ),
+                    ),
+                ),
+                (
+                    "confidence_judgement_title",
+                    forms.CharField(
+                        required = True,
+                        label = "Title/Short Explanation",
+                        initial = initial_confidence_judgement["title"] if ("title" in initial_confidence_judgement) else "",
+                        widget = forms.TextInput(),
+                    ),
+                ),
+                (
+                    "confidence_judgement_explanation",
+                    forms.CharField(
+                        required = False,
+                        label = "Full Explanation",
+                        initial = initial_confidence_judgement["explanation"] if ("explanation" in initial_confidence_judgement) else "",
+                        help_text = "Explain why you selected the overall judgement score you did",
+                        widget = forms.Textarea(),
+                    ),
+                ),
             ]
         )
 
         # Iterate through the new set of fields and add them to self.fields
         for key, value in new_fields.items():
             self.fields[key] = value
+
+        self.fields["one_scenario_per_stream"].widget.attrs["onclick"] = "onlyOneScenarioPerStream(this)"
 
         # Set the desired helper classes, etc. for this form
         self.helper = self.setHelper()
@@ -800,10 +802,6 @@ class EvidenceProfileForm(forms.ModelForm):
             if (type(widget) != forms.CheckboxInput):
                 # This form field does not use the forms.CheckboxInput widget, add the 'span12' class to its widget
                 widget.attrs['class'] = 'span12'
-
-            if (fieldName == "settings"):
-                # For the "settings" field, constrain their textarea height to two rows
-                self.fields[fieldName].widget.attrs["rows"] = 2
 
         if (self.instance.id):
             # This is an existing evidence profile that is being edited, set inputs accordingly
@@ -870,7 +868,7 @@ class EvidenceProfileForm(forms.ModelForm):
             "evidence_profile_streams": {
                 "ordering_field": "order",
                 "retain_ordering_field": True,
-                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|order)$",
+                "re_match": r"^stream_(\d+)_(pk|stream_type|stream_title|confidence_judgement_title|confidence_judgement_score|confidence_judgement_explanation|summary_of_findings_title|summary_of_findings_summary|order)$",
                 "re_replace_with": r"\1,\2",
                 "field_validation": {
                     "pk": {
@@ -905,6 +903,16 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "string",
                         "can_be_empty": True,
                     },
+                    "summary_of_findings_title": {
+                        "required": False,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                    "summary_of_findings_summary": {
+                        "required": False,
+                        "type": "strng",
+                        "can_be_empty": True,
+                    }
                 },
             },
             "stream_scenarios": {
@@ -912,7 +920,7 @@ class EvidenceProfileForm(forms.ModelForm):
                 "parent_field": "scenarios",
                 "ordering_field": "order",
                 "retain_ordering_field": True,
-                "re_match": r"^stream_(\d+)_(\d+)_scenario_(order|pk|scenario_name|outcome_score|outcome_title|outcome_explanation)$",
+                "re_match": r"^stream_(\d+)_(\d+)_scenario_(order|pk|scenario_name|outcome_score|outcome_title|outcome_explanation|summary_of_findings_title|summary_of_findings_summary)$",
                 "re_replace_with": r"\1,\2,\3",
                 "field_validation": {
                     "pk": {
@@ -923,12 +931,12 @@ class EvidenceProfileForm(forms.ModelForm):
                     "scenario_name": {
                         "required": True,
                         "type": "string",
-                        "can_be_empty": False,
+                        "can_be_empty": True,
                     },
                     "outcome_title": {
                         "required": True,
                         "type": "string",
-                        "can_be_empty": False,
+                        "can_be_empty": True,
                     },
                     "outcome_score": {
                         "required": False,
@@ -940,8 +948,78 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "string",
                         "can_be_empty": True,
                     },
+                    "summary_of_findings_title": {
+                        "required": False,
+                        "type": "string",
+                        "can_be_empty": True,
+                    },
+                    "summary_of_findings_summary": {
+                        "required": False,
+                        "type": "strng",
+                        "can_be_empty": True,
+                    }
                 },
             },
+            "effect_tags": {
+                "parent_object_type": "stream_scenarios",
+                "parent_field": "effectTags",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_(\d+)_effectTag_(order|pk)$",
+                "re_replace_with": r"\1,\2,\3,\4",
+                "field_validation": {
+                    "pk": {
+                        "required": True,
+                        "type": "integer",
+                        "can_be_empty": False,
+                    },
+                },
+            },
+            "studies": {
+                "parent_object_type": "effect_tags",
+                "parent_field": "studies",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_(\d+)_(\d+)_study_(order|pk)$",
+                "re_replace_with": r"\1,\2,\3,\4,\5",
+                "field_validation": {
+                    "pk": {
+                        "required": True,
+                        "type": "integer",
+                        "can_be_empty": False,
+                    },
+                },
+            },
+            "confidenceFactorsIncrease": {
+                "parent_object_type": "stream_scenarios",
+                "parent_field": "confidenceFactorsIncrease",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_increase_(\d+)_confidenceFactor_(order|pk|explanation)$",
+                "re_replace_with": r"\1,\2,\3,\4",
+                "field_validation": {
+                    "pk": {
+                        "required": True,
+                        "type": "integer",
+                        "can_be_empty": False,
+                    },
+                },
+            },
+            "confidenceFactorsDecrease": {
+                "parent_object_type": "stream_scenarios",
+                "parent_field": "confidenceFactorsDecrease",
+                "ordering_field": "order",
+                "retain_ordering_field": True,
+                "re_match": r"^stream_(\d+)_(\d+)_decrease_(\d+)_confidenceFactor_(order|pk|explanation)$",
+                "re_replace_with": r"\1,\2,\3,\4",
+                "field_validation": {
+                    "pk": {
+                        "required": True,
+                        "type": "integer",
+                        "can_be_empty": False,
+                    },
+                },
+            }
         }
 
         #Iterate over the sets of unordered object types and add some key/value attributes to each one that are common to all
@@ -1151,9 +1229,107 @@ class EvidenceProfileForm(forms.ModelForm):
 
                     if (not ordering_list[list_index]):
                         ordering_list[list_index] = {}
+                        ordering_list[list_index]["original_key"] = o_key
 
                     for field_key, field_value in o_dict.items():
                         ordering_list[list_index][field_key] = field_value
+
+        # Iterate through each of the stream objects in order to make an addition to each stream's scenarios
+        for stream_key, stream_dict in unordered_types["evidence_profile_streams"]["objects"].items():
+            if ("scenarios" in stream_dict):
+                # This stream has a set of scenarios, iterate over them and add the following keys and initialize them to empty lists:
+                #   * scenarios
+                #   * confidencefactors_increase
+                #   * confidencefactors_decrease
+
+                for scenario in stream_dict["scenarios"]:
+                    scenario["studies"] = []
+                    scenario["confidencefactors_increase"] = []
+                    scenario["confidencefactors_decrease"] = []
+
+                    if ((scenario["summary_of_findings_title"] != "") or (scenario["summary_of_findings_summary"] != "")):
+                        # The summary of findings is not empty, save it as an object
+
+                        scenario["summary_of_findings"] = {
+                            "title": scenario["summary_of_findings_title"],
+                            "summary": scenario["summary_of_findings_summary"]
+                        }
+                    else:
+                        # The summary of findings is empty, save an empty object instead
+                        scenario["summary_of_findings"] = {}
+
+                    # Remove the scenario fields related the the summary of findings
+                    del scenario["summary_of_findings_title"]
+                    del scenario["summary_of_findings_summary"]
+
+                    if ((scenario["outcome_title"] != "") or (scenario["outcome_explanation"] != "")):
+                        # The outcome is not empty, save it as an object
+
+                        scenario["outcome"] = {
+                            "title": scenario["outcome_title"],
+                            "explanation": scenario["outcome_explanation"],
+                            "score": scenario["outcome_score"],
+                            "name": confidence_judgement_dict[scenario["outcome_score"]] if (scenario["outcome_score"] in confidence_judgement_dict) else "",
+                        }
+                    else:
+                        # The outcome is empty, save an empty object instead
+                        scenario["outcome"] = {}
+
+                    # Delete the individual outcome-related fields from the cleaned submitted data (they were just combined into a single "outcome" attribute)
+                    del scenario["outcome_title"]
+                    del scenario["outcome_explanation"]
+                    del scenario["outcome_score"]
+
+                    if ("original_key" in scenario):
+                        # This scenario includes an attribute named original_key
+
+                        if (scenario["original_key"] in unordered_types["stream_scenarios"]["objects"]):
+                            # original_key's value is an attribute in the set of objects within stream_scenarios; look for studes and confidence factors
+
+                            if ("effectTags" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]):
+                                # This scenario has a set of effectTags, iterate over them to build the studies key's value
+
+                                for effectTag in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]["effectTags"]:
+                                    scenario["studies"].append(
+                                        {
+                                            "effecttag_id": effectTag["pk"],
+                                            "studies": [],
+                                        }
+                                    )
+
+                                    if ((effectTag["original_key"] in unordered_types["effect_tags"]["objects"]) and ("studies" in unordered_types["effect_tags"]["objects"][effectTag["original_key"]])):
+                                        # This effectTag object has a studies attribute, iterate through it to add each study's primary key to the studies[].studies array
+                                        studyIndex = len(scenario["studies"]) - 1
+                                        if (studyIndex >= 0):
+                                            for study in unordered_types["effect_tags"]["objects"][effectTag["original_key"]]["studies"]:
+                                                scenario["studies"][studyIndex]["studies"].append(study["pk"])
+
+                            if ("confidenceFactorsIncrease" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]):
+                                # This scenario has a set of confidenceFactorsIncrease values, iterate over them to build the
+                                # confidencefactors_increase key's value
+
+                                for confidenceFactor in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]["confidenceFactorsIncrease"]:
+                                    scenario["confidencefactors_increase"].append(
+                                        {
+                                            "confidencefactor_id": confidenceFactor["pk"],
+                                            "explanation": confidenceFactor["explanation"] if (confidenceFactor["explanation"] is not None) else "",
+                                        }
+                                    )
+
+                            if ("confidenceFactorsDecrease" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]):
+                                # This scenario has a set of confidenceFactorsDecrease values, iterate over them to build the
+                                # confidencefactors_decrease key's value
+
+                                for confidenceFactor in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]["confidenceFactorsDecrease"]:
+                                    scenario["confidencefactors_decrease"].append(
+                                        {
+                                            "confidencefactor_id": confidenceFactor["pk"],
+                                            "explanation": confidenceFactor["explanation"] if (confidenceFactor["explanation"] is not None) else "",
+                                        }
+                                    )
+
+                        # Remove the original_key since it is no longer needed and was only relevent within this instantiation
+                        del scenario["original_key"]
 
         # Finally, iterate through the unordered object types that have a desired_order attribute and make sure that it contains the same object that
         # is found in the objects attribute
@@ -1166,6 +1342,7 @@ class EvidenceProfileForm(forms.ModelForm):
                     # This object's ordering field does not need to be retained, get rid of it
                     unordered_types[ut_key]["desired_order"][o_dict[unordered_types[ut_key]["ordering_field"]] - 1].pop(unordered_types[ut_key]["ordering_field"])
 
+            # Get rid of any element in the desired order list that is empty
             unordered_types[ut_key]["desired_order"] = [object for object in unordered_types[ut_key]["desired_order"] if (object)]
 
         # Convert the evidence profile stream objects that were built from submitted form data into the format that matches the
@@ -1182,6 +1359,10 @@ class EvidenceProfileForm(forms.ModelForm):
                     "name": confidence_judgement_dict[stream["confidence_judgement_score"]],
                     "explanation": stream["confidence_judgement_explanation"],
                 },
+                "summary_of_findings": {
+                    "title": stream["summary_of_findings_title"] if ("summary_of_findings_title" in stream) else "",
+                    "summary": stream["summary_of_findings_summary"] if ("summary_of_findings_summary" in stream) else "",
+                },
                 "scenarios": [{key:scenario[key] if (key != "order") else (scenario[key] * 10) for key in scenario} for scenario in stream["scenarios"]] if ("scenarios" in stream) else [],
             }
             for index, stream
@@ -1194,29 +1375,14 @@ class EvidenceProfileForm(forms.ModelForm):
         # stream's set of scenarios out to cleaned_data["scenarios"]
         # The scenarios are moved because they are child objects stored in a separate, related database table
         for index, stream in enumerate(unordered_types["evidence_profile_streams"]["desired_order"]):
-            for scenario in stream["scenarios"]:
-                # Create an "outcome" attribute object that holds the outcome-related fields from the cleaned submitted data
-                scenario["outcome"] = {
-                    "title": scenario["outcome_title"],
-                    "explanation": scenario["outcome_explanation"],
-                    "score": scenario["outcome_score"],
-                    "name": confidence_judgement_dict[scenario["outcome_score"]],
-                }
-
-                # Delete the individual outcome-related fields from the cleaned submitted data (they were just combined into a single "outcome" attribute)
-                del scenario["outcome_title"]
-                del scenario["outcome_explanation"]
-                del scenario["outcome_score"]
-
-            # Done iterating through the stream's secenario objects, now move this stream's scenario objects out to an object
-            # named cleaned_data["scenarios"] and remove it from this stream object
+            # Move this stream's scenario objects out to an object named cleaned_data["scenarios"] and remove it from this stream object
             cleaned_data["scenarios"][index] = stream["scenarios"]
             del stream["scenarios"]
 
         # Create an object in the cleaned data that is made of of data related to each of the streams within this evidence profile
         cleaned_data["streams"] = unordered_types["evidence_profile_streams"]["desired_order"]
 
-        # Create an object in the cleaned data that is made of of data related to inferences and judgements across all streams
+        # Create an object in the cleaned data that is made up of data related to inferences and judgements across all streams
         # within this evidence profile
         cleaned_data["cross_stream_confidence_judgement"] = {
             "score": cleaned_data.get("confidence_judgement_score"),
@@ -1224,6 +1390,7 @@ class EvidenceProfileForm(forms.ModelForm):
             "explanation": cleaned_data.get("confidence_judgement_explanation"),
         }
 
+        # Create an object in the cleaned data that is made of the data related to each cross-stream inference within this evidence profile
         cleaned_data["cross_stream_inferences"] = unordered_types["cross_stream_inferences"]["desired_order"]
 
         return cleaned_data

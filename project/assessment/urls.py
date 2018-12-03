@@ -7,6 +7,8 @@ from . import views, api
 
 router = DefaultRouter()
 router.register(r'endpoints', api.AssessmentEndpointList, base_name='endpoint_type')
+router.register(r'effecttag-autosuggest', api.EffectTagAutoSuggest, base_name='effecttag-autosuggest')
+router.register(r'effecttag-create', api.EffectTagCreate, base_name='effecttag-create')
 
 urlpatterns = [
 
@@ -23,6 +25,9 @@ urlpatterns = [
     url(r'^(?P<pk>\d+)/$',
         views.AssessmentRead.as_view(),
         name='detail'),
+    url(r'^(?P<pk>\d+)/clone/$',
+        views.AssessmentClone.as_view(),
+        name='clone'),
     url(r'^(?P<pk>\d+)/edit/$',
         views.AssessmentUpdate.as_view(),
         name='update'),

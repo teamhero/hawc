@@ -9,6 +9,7 @@ import {renderEvidenceProfileScenariosFormset} from "../EvidenceProfileScenarios
 // Set the colors to be used as shades for the alternating streams
 let shade1 = "#F9F9F9";
 let shade2 = "#FFFFFF";
+let evidenceProfileStreamsFormset = undefined;
 
 // This Component object is the container for the entire Evidence Profile Stream formset
 class EvidenceProfileStreamsFormset extends Component {
@@ -37,8 +38,8 @@ class EvidenceProfileStreamsFormset extends Component {
             );
         }
 
-        if (iTo == 0) {
-            // This Evidence Profile has no Streams yet, push an empty one onto the end of this.streams and increment iTo
+        if (this.props.profileId <= 0) {
+            // This formset is part of a new Evidence Profile, push an empty Stream onto the end of this.streams and increment iTo
 
             this.streams.push(
                 {
@@ -82,11 +83,14 @@ class EvidenceProfileStreamsFormset extends Component {
                 index={i}
                 maxIndex={(iTo - 1)}
                 order={(i + 1)}
+                profileId={this.props.profileId}
                 pk={this.streams[i].stream.object.pk}
                 stream_type={this.streams[i].stream.object.stream_type}
                 stream_type_optionSet={this.props.config.streamTypes}
                 stream_title={this.streams[i].stream.object.stream_title}
                 confidence_judgement={this.streams[i].stream.object.confidence_judgement}
+                summary_of_findings={this.streams[i].stream.object.summary_of_findings}
+                onlyOneScenarioPerStream={this.props.onlyOneScenarioPerStream}
                 scenarios={this.streams[i].stream.object.scenarios}
                 confidenceJudgements={this.props.confidenceJudgements}
                 idPrefix={this.props.config.streamIdPrefix}
@@ -95,6 +99,7 @@ class EvidenceProfileStreamsFormset extends Component {
                 scenariosFormsetConfig={this.props.config.scenariosFormset}
                 handleButtonClick={this.handleButtonClick}
                 streamReferences={this.streamReferences}
+                csrf_token={this.props.csrf_token}
             />;
         }
 
@@ -165,10 +170,12 @@ class EvidenceProfileStreamsFormset extends Component {
                         index={newDivIndex}
                         maxIndex={newDivIndex}
                         order={(newDivIndex + 1)}
+                        profileId={this.props.profileId}
                         stream_type={this.streams[streamIndex].stream.object.stream_type}
                         stream_type_optionSet={this.props.config.streamTypes}
                         stream_title={this.streams[streamIndex].stream.object.stream_title}
                         confidence_judgement={this.streams[streamIndex].stream.object.confidence_judgement}
+                        summary_of_findings={this.streams[streamIndex].stream.object.summary_of_findings}
                         scenarios={this.streams[streamIndex].stream.object.scenarios}
                         confidenceJudgements={this.props.confidenceJudgements}
                         idPrefix={this.props.config.streamIdPrefix}
@@ -177,9 +184,8 @@ class EvidenceProfileStreamsFormset extends Component {
                         scenariosFormsetConfig={this.props.config.scenariosFormset}
                         handleButtonClick={this.handleButtonClick}
                         streamReferences={this.streamReferences}
+                        csrf_token={this.props.csrf_token}
                     />;
-
-                    console.log(this.streams);
 
                     this.setState(
                         {
@@ -400,22 +406,44 @@ class StreamDiv extends Component {
        // First, call the super-class's constructor
         super(props);
 
-        this.pk = (("pk" in props) && (props.pk !== null) && (typeof(props.pk) === "number")) ? props.pk : 0;
-        this.stream_type = (("stream_type" in props) && (props.stream_type !== null)) ? props.stream_type : "";
-        this.stream_title = (("stream_title" in props) && (props.stream_title !== null)) ? props.stream_title : "";
+        // Copy syntactically-valid values from this.props into this object, using default values if the versions in this.props are missing or invalid
+        this.pk = (("pk" in this.props) && (this.props.pk !== null) && (typeof(this.props.pk) === "number")) ? this.props.pk : 0;
+        this.stream_type = (("stream_type" in this.props) && (this.props.stream_type !== null)) ? this.props.stream_type : "";
+        this.stream_title = (("stream_title" in this.props) && (this.props.stream_title !== null)) ? this.props.stream_title : "";
 
+        // Initialize an empty reference for this stream's child scenario formset
+        this.scenariosFormset = null;
+
+        // Copy a syntactically-valid this.props.confidence_judgement to this object, defaulting to to an empty judgement if the version in props is missing or invalid
         this.confidence_judgement = (("confidence_judgement" in props) && (props.confidence_judgement !== null) && (typeof(props.confidence_judgement) === "object")) ? props.confidence_judgement : {
             score: "",
             title: "",
             explanation: "",
-        }
+        };
 
+        // Copy a syntactically-valid this.props.summary_of_findings to this object, defaulting to to an empty summary if the version in props is missing or invalid
+        this.summary_of_findings = (
+            ("summary_of_findings" in this.props)
+            && (this.props.summary_of_findings !== null)
+            && (typeof(this.props.summary_of_findings) === "object")
+            && ("title" in this.props.summary_of_findings)
+            && ("summary" in this.props.summary_of_findings)
+        ) ? this.props.summary_of_findings : {
+            title: "",
+            summary: "",
+        };
+
+        // Copy a syntactically-valid this.props.scenarios to thios object, defualting to an empty array if the version in props is missing or invalid
         this.scenarios = (("scenarios" in props) && (props.scenarios !== null) && (typeof(props.scenarios) === "object") && (Array.isArray(props.scenarios))) ? props.scenarios : [];
 
         // These fields will get used multiple times each, so it is a good idea to go ahead and declare them
         this.plusOne = this.props.index + 1;
         this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne;
         this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
+
+        this.state = {
+            "onlyOneScenarioPerStream": (("onlyOneScenarioPerStream" in this.props) && (this.props.onlyOneScenarioPerStream !== null) && (typeof(this.props.onlyOneScenarioPerStream) === "boolean")) ? this.props.onlyOneScenarioPerStream : false,
+        };
     }
 
     render() {
@@ -577,6 +605,39 @@ class StreamDiv extends Component {
                 <br className={"streamsClearBoth"} />
 
                 <div className={"streamPartDiv streamsClearBoth"}>
+                    <div className={"streamPart_summaryOfFindings"}>
+                        <br />
+                        <label htmlFor={this.fieldPrefix + "_summary_of_findings_title"} className={"control-label"}>Within-Stream Summary of Findings<br /><span style={{fontSize:"0.8em",}}>Title/Short Summary</span></label>
+                        <div className={"controls"}>
+                            <InputSummaryOfFindingsTitle
+                                ref={
+                                    (input) => {
+                                        this.summaryOfFindingsTitleReference = input;
+                                    }
+                                }
+                                id={this.fieldPrefix + "_summary_of_findings_title"}
+                                value={this.summary_of_findings.title}
+                            />
+                        </div>
+
+                        <label htmlFor={this.fieldPrefix + "_summary_of_findings_summary"} className={"control-label"}><span style={{fontSize:"0.8em",}}>Full Summary</span></label>
+                        <div className={"controls"}>
+                            <TextAreaSummaryOfFindingsSummary
+                                ref={
+                                    (input) => {
+                                        this.summaryOfFindingsSummaryReference = input;
+                                    }
+                                }
+                                id={this.fieldPrefix + "_summary_of_findings_summary"}
+                                value={this.summary_of_findings.summary}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <br className={"streamsClearBoth"} />
+
+                <div className={"streamPartDiv streamsClearBoth"}>
                     <div className={"streamPart_leftConfidenceJudgement"}>
                         <label htmlFor={this.fieldPrefix + "_confidence_judgement_title"} className={"control-label"}>Within-Stream Confidence Judgement<br /><span style={{fontSize:"0.8em",}}>Title/Short Explanation</span></label>
                         <div className={"controls"}>
@@ -638,8 +699,59 @@ class StreamDiv extends Component {
         );
     }
 
+    // This method executes after this component has mounted (loaded) correctly
     componentDidMount() {
-        renderEvidenceProfileScenariosFormset(this.scenarios, this.fieldPrefix + "_scenariosFormset", this.props.scenariosFormsetConfig, this.props.confidenceJudgements, this.divReference);
+        this.scenariosFormset = renderEvidenceProfileScenariosFormset(
+            this.props.profileId,
+            this.scenarios,
+            this.fieldPrefix + "_scenariosFormset",
+            this.props.scenariosFormsetConfig,
+            this.props.confidenceJudgements,
+            this.props.csrf_token,
+            this.props.onlyOneScenarioPerStream
+        );
+    }
+
+    // This method executes after the component has been updated in some way
+    componentDidUpdate() {
+        if (this.scenariosFormset !== null) {
+            // The reference to this stream's cchild scenarios formset is not empty, update its state
+
+            if (this.state.onlyOneScenarioPerStream) {
+                // This stream is now limited to only one scenario, update the formset's state
+
+                if (this.scenariosFormset.scenarios.length > 1) {
+                    // The formset currently contains more than one scenario, only retain the scenario at the top of the list and re-build the formset via its state
+
+                    this.scenariosFormset.scenarios = [
+                        this.scenariosFormset.scenarios[0],
+                    ];
+
+                    this.scenariosFormset.setState(
+                        {
+                            onlyOneScenario: true,
+                            divs: this.scenariosFormset.buildDivs(),
+                        }
+                    );
+                }
+                else {
+                    // The formset currently contains only one or zero scenarios, only update the onlyOneScenario Boolean flag in the formset's state
+                    this.scenariosFormset.setState(
+                        {
+                            onlyOneScenario: true,
+                        }
+                    );
+                }
+            }
+            else {
+                // The stream is no longer limited to only one scenario, update the formset's state
+                this.scenariosFormset.setState(
+                    {
+                        onlyOneScenario: false,
+                    }
+                );
+            }
+        }
     }
 }
 
@@ -765,7 +877,84 @@ class InputStreamTitle extends Component {
 }
 
 
-// This Component class is used to create an input field for the "Within-Stream" confidence judgment
+// This Component class is used to create an input field for the Stream's overall Summary-of-Findings title
+class InputSummaryOfFindingsTitle extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor and properly bind its updateField method
+        super(props);
+        this.updateField = this.updateField.bind(this);
+
+        this.state = {
+            value: props.value
+        };
+    }
+
+    // This method update the tag's state with the new value of the contained input
+    updateField(event) {
+        this.setState(
+            {
+                value: event.target.value
+            }
+        );
+    }
+
+    // This method generates the HTML code for this Component
+    render() {
+        return (
+            <input
+                id={this.props.id}
+                className={"span12 textinput textInput"}
+                type={"text"}
+                maxLength={"50"}
+                name={this.props.id}
+                value={this.state.value}
+                onChange={(e) => this.updateField(e)}
+            />
+        );
+    }
+}
+
+
+// This Component class is used to create a textarea field for a stream's Summary-of-Findings summary
+class TextAreaSummaryOfFindingsSummary extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor and properly bind its updateField method
+        super(props);
+        this.updateField = this.updateField.bind(this);
+
+        this.state = {
+            value: props.value
+        };
+    }
+
+    // Update the tag's state with the new value of the contained textarea
+    updateField(event) {
+        this.setState(
+            {
+                value: event.target.value
+            }
+        );
+    }
+
+    // Place the desired textarea on the page
+    render() {
+        return (
+            <textarea
+                id={this.props.id}
+                className={"span12"}
+                cols={"80"}
+                rows={"4"}
+                name={this.props.id}
+                value={this.state.value}
+                onChange={(e) => this.updateField(e)}
+            >
+            </textarea>
+        );
+    }
+}
+
+
+// This Component class is used to create an input field for the "Within-Stream" Confidence Judgment title
 class InputConfidenceJudgementTitle extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
@@ -898,19 +1087,88 @@ class TextAreaConfidenceJudgementExplanation extends Component {
 
 // This function is used to create and then populate the <div> element in the Evidence Profile form that will hold and manage the formset for the
 // individual Evidence Profile Streams
-export function renderEvidenceProfileStreamsFormset(streams, formConfig, streamsConfig) {
+export function renderEvidenceProfileStreamsFormset(profileId, streams, formConfig, streamsConfig, onlyOneScenarioPerStream) {
     // First, look for the <div> element in the Evidence Profile form that holds the profile's caption -- the Streams'  formset will be just
     // beneath the caption
-    let captionDivList = document.querySelectorAll("#" + formConfig.captionDiv);
-    if (captionDivList.length > 0) {
+    let targetDivList = document.querySelectorAll("#" + formConfig.oneScenarioPerStreamDiv);
+    if (targetDivList.length > 0) {
         // The desired element was found in the page, attempt to add the new element as desired
 
-        captionDivList[0].insertAdjacentHTML("afterend", '<hr style="margin-top:32px; border-width:1px;" /><div id="' + streamsConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div>');
-        ReactDOM.render(
-            <EvidenceProfileStreamsFormset streams={streams} config={streamsConfig} confidenceJudgements={formConfig.confidenceJudgements} />,
+        // Clean onlyOneScenarioPerStream, defaulting to a Boolean false if it is invalid
+        onlyOneScenarioPerStream = ((onlyOneScenarioPerStream !== null) && (typeof(onlyOneScenarioPerStream) === "boolean")) ? onlyOneScenarioPerStream : false;
+
+        targetDivList[0].insertAdjacentHTML("afterend", '<hr style="margin-top:32px; border-width:1px;" /><div id="' + streamsConfig.divId + '" style="font-size:0.9em; margin:0 0 32px 0; padding:0"></div><hr style="margin-top:-16px; margin-bottom:32px; border-width:2px;" />');
+        evidenceProfileStreamsFormset = ReactDOM.render(
+            <EvidenceProfileStreamsFormset
+                profileId={profileId}
+                streams={streams}
+                config={streamsConfig}
+                confidenceJudgements={formConfig.confidenceJudgements}
+                onlyOneScenarioPerStream={onlyOneScenarioPerStream}
+                csrf_token={formConfig.csrf_token}
+            />,
             document.getElementById(streamsConfig.divId)
         );
     }
 }
+
+
+// This function is used to either:
+//      * Limit each stream to only one child scenario object
+//      * Allow each stream to have multiple child scenario objects
+// THIS ACTIVITY CAN POTENTIALLy DELETE A LOT OF DATA IF YOU ARE NOT CAREFUL!!
+export function limitStreamsToOneScenario(element) {
+    if ((evidenceProfileStreamsFormset !== undefined) && (element !== undefined) && (typeof(element.checked) === "boolean")) {
+        // The Evidence Profile Stream Formset has been instantiated and the element argument has a Boolean "checked" attribute, continue
+
+        var iTo = evidenceProfileStreamsFormset.streams.length;
+        let okayToChange = false;
+        if (element.checked) {
+            // The user checked the box -- this means each strimg can only hold one scenario
+
+            // First, check and see how many scenarios will be removed; iterate through the streams and see how many scenarios each one has
+            let toRemove = 0;
+            for (var i=0; i<iTo; i++) {
+                let scenarioCount = evidenceProfileStreamsFormset.streamReferences["div_" + evidenceProfileStreamsFormset.streams[i].div.props.index].scenariosFormset.scenarios.length;
+
+                if (scenarioCount > 1) {
+                    // This stream has more than one scenario, all but the first one will be removed
+                    toRemove = toRemove + (scenarioCount - 1);
+                }
+            }
+
+            if (toRemove > 0) {
+                // One or more scenarios will be removed, make sure that the user wishes to do this
+                okayToChange = confirm("This will remove " + toRemove + " scenario" + ((toRemove > 1) ? "s" : "") + " across " + iTo + " stream" + ((iTo > 1) ? "s" : ""));
+
+                if (!okayToChange) {
+                    // The user backed out of this, un-check the box
+                    element.checked = false;
+                }
+            }
+            else {
+                // No scenarios will be removed
+                okayToChange = true;
+            }
+        }
+        else {
+            // The user un-checked the box -- this means each stream can hold multiple scenarios
+            okayToChange = true;
+        }
+
+        if (okayToChange) {
+            // All the checks came out okay, update every stream's state
+
+            for (var i=0; i<iTo; i++) {
+                evidenceProfileStreamsFormset.streamReferences["div_" + evidenceProfileStreamsFormset.streams[i].div.props.index].setState(
+                    {
+                        onlyOneScenarioPerStream: element.checked,
+                    }
+                );
+            }
+        }
+    }
+}
+
 
 export default EvidenceProfileStreamsFormset;
