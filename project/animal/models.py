@@ -307,12 +307,6 @@ class AnimalGroup(models.Model):
                     '(gestation)</b>: Exposure in dams during pregnancy. <b>Multi-lifestage</b>: includes both ' +
                     'developmental and adult (i.e., multi-generational studies, exposure that start ' +
                     'before sexual maturity and continue to adulthood)')
-    duration_observation = models.FloatField(
-        verbose_name="Exposure-outcome duration",
-        help_text='Optional: Numeric length of time between start of exposure and outcome assessment in days. ' +
-                    'This field may be used to sort studies which is why days are used as a common metric.',
-        blank=True,
-        null=True)
     siblings = models.ForeignKey(
         "self",
         blank=True,
@@ -391,7 +385,6 @@ class AnimalGroup(models.Model):
             "animal_group-animal_source",
             "animal_group-lifestage_exposed",
             "animal_group-lifestage_assessed",
-            "animal_group-duration_observation",
             "animal_group-siblings",
             "animal_group-parents",
             "animal_group-generation",
@@ -415,7 +408,6 @@ class AnimalGroup(models.Model):
             ser['animal_source'],
             ser['lifestage_exposed'],
             ser['lifestage_assessed'],
-            ser['duration_observation'],
             cls.get_relation_id(ser['siblings']),
             '|'.join([cls.get_relation_id(p) for p in ser['parents']]),
             ser['generation'],
@@ -534,6 +526,12 @@ class DosingRegime(models.Model):
                     "possible instead include abbreviated age descriptions such as \"GD1-10\" "
                     "or \"GD2-PND10\". For gavage studies, include the number of doses, e.g. "
                     "\"1wk (1dose/d, 5d/wk)\" or \"2doses\" for a single-day experiment.")
+    duration_observation = models.FloatField(
+        verbose_name="Exposure-outcome duration",
+        help_text='Optional: Numeric length of time between start of exposure and outcome assessment in days. ' +
+                    'This field may be used to sort studies which is why days are used as a common metric.',
+        blank=True,
+        null=True)
     num_dose_groups = models.PositiveSmallIntegerField(
         default=4,
         validators=[MinValueValidator(1)],
@@ -599,6 +597,7 @@ class DosingRegime(models.Model):
             "dosing_regime-route_of_exposure",
             "dosing_regime-duration_exposure",
             "dosing_regime-duration_exposure_text",
+            "dosing_regime-duration_observation",
             "dosing_regime-num_dose_groups",
             "dosing_regime-positive_control",
             "dosing_regime-negative_control",
@@ -613,6 +612,7 @@ class DosingRegime(models.Model):
             ser['route_of_exposure'],
             ser['duration_exposure'],
             ser['duration_exposure_text'],
+            ser['duration_observation'],
             ser['num_dose_groups'],
             ser['positive_control'],
             ser['negative_control'],
