@@ -884,7 +884,7 @@ class ResultForm(forms.ModelForm):
         helper.form_class = None
 
         helper.add_fluid_row('name', 2, "span6")
-        helper.add_fluid_row('metric', 2, "span6")
+        helper.add_fluid_row('metric', 3, "span4")
         helper.add_fluid_row('data_location', 2, "span6")
         helper.add_fluid_row('dose_response', 3, "span4")
         helper.add_fluid_row('statistical_power', 4, "span3")
@@ -896,8 +896,10 @@ class ResultForm(forms.ModelForm):
         helper.addBtnLayout(helper.layout[8], 0, url, "Add new result tag", "span6")
 
         url = reverse('epi:adjustmentfactor_create', kwargs={'pk': self.instance.outcome.assessment_id})
-        helper.addBtnLayout(helper.layout[9], 0, url, "Add new adjustment factor", "span6")
-        helper.addBtnLayout(helper.layout[9], 1, url, "Add new adjustment factor", "span6")
+        # remove magic number 9; breaks if we change number of elements in the form. This still isn't great; what if comments went away?
+        btn_target_idx = helper.find_layout_idx_for_field_name('comments') - 1
+        helper.addBtnLayout(helper.layout[btn_target_idx], 0, url, "Add new adjustment factor", "span6")
+        helper.addBtnLayout(helper.layout[btn_target_idx], 1, url, "Add new adjustment factor", "span6")
 
         return helper
 

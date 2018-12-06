@@ -1316,6 +1316,10 @@ class Result(models.Model):
         ,help_text="Specify metric if \"other\"; optionally, provide details. Ex. Logistic regression to estimate OR and 95% CIs for continuous ln-transformed PFHxS"
     )
 
+    metric_units = models.TextField(
+        blank=True
+    )
+
     data_location = models.CharField(
         max_length=128
         ,blank=True
@@ -1415,7 +1419,6 @@ class Result(models.Model):
         EffectTag
         ,blank=True
         ,verbose_name="Tags"
-        ,help_text="Note units. Ex. IQR increase"
     )
 
     COPY_NAME = "results"
@@ -1451,6 +1454,7 @@ class Result(models.Model):
             "result-id",
             "result-name",
             "result-metric_description",
+            "result-metric_units",
             "result-data_location",
             "result-population_description",
             "result-dose_response",
@@ -1486,6 +1490,7 @@ class Result(models.Model):
             ser['id'],
             ser['name'],
             ser['metric_description'],
+            ser['metric_units'],
             ser['data_location'],
             ser['population_description'],
             ser['dose_response'],
