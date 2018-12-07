@@ -1313,11 +1313,12 @@ class Result(models.Model):
 
     metric_description = models.TextField(
         blank=True
-        ,help_text="Specify metric if \"other\"; optionally, provide details. Ex. Logistic regression to estimate OR and 95% CIs for continuous ln-transformed PFHxS"
+        ,help_text="Specify metric if \"other\"; optionally, provide details. Ex. Bayesian hierarchical linear regression estimates (betas) and 95% CI between quartile increases in maternal plasma PFAS concentrations (ug/L) and ponderal index (kg/m^3)"
     )
 
     metric_units = models.TextField(
         blank=True
+        ,help_text="Note Units: Ex. IQR increase, unit (ng/mL) increase, ln-unit (ng/mL) increase"
     )
 
     data_location = models.CharField(
