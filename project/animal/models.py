@@ -396,7 +396,6 @@ class AnimalGroup(models.Model):
             "animal_group-parents",
             "animal_group-generation",
             "animal_group-comments",
-            "animal_group-diet",
             "species-name",
             "strain-name",
         )
@@ -420,7 +419,6 @@ class AnimalGroup(models.Model):
             '|'.join([cls.get_relation_id(p) for p in ser['parents']]),
             ser['generation'],
             cleanHTML(ser['comments']),
-            ser['diet'],
             ser['species'],
             ser['strain']
         )
@@ -1031,8 +1029,6 @@ class Endpoint(BaseEndpoint):
             "endpoint-organ",
             "endpoint-effect",
             "endpoint-effect_subtype",
-            'endpoint-litter_effects',
-            'endpoint-litter_effect_notes',
             "endpoint-observation_time",
             "endpoint-observation_time_units",
             "endpoint-observation_time_text",
@@ -1067,8 +1063,6 @@ class Endpoint(BaseEndpoint):
             ser['organ'],
             ser['effect'],
             ser['effect_subtype'],
-            ser['litter_effects'],
-            ser['litter_effect_notes'],
             ser['observation_time'],
             ser['observation_time_units'],
             ser['observation_time_text'],
