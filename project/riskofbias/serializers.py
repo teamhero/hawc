@@ -5,8 +5,6 @@ from utils.helper import SerializerHelper
 
 from myuser.serializers import HAWCUserSerializer
 from . import models
-import logging
-logger = logging.getLogger(__name__)
 
 class AssessmentMetricChoiceSerializer(serializers.ModelSerializer):
 
@@ -99,26 +97,28 @@ class RiskOfBiasSerializer(serializers.ModelSerializer):
 			
         scoreperendpoint_data = self.initial_data.pop('scoresperendpoint')
         del validated_data['scoresperendpoint']
+        if scoreperendpoint_data:
 		
-        endpoint_mapping = {riskofbiasperendpoint.id: riskofbiasperendpoint for riskofbiasperendpoint in instance.scoresperendpoint.all()}
-        data_mapping = {item['id']: item for item in scoreperendpoint_data}
+            endpoint_mapping = {riskofbiasperendpoint.id: riskofbiasperendpoint for riskofbiasperendpoint in instance.scoresperendpoint.all()}
+            data_mapping = {item['id']: item for item in scoreperendpoint_data}
 
         # Perform creations and updates.
-        for robpe_id, data in data_mapping.items():
-            robpe = endpoint_mapping.get(robpe_id, None) 
-            localvar = data['baseendpoint'] 
-            del data['baseendpoint']
-            del data['id']
-            if robpe is None:
-                models.RiskOfBiasScorePerEndpoint.objects.create(baseendpoint_id=localvar,riskofbiasperendpoint_id=self.initial_data['pk'],**data)
-            else:
-                logger.info("in update robpe=%s. data is %s", robpe_id, data)
-                models.RiskOfBiasScorePerEndpoint.objects.filter(id=robpe_id).update(**data)
+            for robpe_id, data in data_mapping.items():
+                robpe = endpoint_mapping.get(robpe_id, None) 
+                localvar = data['baseendpoint']
+                if localvar == 0:
+                    localvar = None
+                del data['id']
+                if robpe is None:
+                    del data['baseendpoint']
+                    models.RiskOfBiasScorePerEndpoint.objects.create(baseendpoint_id=localvar,riskofbiasperendpoint_id=self.initial_data['pk'],**data)
+                else:
+                    models.RiskOfBiasScorePerEndpoint.objects.filter(id=robpe_id).update(**data)
 
-        # Perform deletions.
-        for riskofbiasperendpoint_id, robpe in endpoint_mapping.items():
-            if riskofbiasperendpoint_id not in data_mapping:
-                robpe.delete()
+            # Perform deletions.
+            for riskofbiasperendpoint_id, robpe in endpoint_mapping.items():
+                if riskofbiasperendpoint_id not in data_mapping:
+                    robpe.delete()
 				
         return super().update(instance, validated_data)
 

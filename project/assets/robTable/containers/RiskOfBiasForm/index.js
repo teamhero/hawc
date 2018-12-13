@@ -42,14 +42,14 @@ class RiskOfBiasForm extends Component {
                 return _.map(form.refs, (endpoint) => {
 					return {
 						id: endpoint.state.endpointID,
-						baseendpoint: endpoint.state.baseEndpointId,
+						baseendpoint: endpoint.state.baseEndpointId==0?null:endpoint.state.baseEndpointId,
 						notes: endpoint.state.notes,
 						score: endpoint.state.score,
 						metric_id: metric_id };
 				});	
             }); 
-        }));
-        this.props.dispatch(submitRiskOfBiasScores({scores, scoresperendpoint}));
+        }));		
+        this.props.dispatch(submitRiskOfBiasScores({scores, scoresperendpoint}))
     }
 
     handleCancel(e){

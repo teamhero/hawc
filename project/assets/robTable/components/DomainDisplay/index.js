@@ -10,6 +10,7 @@ class DomainDisplay extends Component {
         super(props);
 		this.endpoints = {};
 		if (this.props.endpoints.length > 0) {
+			this.endpoints[0] = "";
             for (var i=0; i < this.props.endpoints.length; i++) { 
 			    for (var j=0; j < this.props.endpoints[i].animal_groups.length; j++) {
 			        for (var k=0; k < this.props.endpoints[i].animal_groups[j].endpoints.length; k++) {
