@@ -24,10 +24,11 @@ class EndpointScoreForm extends Component {
 			this.state.endpointID = this.state.endpointID+"."+this.props.index;
         this.handleEPEditorInput = this.handleEPEditorInput.bind(this);
         this.selectEPScore = this.selectEPScore.bind(this);
+        this.selectEndpointforNote = this.selectEndpointforNote.bind(this);
     }
 
     componentWillMount(){
-        this.selectEPScore(this.props.endpoint.score);
+        this.selectEPScore(this.state.score);
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -38,31 +39,13 @@ class EndpointScoreForm extends Component {
                 notes: this.state.notes + nextProps.addText,
             });
         }
-        // if score notes is changed, change notes to new notes
-        if(nextProps.endpoint.notes !== this.state.notes){
-            this.setState({
-                notes: nextProps.endpoint.notes,
-            });
-        }
-        // if score is changed, change to new score
-        if (nextProps.endpoint.score !== this.state.score) {
-            this.selectScore(nextProps.endpoint.score);
-        }
     }
 
     handleEPEditorInput(event){
 		var tempNotes = event.toString();
         this.state.notes = tempNotes;
-        //this.validateInput(this.state.score, event);
     }
 
-    validateInput(score, notes){
-        if (this.state.notes.replace(/<\/?[^>]+(>|$)/g, '') == '' && score != 0) {
-            this.props.updateNotesLeft(this.props.endpoint.id, 'add');
-        } else {
-            this.props.updateNotesLeft(this.props.endpoint.id, 'clear');
-        }
-    }
 
     selectEPScore(score){
         this.setState({
@@ -70,16 +53,23 @@ class EndpointScoreForm extends Component {
             selectedShade: this.state.scoreShades[score],
             selectedSymbol: this.state.scoreSymbols[score],
         });
-       // this.validateInput(score, this.state.notes);
+    }
+	
+    selectEndpointforNote(endpoint){
+		this.setState({
+			baseEndpointId: parseInt(endpoint)
+		});
     }
 	
     render() {
-        let { updateNotesLeft, endpointText, score} = this.props, empty = {score:0, notes:'', metric:{name:'',},};
+        let { updateNotesLeft, endpointText, score, endpointChoices} = this.props, empty = {score:0, notes:'', metric:{name:'',},};
         let { scoreChoices, scoreSymbols, scoreShades, selectedSymbol, selectedShade, notes, metric, } = this.state;
+		let addEndpoint =  _.isEmpty(endpointChoices)? false : !this.props.endpoint.baseendpoint;
 
         return (
             <fieldset>
-				<h4>{this.props.endpointText}</h4>
+				<h4>{addEndpoint?'Select the Endpoint':this.props.endpointText}</h4>
+				{addEndpoint?(<Select choices={endpointChoices} id={name+'_ep'} handleSelect={this.selectEndpointforNote} />) : null}			
 				<div className='score-form'>
 					<div>
 						<Select choices={this.state.scoreChoices}
@@ -107,7 +97,7 @@ EndpointScoreForm.propTypes = {
         id: PropTypes.number.isRequired,
         score: PropTypes.number.isRequired,
         notes: PropTypes.string,
-        baseendpoint: PropTypes.number.isRequired,
+        baseendpoint: PropTypes.number,
 		metric: PropTypes.shape({
             name: PropTypes.string,
             answers: PropTypes.array,

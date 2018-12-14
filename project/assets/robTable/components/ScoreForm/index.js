@@ -116,18 +116,19 @@ class ScoreForm extends Component {
 
     addGenericEndpoint(e){
 		e.preventDefault();
-		this.state.endpointIDs.push({id:0,baseendpoint:0,score:this.state.score,metric:this.props.score.metric,});
+		this.state.endpointIDs.push({id:0,baseendpoint:0,score:this.state.score,metric:this.props.score.metric,notes:'',});
 		this.forceUpdate();
     }
 
     selectEndpoint(endpoint){
-		this.state.endpointIDs.push({id:0,baseendpoint:parseInt(endpoint),score:this.state.score,metric:this.props.score.metric,});
-		this.forceUpdate();
+		if (endpoint > 0) {
+			this.state.endpointIDs.push({id:0,baseendpoint:parseInt(endpoint),score:this.state.score,metric:this.props.score.metric,});
+			this.forceUpdate();
+		}
     }
 
     render() {
 		const endpointScores = [];
-		//const EPButton = this.props.showEPButton;
 		
         let endpointAddControl, { name } = this.props.score.metric,
             { scoreChoices, scoreSymbols, scoreShades, score, notes, selectedSymbol, selectedShade, endpointChoices, endpointIDs } = this.state;
@@ -149,7 +150,7 @@ class ScoreForm extends Component {
                     <ScoreIcon shade={selectedShade}
                              symbol={selectedSymbol}/>
 					<br/>
-					Add notes for an endpoint:<br/>
+					<label>Add notes for an endpoint:</label><br/>
 					{endpointAddControl}
                 </div>
                 <ReactQuill id={name}
@@ -160,8 +161,8 @@ class ScoreForm extends Component {
                          className='score-editor' />
             </div>
 			<div>
-			{_.map(endpointIDs, (endpoint, index) => { //function(endpoint, index) {
-				return <EndpointScoreForm ref={endpoint.id==0?'epform'+endpoint.id+'.'+index:'epform'+endpoint.id} key={endpoint.id==0?endpoint.id+'.'+index:endpoint.id} index={index} updateNotesLeft={this.props.updateNotesLeft} endpoint={endpoint} endpointText={endpoint.baseendpoint==0?'Endpoint Notes':endpointChoices[endpoint.baseendpoint]} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} />;
+			{_.map(endpointIDs, (endpoint, index) => { 
+				return <EndpointScoreForm ref={endpoint.id==0?'epform'+endpoint.id+'.'+index:'epform'+endpoint.id} key={endpoint.id==0?endpoint.id+'.'+index:endpoint.id} index={index} updateNotesLeft={this.props.updateNotesLeft} endpoint={endpoint} endpointText={endpoint.baseendpoint==0||endpoint.baseendpoint==null?'Endpoint Notes':endpointChoices[endpoint.baseendpoint]} endpointChoices={endpointChoices} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} />;
             })}
 			</div>
 			</div>
