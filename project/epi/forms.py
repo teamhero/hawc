@@ -328,9 +328,6 @@ class ExposureForm(forms.ModelForm):
         helper.add_fluid_row('measured', 3, "span4")
         helper.add_fluid_row('metric_description', 3, "span4")
         helper.add_fluid_row('age_of_exposure', 3, "span6")
-        helper.add_fluid_row('n', 3, "span4")
-        helper.add_fluid_row('variance', 2, "span6")
-        helper.add_fluid_row('lower_ci', 4, "span3")
 
         url = reverse(
             'assessment:dose_units_create',
@@ -746,6 +743,38 @@ BlankGroupFormset = modelformset_factory(
     models.Group,
     form=GroupForm,
     formset=BaseGroupFormset,
+    can_delete=False,
+    extra=1)
+
+class CentralTendencyForm(forms.ModelForm):
+
+    class Meta:
+        model = models.CentralTendency
+        exclude = ('exposure',)
+
+class BaseCentralTendencyFormset(BaseModelFormSet):
+
+    def clean(self):
+        super().clean()
+
+        # check that there is at least one exposure-group
+        count = len([f for f in self.forms if f.is_valid() and f.clean()])
+        if count < 1:
+            raise forms.ValidationError("At least one central tendency is required.")
+
+
+CentralTendencyFormset = modelformset_factory(
+    models.CentralTendency,
+    form=CentralTendencyForm,
+    formset=BaseCentralTendencyFormset,
+    can_delete=True,
+    extra=0)
+
+
+BlankCentralTendencyFormset = modelformset_factory(
+    models.CentralTendency,
+    form=CentralTendencyForm,
+    formset=BaseCentralTendencyFormset,
     can_delete=False,
     extra=1)
 

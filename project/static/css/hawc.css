@@ -536,3 +536,7 @@ Risk of Bias
 .help-block .optional {
 	color: #999999;
 }
+
+table.bordered th, table.bordered td {
+	border: 1px solid #dddddd;
+}
