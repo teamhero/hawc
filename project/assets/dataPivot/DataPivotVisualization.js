@@ -61,8 +61,20 @@ class DataPivotVisualization extends D3Plot {
                     }
                 }
 
-                var aa = chunkify(a[field_name].toString()),
-                    bb = chunkify(b[field_name].toString());
+                // is the value for a/b actually an object (sometimes we want to display one thing but sort on another)?
+                var aObj = HAWCUtils.attemptJsonParse(a[field_name]);
+                var bObj = HAWCUtils.attemptJsonParse(b[field_name]);
+
+                var aSortOn = a[field_name].toString();
+                var bSortOn = b[field_name].toString();
+                if (aObj !== false && bObj !== false) {
+                    aSortOn = aObj.sortValue;
+                    bSortOn = bObj.sortValue;
+                }
+
+                var aa = chunkify(aSortOn),
+                    bb = chunkify(bSortOn);
+                // console.log("chunks [" + a[field_name] + "]->[" + aa + "]; [" + b[field_name] + "->[" + bb + "]");
 
                 for (var x = 0; aa[x] && bb[x]; x++) {
                     if (aa[x] !== bb[x]) {
@@ -1019,7 +1031,10 @@ class DataPivotVisualization extends D3Plot {
               .attr('x', 0)
               .attr('y', 0)
               .attr('class', 'with_whitespace')
-              .text(function(d){return d.text;})
+              .text(function(d){
+                  var dObj = HAWCUtils.attemptJsonParse(d.text);
+                  return dObj !== false ? dObj.display : d.text;
+              })
               .style('cursor', function(d){return d.cursor;})
               .on('click', function(d){return d.onclick();})
               .each(function(d){apply_text_styles(this, d.style);});

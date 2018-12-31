@@ -221,6 +221,25 @@ class HAWCUtils {
         }
         return false;
     }
+	
+    // based on https://stackoverflow.com/a/20392392
+    static attemptJsonParse(possibleJson){
+        if (possibleJson !== null && (typeof possibleJson) == "string" &&
+            possibleJson.charAt(0) == "{" && possibleJson.charAt(possibleJson.length - 1) == "}") {
+            try {
+                var o = JSON.parse(possibleJson);
+
+                if (o && typeof o === "object") {
+                    return o;
+                }
+            } catch (e) {
+				console.log("JSON-like string found, but not parseable");
+				console.log(e);
+			}
+        }
+
+        return false;
+    }
 }
 
 export default HAWCUtils;
