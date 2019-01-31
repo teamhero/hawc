@@ -205,7 +205,7 @@ class AnimalGroupForm(ModelForm):
         helper.form_class = None
         helper.form_id = "animal_group"
         helper.add_fluid_row('species', 3, "span4")
-        helper.add_fluid_row('lifestage_exposed', 3, "span4")
+        helper.add_fluid_row('lifestage_exposed', 2, "span6")
 
         assessment_id = self.instance.experiment.study.assessment.pk
 
@@ -294,7 +294,7 @@ class DosingRegimeForm(ModelForm):
         helper = BaseFormHelper(self, **inputs)
         helper.form_class = None
         helper.form_id = "dosing_regime"
-        helper.add_fluid_row('route_of_exposure', 3, "span4")
+        helper.add_fluid_row('duration_exposure', 3, "span4")
         helper.add_fluid_row('num_dose_groups', 3, "span4")
         return helper
 
