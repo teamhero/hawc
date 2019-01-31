@@ -808,23 +808,6 @@ class Exposure(models.Model):
 
     ROUTE_HELP_TEXT = 'Select the most significant route(s) of chemical exposure'
 
-    ESTIMATE_TYPE_CHOICES = (
-        (0, None),
-        (1, "mean"),
-        (2, "geometric mean"),
-        (3, "median"),
-        (5, "point"),
-        (4, "other"),
-    )
-
-    VARIANCE_TYPE_CHOICES = (
-        (0, None),
-        (1, "SD"),
-        (2, "SE"),
-        (3, "SEM"),
-        (4, "GSD"),
-        (5, "other"))
-    
     TEXT_CLEANUP_FIELDS = (
         'metric_description',
         'analytical_method',
@@ -922,6 +905,125 @@ class Exposure(models.Model):
         blank=True,
         null=True,
         help_text=OPTIONAL_NOTE + "<span class='optional'>Number of individuals where exposure was measured</span>")
+    created = models.DateTimeField(
+        auto_now_add=True)
+    last_updated = models.DateTimeField(
+        auto_now=True)
+
+    COPY_NAME = "exposures"
+
+    class Meta:
+        ordering = ('name', )
+        verbose_name = "Exposure"
+        verbose_name_plural = "Exposures"
+
+    def __str__(self):
+        return self.name
+
+    def get_assessment(self):
+        return self.study_population.get_assessment()
+
+    def get_absolute_url(self):
+        return reverse('epi:exp_detail', kwargs={'pk': self.pk})
+
+    def get_crumbs(self):
+        return get_crumbs(self, self.study_population)
+
+    @classmethod
+    def delete_caches(cls, ids):
+        SerializerHelper.delete_caches(cls, ids)
+
+    @staticmethod
+    def flat_complete_header_row():
+        return (
+            "exposure-id",
+            "exposure-url",
+            "exposure-name",
+            "exposure-inhalation",
+            "exposure-dermal",
+            "exposure-oral",
+            "exposure-in_utero",
+            "exposure-iv",
+            "exposure-unknown_route",
+            "exposure-measured",
+            "exposure-metric",
+            "exposure-metric_units_id",
+            "exposure-metric_units_name",
+            "exposure-metric_description",
+            "exposure-analytical_method",
+            "exposure-sampling_period",
+            "exposure-age_of_exposure",
+            "exposure-duration",
+            "exposure-n",
+            "exposure-exposure_distribution",
+            "exposure-created",
+            "exposure-last_updated",
+        )
+
+    @staticmethod
+    def flat_complete_data_row(ser):
+        if ser is None:
+            ser = {}
+        units = ser.get("metric_units", {})
+        return (
+            ser.get("id"),
+            ser.get("url"),
+            ser.get("name"),
+            ser.get("inhalation"),
+            ser.get("dermal"),
+            ser.get("oral"),
+            ser.get("in_utero"),
+            ser.get("iv"),
+            ser.get("unknown_route"),
+            ser.get("measured"),
+            ser.get("metric"),
+            units.get("id"),
+            units.get("name"),
+            ser.get("metric_description"),
+            ser.get("analytical_method"),
+            ser.get("sampling_period"),
+            ser.get("age_of_exposure"),
+            ser.get("duration"),
+            ser.get("n"),
+            ser.get("description"),
+            ser.get("created"),
+            ser.get("last_updated"),
+        )
+
+    def copy_across_assessments(self, cw):
+        old_id = self.id
+        self.id = None
+        self.study_population_id = cw[StudyPopulation.COPY_NAME][self.study_population_id]
+        self.save()
+        cw[self.COPY_NAME][old_id] = self.id
+
+    def get_study(self):
+        if self.study_population is not None:
+            return self.study_population.get_study()
+
+class CentralTendency(models.Model):
+    # object = managers.CentralTendencyManager
+    ESTIMATE_TYPE_CHOICES = (
+        (0, None),
+        (1, "mean"),
+        (2, "geometric mean"),
+        (3, "median"),
+        (5, "point"),
+        (4, "other"),
+    )
+
+    VARIANCE_TYPE_CHOICES = (
+        (0, None),
+        (1, "SD"),
+        (2, "SE"),
+        (3, "SEM"),
+        (4, "GSD"),
+        (5, "other"))
+    
+    exposure = models.ForeignKey(
+        Exposure,
+        related_name='central_tendencies')
+
     estimate = models.FloatField(
         blank=True,
         null=True,
@@ -964,20 +1066,6 @@ class Exposure(models.Model):
     description = models.TextField(
         blank=True,
         help_text="Provide additional exposure or extraction details if necessary")
-    created = models.DateTimeField(
-        auto_now_add=True)
-    last_updated = models.DateTimeField(
-        auto_now=True)
-
-    COPY_NAME = "exposures"
-
-    class Meta:
-        ordering = ('name', )
-        verbose_name = "Exposure"
-        verbose_name_plural = "Exposures"
-
-    def __str__(self):
-        return self.name
 
     @property
     def lower_bound_interval(self):
@@ -991,82 +1079,39 @@ class Exposure(models.Model):
             if self.upper_ci is None \
             else self.upper_ci
 
-    def get_assessment(self):
-        return self.study_population.get_assessment()
+    COPY_NAME = "central_tendencies"
 
-    def get_absolute_url(self):
-        return reverse('epi:exp_detail', kwargs={'pk': self.pk})
+    class Meta:
+        ordering = ('estimate_type', )
+        verbose_name = "Central Tendency"
+        verbose_name_plural = "Central Tendencies"
 
-    def get_crumbs(self):
-        return get_crumbs(self, self.study_population)
-
-    @classmethod
-    def delete_caches(cls, ids):
-        SerializerHelper.delete_caches(cls, ids)
+    def __str__(self):
+        return "{CT id=%s, exposure=%s}" % (self.id, self.exposure)
 
     @staticmethod
     def flat_complete_header_row():
         return (
-            "exposure-id",
-            "exposure-url",
-            "exposure-name",
-            "exposure-inhalation",
-            "exposure-dermal",
-            "exposure-oral",
-            "exposure-in_utero",
-            "exposure-iv",
-            "exposure-unknown_route",
-            "exposure-measured",
-            "exposure-metric",
-            "exposure-metric_units_id",
-            "exposure-metric_units_name",
-            "exposure-metric_description",
-            "exposure-analytical_method",
-            "exposure-sampling_period",
-            "exposure-age_of_exposure",
-            "exposure-duration",
-            "exposure-n",
-            "exposure-estimate",
-            "exposure-estimate_type",
-            "exposure-variance",
-            "exposure-variance_type",
-            "exposure-lower_ci",
-            "exposure-upper_ci",
-            "exposure-lower_range",
-            "exposure-upper_range",
-            "exposure-lower_bound_interval",
-            "exposure-upper_bound_interval",
-            "exposure-exposure_distribution",
-            "exposure-description",
-            "exposure-created",
-            "exposure-last_updated",
+            "central_tendency-id",
+            "central_tendency-estimate",
+            "central_tendency-estimate_type",
+            "central_tendency-variance",
+            "central_tendency-variance_type",
+            "central_tendency-lower_ci",
+            "central_tendency-upper_ci",
+            "central_tendency-lower_range",
+            "central_tendency-upper_range",
+            "central_tendency-description",
+            "central_tendency-lower_bound_interval",
+            "central_tendency-upper_bound_interval",
         )
 
     @staticmethod
     def flat_complete_data_row(ser):
         if ser is None:
             ser = {}
-        units = ser.get("metric_units", {})
         return (
             ser.get("id"),
-            ser.get("url"),
-            ser.get("name"),
-            ser.get("inhalation"),
-            ser.get("dermal"),
-            ser.get("oral"),
-            ser.get("in_utero"),
-            ser.get("iv"),
-            ser.get("unknown_route"),
-            ser.get("measured"),
-            ser.get("metric"),
-            units.get("id"),
-            units.get("name"),
-            ser.get("metric_description"),
-            ser.get("analytical_method"),
-            ser.get("sampling_period"),
-            ser.get("age_of_exposure"),
-            ser.get("duration"),
-            ser.get("n"),
             ser.get("estimate"),
             ser.get("estimate_type"),
             ser.get("variance"),
@@ -1075,24 +1120,10 @@ class Exposure(models.Model):
             ser.get("upper_ci"),
             ser.get("lower_range"),
             ser.get("upper_range"),
+            ser.get("description"),
             ser.get("lower_bound_interval"),
             ser.get("upper_bound_interval"),
-            ser.get("exposure_distribution"),
-            ser.get("description"),
-            ser.get("created"),
-            ser.get("last_updated"),
         )
-
-    def copy_across_assessments(self, cw):
-        old_id = self.id
-        self.id = None
-        self.study_population_id = cw[StudyPopulation.COPY_NAME][self.study_population_id]
-        self.save()
-        cw[self.COPY_NAME][old_id] = self.id
-
-    def get_study(self):
-        if self.study_population is not None:
-            return self.study_population.get_study()
 
 
 class GroupNumericalDescriptions(models.Model):

@@ -65,6 +65,10 @@ class GroupManager(BaseManager):
 class ExposureManager(BaseManager):
     assessment_relation = 'study_population__study__assessment'
 
+"""
+class CentralTendencyManager(BaseManager):
+    assessment_relation = 'exposure__study_population__study__assessment'
+"""
 
 class GroupNumericalDescriptionsManager(BaseManager):
 
