@@ -72,6 +72,17 @@
               var tr = $(tr);
               tr.find('.groupFieldLabel').text(tr.find('.groupField option:selected').text());
             });
+          }, showOrHideMetricUnits = function() {
+              var metricsThatRequireUnits = [ "mean", "mean change", "regression coefficient", "other" ];
+              var selectedMetricText = $("#id_metric option:selected").text();
+              var showMetricUnits = metricsThatRequireUnits.indexOf(selectedMetricText) != -1;
+              var metricUnitsWrapper = $("div#div_id_metric_units");
+              if (showMetricUnits) {
+                  metricUnitsWrapper.show();
+              } else {
+                  metricUnitsWrapper.find("textarea").val("");
+                  metricUnitsWrapper.hide();
+              }
           };
 
       // add group labels
@@ -123,6 +134,9 @@
         return true;
       });
 
+      // we only want to show the metric units UI for particular selected metrics
+      $("#id_metric").change(showOrHideMetricUnits);
+      showOrHideMetricUnits();
     });
   </script>
 {% endblock extrajs %}

@@ -1313,7 +1313,12 @@ class Result(models.Model):
 
     metric_description = models.TextField(
         blank=True
-        ,help_text="Specify metric if \"other\"; optionally, provide details. Ex. Logistic regression to estimate OR and 95% CIs for continuous ln-transformed PFHxS"
+        ,help_text="Specify metric if \"other\"; optionally, provide details. Ex. Bayesian hierarchical linear regression estimates (betas) and 95% CI between quartile increases in maternal plasma PFAS concentrations (ug/L) and ponderal index (kg/m^3)"
+    )
+
+    metric_units = models.TextField(
+        blank=True
+        ,help_text="Note Units: Ex. IQR increase, unit (ng/mL) increase, ln-unit (ng/mL) increase"
     )
 
     data_location = models.CharField(
@@ -1415,7 +1420,6 @@ class Result(models.Model):
         EffectTag
         ,blank=True
         ,verbose_name="Tags"
-        ,help_text="Note units. Ex. IQR increase"
     )
 
     COPY_NAME = "results"
@@ -1451,6 +1455,7 @@ class Result(models.Model):
             "result-id",
             "result-name",
             "result-metric_description",
+            "result-metric_units",
             "result-data_location",
             "result-population_description",
             "result-dose_response",
@@ -1486,6 +1491,7 @@ class Result(models.Model):
             ser['id'],
             ser['name'],
             ser['metric_description'],
+            ser['metric_units'],
             ser['data_location'],
             ser['population_description'],
             ser['dose_response'],
