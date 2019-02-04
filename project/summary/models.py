@@ -352,12 +352,29 @@ class Visual(models.Model):
 
         return json.dumps(data)
 
+    @staticmethod
+    def copy_across_assessments(copy_to_assessment, copy_from_assessment):
+        source_visuals = Visual.objects.get(pk=copy_from_assessment.pk)
+
+        # The Many-to-many fields
+        eps = source_visuals.endpoints.all()
+        ss = source_visuals.studies.all()
+
+        # copy visuals to assessment
+        for visual in copy_from_assessment.visuals.all():
+            visual.id = None
+            visual.assessment = copy_to_assessment
+            visual.save()
+            visual.endpoints.add(*eps)
+            visual.studies.add(*ss)
+
 
 class DataPivot(models.Model):
     objects = managers.DataPivotManager()
 
     assessment = models.ForeignKey(
-        Assessment)
+        Assessment,
+        related_name='datapivots')
     title = models.CharField(
         max_length=128,
         help_text="Enter the title of the visualization (spaces and special-characters allowed).")
@@ -437,6 +454,14 @@ class DataPivot(models.Model):
         settings_as_json = json.loads(settings)
         settings_as_json['row_overrides'] = []
         return json.dumps(settings_as_json)
+
+    @staticmethod
+    def copy_across_assessments(copy_to_assessment, copy_from_assessment):
+        # copy Data pivots to assessment
+        for dp in copy_from_assessment.datapivots.all():
+            dp.id = None
+            dp.assessment = copy_to_assessment
+            dp.save()
 
 
 class DataPivotUpload(DataPivot):

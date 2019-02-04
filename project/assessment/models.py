@@ -238,7 +238,7 @@ class Assessment(models.Model):
         from lit.models import Search, PubMedQuery, ReferenceTags, Reference
         from mgmt.models import Task
         from myuser.models import HAWCUser
-        from riskofbias.models import RiskOfBias
+        from riskofbias.models import RiskOfBias, RiskOfBiasDomain
         from study.models import Study
         from summary.models import SummaryText, Visual, DataPivot, EvidenceProfile, EvidenceProfileStream, EvidenceProfileScenario
 
@@ -246,6 +246,7 @@ class Assessment(models.Model):
         assessment.cloned = True
         assessment.save()
         source_assessment = Assessment.objects.get(pk=assessment.pk)
+        source_studies = Study.objects.filter(assessment=source_assessment)
 
         """Cloning selected assessment from the form."""
         
@@ -268,16 +269,31 @@ class Assessment(models.Model):
         # Cloned Target Assesment
         target_assessment = Assessment.objects.get(pk=assessment_clone.pk)
 
-        # Check if Assessment even has studies
-        """if Study.objects.filter(
-                assessment=source_assessment
-            ).count() > 0:"""
-        # Copy existing studies over to cloned assessment
-        studies = Study.objects.filter(assessment=source_assessment)
-        Study.copy_across_assessment(studies, target_assessment)
-
         # Copy Risk of Bias Information 
         RiskOfBias.copy_riskofbias(target_assessment, source_assessment)
+
+        # Check if Assessment even has studies
+        if Study.objects.filter(
+            assessment=source_assessment
+            ).count() > 0:
+                # Copy existing studies over to cloned assessment and possible study evalution information.
+                studies = Study.objects.filter(assessment=source_assessment)
+                cw = Study.copy_across_assessment(studies, target_assessment)
+                cw = RiskOfBiasDomain.copy_across_assessment(cw, source_studies, target_assessment)
+                RiskOfBias.copy_across_assessment(cw, source_studies, target_assessment)
+
+        # Check if Assessment even has visuals
+        if Visual.objects.filter(
+            assessment=source_assessment
+            ).count() > 0:
+                # Copy Visuals Information
+                Visual.copy_across_assessments(target_assessment, source_assessment)
+
+        if DataPivot.objects.filter(
+            assessment=source_assessment
+            ).count() > 0:
+                # Copy Data Pivots Information
+                DataPivot.copy_across_assessments(target_assessment, source_assessment)
 
 
 class Attachment(models.Model):

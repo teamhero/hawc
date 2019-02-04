@@ -316,7 +316,7 @@ class AssessmentClone(TeamMemberOrHigherMixin, MessageMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('assessment:detail', kwargs={'pk': self.assessment.id})
+        return reverse_lazy('portal')
 
 
 # Attachment views

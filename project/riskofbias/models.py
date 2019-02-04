@@ -411,7 +411,6 @@ class RiskOfBias(models.Model):
                 score.id = None
                 score.riskofbias_id = rob.id
                 score.metric_id = cw[RiskOfBiasMetric.COPY_NAME][score.metric_id]
-                score.answers_id = cw[RiskOfBiasMetricAnswers.COPY_NAME][score.answers_id]
                 score.save()
 
         return cw
