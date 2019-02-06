@@ -737,7 +737,7 @@ class EvidenceProfile(models.Model):
     # Declare the necessary foriegn key attributes for this object (relating back to the HAWC User who created this EvidenceProfile
     # and its parent Assessment)
     hawcuser = models.ForeignKey(HAWCUser)
-    assessment = models.ForeignKey(Assessment)
+    assessment = models.ForeignKey(Assessment, related_name='evidence_profiles')
 
     # Declare the basic attributes for this object
     title = models.CharField(max_length=128, help_text="Enter the title of this evidence profile table (spaces and special-characters allowed).")
@@ -798,6 +798,24 @@ class EvidenceProfile(models.Model):
     @property
     def visual_type(self):
         return "Evidence Profile"
+
+    @staticmethod
+    def copy_evidence_profile(copy_to_assessment, copy_from_assessment):
+        # copy profiles, streams, and scenarios to assessment
+        for profile in copy_from_assessment.evidence_profiles.all():
+            streams = list(profile.streams.all())  # force evaluation
+            profile.id = None
+            profile.assessment = copy_to_assessment
+            profile.save()
+            for stream in streams:
+                scenarios = list(stream.scenarios.all())
+                stream.id = None
+                stream.evidenceprofile = profile
+                stream.save()
+                for scenario in scenarios:
+                    scenario.id = None
+                    scenario.evidenceprofilestream = stream
+                    scenario.save()
 
 
 # This object is the second-level object for an EvidenceProfile object (multiple EvidenceProfileStream objects
