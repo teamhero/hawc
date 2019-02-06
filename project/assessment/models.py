@@ -295,6 +295,12 @@ class Assessment(models.Model):
                 # Copy Data Pivots Information
                 DataPivot.copy_across_assessments(target_assessment, source_assessment)
 
+        if EvidenceProfile.objects.filter(
+            assessment=source_assessment
+            ).count() > 0:
+                # Copy Evidence Profile Information
+                EvidenceProfile.copy_evidence_profile(target_assessment, source_assessment)
+
 
 class Attachment(models.Model):
     objects = managers.AttachmentManager()
