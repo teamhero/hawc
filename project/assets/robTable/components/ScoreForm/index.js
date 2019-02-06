@@ -66,6 +66,7 @@ class ScoreForm extends Component {
         this.selectScore = this.selectScore.bind(this);
         this.selectEndpoint = this.selectEndpoint.bind(this);
         this.addGenericEndpoint = this.addGenericEndpoint.bind(this);
+        this.removeEndpoint = this.removeEndpoint.bind(this);
     }
 
     componentWillMount(){
@@ -112,6 +113,12 @@ class ScoreForm extends Component {
         } else {
             this.props.updateNotesLeft(this.props.score.id, 'clear');
         }
+    }
+
+    removeEndpoint(endpointID, e){
+		e.preventDefault();
+		this.state.endpointIDs.splice(this.state.endpointIDs.findIndex(ep => ep.id == endpointID),1);
+		this.forceUpdate();
     }
 
     addGenericEndpoint(e){
@@ -162,7 +169,7 @@ class ScoreForm extends Component {
             </div>
 			<div>
 			{_.map(endpointIDs, (endpoint, index) => { 
-				return <EndpointScoreForm ref={endpoint.id==0?'epform'+endpoint.id+'.'+index:'epform'+endpoint.id} key={endpoint.id==0?endpoint.id+'.'+index:endpoint.id} index={index} updateNotesLeft={this.props.updateNotesLeft} endpoint={endpoint} endpointText={endpoint.baseendpoint==0||endpoint.baseendpoint==null?'Endpoint Notes':endpointChoices[endpoint.baseendpoint]} endpointChoices={endpointChoices} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} />;
+				return <EndpointScoreForm removeEndpoint={this.removeEndpoint} ref={endpoint.id==0?'epform'+endpoint.id+'.'+index+this.props.score.metric.id:'epform'+endpoint.id} key={endpoint.id==0?endpoint.id+'.'+index+this.props.score.metric.id:endpoint.id} index={index} updateNotesLeft={this.props.updateNotesLeft} endpoint={endpoint} endpointText={endpoint.baseendpoint==0||endpoint.baseendpoint==null?'Endpoint Notes':endpointChoices[endpoint.baseendpoint]} endpointChoices={endpointChoices} scoreChoices={scoreChoices} scoreSymbols={scoreSymbols} scoreShades={scoreShades} />;
             })}
 			</div>
 			</div>
