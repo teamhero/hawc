@@ -21,7 +21,7 @@ class EndpointScoreForm extends Component {
 			notes: this.props.endpoint.notes,
 		}
 		if (this.state.endpointID == 0)
-			this.state.endpointID = this.state.endpointID+"."+this.props.index;
+			this.state.endpointID = this.state.endpointID+"."+this.props.index+this.props.endpoint.metric.id;
         this.handleEPEditorInput = this.handleEPEditorInput.bind(this);
         this.selectEPScore = this.selectEPScore.bind(this);
         this.selectEndpointforNote = this.selectEndpointforNote.bind(this);
@@ -68,6 +68,9 @@ class EndpointScoreForm extends Component {
 
         return (
             <fieldset>
+				<div className='btn-group pull-right'>
+					<button className='btn btn-mini btn-danger' onClick={(e) => this.props.removeEndpoint(this.state.endpointID, e)}><i className='fa fa-lg fa-times'></i> Delete</button>
+				</div>
 				<h4>{addEndpoint?'Select the Endpoint':this.props.endpointText}</h4>
 				{addEndpoint?(<Select choices={endpointChoices} id={name+'_ep'} handleSelect={this.selectEndpointforNote} />) : null}			
 				<div className='score-form'>

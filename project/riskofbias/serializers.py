@@ -97,9 +97,10 @@ class RiskOfBiasSerializer(serializers.ModelSerializer):
 			
         scoreperendpoint_data = self.initial_data.pop('scoresperendpoint')
         del validated_data['scoresperendpoint']
+
+        endpoint_mapping = {riskofbiasperendpoint.id: riskofbiasperendpoint for riskofbiasperendpoint in instance.scoresperendpoint.all()}
         if scoreperendpoint_data:
 		
-            endpoint_mapping = {riskofbiasperendpoint.id: riskofbiasperendpoint for riskofbiasperendpoint in instance.scoresperendpoint.all()}
             data_mapping = {item['id']: item for item in scoreperendpoint_data}
 
         # Perform creations and updates.
@@ -119,7 +120,10 @@ class RiskOfBiasSerializer(serializers.ModelSerializer):
             for riskofbiasperendpoint_id, robpe in endpoint_mapping.items():
                 if riskofbiasperendpoint_id not in data_mapping:
                     robpe.delete()
-				
+        else:
+            for riskofbiasperendpoint_id, robpe in endpoint_mapping.items():
+                robpe.delete()
+		
         return super().update(instance, validated_data)
 
 
