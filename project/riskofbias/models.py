@@ -15,6 +15,7 @@ from reversion import revisions as reversion
 from assessment.models import Assessment
 from myuser.models import HAWCUser
 from lit.models import Reference
+from animal.models import Endpoint
 from study.models import Study
 from utils.helper import cleanHTML, HAWCDjangoJSONEncoder, SerializerHelper
 from utils.models import get_crumbs
@@ -401,6 +402,7 @@ class RiskOfBias(models.Model):
         # copy reviews and scores
         for rob in final_robs:
             scores = list(rob.scores.all())
+            endpoints = list(rob.scoresperendpoint.all())
 
             rob.id = None
             rob.study_id = cw[Study.COPY_NAME][rob.study_id]
@@ -412,6 +414,13 @@ class RiskOfBias(models.Model):
                 score.riskofbias_id = rob.id
                 score.metric_id = cw[RiskOfBiasMetric.COPY_NAME][score.metric_id]
                 score.save()
+
+            for endpoint in endpoints:
+                endpoint.id = None
+                endpoint.riskofbiasperendpoint_id = rob.id
+                endpoint.metric_id = cw[RiskOfBiasMetric.COPY_NAME][endpoint.metric_id]
+                #endpoint.baseendpoint_id = cw[Endpoint.COPY_NAME][endpoint.baseendpoint_id]
+                endpoint.save()
 
         return cw
 
