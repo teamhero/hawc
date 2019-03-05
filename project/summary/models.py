@@ -199,7 +199,8 @@ class Visual(models.Model):
     visual_type = models.PositiveSmallIntegerField(
         choices=VISUAL_CHOICES)
     dose_units = models.ForeignKey(
-        DoseUnits,
+        'assessment.DoseUnits',
+        related_name='visuals',
         blank=True,
         null=True)
     prefilters = models.TextField(
@@ -354,14 +355,14 @@ class Visual(models.Model):
 
     @staticmethod
     def copy_across_assessments(copy_to_assessment, copy_from_assessment):
-        source_visuals = Visual.objects.get(pk=copy_from_assessment.pk)
-
-        # The Many-to-many fields
-        eps = source_visuals.endpoints.all()
-        ss = source_visuals.studies.all()
+        source_visuals = Visual.objects.filter(assessment=copy_from_assessment)
 
         # copy visuals to assessment
-        for visual in copy_from_assessment.visuals.all():
+        for visual in source_visuals:
+            # The Many-to-many fields
+            eps = visual.endpoints.all()
+            ss = visual.studies.all()
+            # Start cloning and copying visual data
             visual.id = None
             visual.assessment = copy_to_assessment
             visual.save()

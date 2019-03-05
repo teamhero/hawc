@@ -419,7 +419,6 @@ class RiskOfBias(models.Model):
                 endpoint.id = None
                 endpoint.riskofbiasperendpoint_id = rob.id
                 endpoint.metric_id = cw[RiskOfBiasMetric.COPY_NAME][endpoint.metric_id]
-                #endpoint.baseendpoint_id = cw[Endpoint.COPY_NAME][endpoint.baseendpoint_id]
                 endpoint.save()
 
         return cw
