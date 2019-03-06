@@ -25,7 +25,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('epi', '0016_animal_form_instructions_updates'),
+        ('epi', '0017_result_metric_units'),
     ]
 
     operations = [
