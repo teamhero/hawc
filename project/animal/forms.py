@@ -56,7 +56,6 @@ class ExperimentForm(ModelForm):
             if type(widget) != forms.CheckboxInput:
                 widget.attrs['class'] = 'span12'
 
-        self.fields["diet"].widget.attrs['rows'] = 3
         self.fields["description"].widget.attrs['rows'] = 4
 
         if self.instance.id:
@@ -83,18 +82,12 @@ class ExperimentForm(ModelForm):
         helper.add_fluid_row('name', 2, "span6")
         helper.add_fluid_row('chemical', 3, "span4")
         helper.add_fluid_row('purity_available', 4, ["span2", "span2", "span2", "span6"])
-        helper.add_fluid_row('litter_effects', 2, "span6")
-        helper.add_fluid_row('diet', 2, "span6")
         return helper
 
     PURITY_QUALIFIER_REQ = "Qualifier must be specified"
     PURITY_QUALIFIER_NOT_REQ = "Qualifier must be blank if purity is not available"
     PURITY_REQ = "A purity value must be specified"
     PURITY_NOT_REQ = "Purity must be blank if purity is not available"
-    LIT_EFF_REQ = "Litter effects required if a reproductive/developmental study"
-    LIT_EFF_NOT_REQ = "Litter effects must be NA if non-reproductive/developmental study"
-    LIT_EFF_NOTES_REQ = 'Notes are required if litter effects are "Other"'
-    LIT_EFF_NOTES_NOT_REQ = "Litter effect notes should be blank if effects are not-applicable"
 
     def clean(self):
         cleaned_data = super().clean()
@@ -103,8 +96,6 @@ class ExperimentForm(ModelForm):
         purity_qualifier = cleaned_data.get("purity_qualifier")
         purity = cleaned_data.get("purity")
         type_ = cleaned_data.get('type')
-        litter_effects = cleaned_data.get("litter_effects")
-        litter_effect_notes = cleaned_data.get("litter_effect_notes")
 
         if purity_available and purity_qualifier is "":
             self.add_error('purity_qualifier', self.PURITY_QUALIFIER_REQ)
@@ -117,18 +108,6 @@ class ExperimentForm(ModelForm):
 
         if not purity_available and purity is not None:
             self.add_error('purity', self.PURITY_NOT_REQ)
-
-        if type_ in ["Rp", "Dv"]:
-            if litter_effects == "NA":
-                self.add_error('litter_effects', self.LIT_EFF_REQ)
-        elif type_ != "Ot" and litter_effects != "NA":
-            self.add_error('litter_effects', self.LIT_EFF_NOT_REQ)
-
-        if litter_effects == "O" and litter_effect_notes == "":
-            self.add_error('litter_effect_notes', self.LIT_EFF_NOTES_REQ)
-
-        if litter_effects == "NA" and litter_effect_notes != "":
-            self.add_error('litter_effect_notes', self.LIT_EFF_NOTES_NOT_REQ)
 
         return cleaned_data
 
@@ -147,6 +126,9 @@ class AnimalGroupForm(ModelForm):
     class Meta:
         model = models.AnimalGroup
         exclude = ('experiment', 'dosing_regime', 'generation', 'parents')
+        labels = {
+            'lifestage_assessed': 'Lifestage at assessment'
+        }
 
     def __init__(self, *args, **kwargs):
         parent = kwargs.pop('parent', None)
@@ -155,6 +137,7 @@ class AnimalGroupForm(ModelForm):
         if parent:
             self.instance.experiment = parent
 
+        """
         self.fields['lifestage_exposed'].widget = selectable.AutoCompleteWidget(
             lookup_class=lookups.RelatedAnimalGroupLifestageExposedLookup,
             allow_new=True)
@@ -166,6 +149,25 @@ class AnimalGroupForm(ModelForm):
             allow_new=True)
         self.fields['lifestage_assessed'].widget.update_query_parameters(
             {'related': self.instance.experiment.study.assessment.id})
+        """
+
+        # for lifestage assessed/exposed, use a select widget. Manually add in
+        # previously saved values that don't conform to the LIFESTAGE_CHOICES tuple
+        lifestage_dict = dict(models.AnimalGroup.LIFESTAGE_CHOICES)
+
+        if self.instance.lifestage_exposed in lifestage_dict:
+            le_choices = models.AnimalGroup.LIFESTAGE_CHOICES
+        else:
+            le_choices = ((self.instance.lifestage_exposed, self.instance.lifestage_exposed),) + models.AnimalGroup.LIFESTAGE_CHOICES
+        self.fields['lifestage_exposed'].widget = forms.Select(choices=le_choices)
+
+        if self.instance.lifestage_assessed in lifestage_dict:
+            la_choices = models.AnimalGroup.LIFESTAGE_CHOICES
+        else:
+            la_choices = ((self.instance.lifestage_assessed, self.instance.lifestage_assessed),) + models.AnimalGroup.LIFESTAGE_CHOICES
+        self.fields['lifestage_assessed'].widget = forms.Select(choices=la_choices)
+
+
 
         self.fields['siblings'].queryset = models.AnimalGroup.objects.filter(
                 experiment=self.instance.experiment)
@@ -203,7 +205,7 @@ class AnimalGroupForm(ModelForm):
         helper.form_class = None
         helper.form_id = "animal_group"
         helper.add_fluid_row('species', 3, "span4")
-        helper.add_fluid_row('lifestage_exposed', 3, "span4")
+        helper.add_fluid_row('lifestage_exposed', 2, "span6")
 
         assessment_id = self.instance.experiment.study.assessment.pk
 
@@ -215,6 +217,9 @@ class AnimalGroupForm(ModelForm):
 
         if "generation" in self.fields:
             helper.add_fluid_row('siblings', 3, "span4")
+
+        helper.add_fluid_row('comments', 2, "span6")
+
         return helper
 
     def clean(self):
@@ -239,6 +244,9 @@ class GenerationalAnimalGroupForm(AnimalGroupForm):
     class Meta:
         model = models.AnimalGroup
         exclude = ('experiment', )
+        labels = {
+            'lifestage_assessed': 'Lifestage at assessment'
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -286,7 +294,7 @@ class DosingRegimeForm(ModelForm):
         helper = BaseFormHelper(self, **inputs)
         helper.form_class = None
         helper.form_id = "dosing_regime"
-        helper.add_fluid_row('route_of_exposure', 3, "span4")
+        helper.add_fluid_row('duration_exposure', 3, "span4")
         helper.add_fluid_row('num_dose_groups', 3, "span4")
         return helper
 
@@ -360,7 +368,9 @@ class EndpointForm(ModelForm):
     effects = selectable.AutoCompleteSelectMultipleField(
         lookup_class=EffectTagLookup,
         required=False,
-        help_text="Any additional descriptive-tags used to categorize the outcome",
+        help_text="For now, use the endpoint specific overall study "
+                    "evaluation rating of \"high\", \"medium\", \"low\" or "
+                    "\"uninformative\"",
         label="Additional tags"
     )
 
@@ -373,9 +383,9 @@ class EndpointForm(ModelForm):
                   'data_reported', 'data_extracted', 'values_estimated',
                   'data_type', 'variance_type', 'confidence_interval',
                   'response_units', 'data_location', 'expected_adversity_direction',
-                  'NOEL', 'LOEL', 'FEL',
-                  'monotonicity', 'statistical_test', 'trend_value',
-                  'power_notes', 'results_notes', 'endpoint_notes')
+                  'NOEL', 'LOEL', 'FEL', 'monotonicity',
+                  'statistical_test', 'trend_result', 'trend_value',
+                  'power_notes', 'results_notes', 'endpoint_notes', 'litter_effects', 'litter_effect_notes')
 
     def __init__(self, *args, **kwargs):
         animal_group = kwargs.pop('parent', None)
@@ -411,9 +421,22 @@ class EndpointForm(ModelForm):
             self.instance.assessment = assessment
 
         self.fields["name"].help_text = """
-            Short-text used to describe the endpoint.
-            Should include observation-time,
-            if multiple endpoints have the same observation time."""
+            Short-text used to describe the endpoint/adverse 
+            outcome. As a first pass during extraction, use 
+            the endpoint name as presented in the study. Do 
+            not add units &mdash; units are summarized in a separate 
+            extraction field. Once extraction is complete for 
+            an assessment, endpoint/adverse outcomes names may 
+            be adjusted to use terms that best work across 
+            studies or assessments using the data clean-up tool 
+            (the original name as presented in the study will 
+            be retained in the "Endpoint Name in Study" field). If the 
+            endpoint is a repeated measure, then indicate the 
+            time in parentheses, e.g., running wheel activity 
+            (6 wk), using the abbreviated format: seconds = sec, 
+            minutes = min, hours = h, days = d, weeks = wk, 
+            months = mon, years = y.
+            """
 
         self.helper = self.setHelper()
 
@@ -428,9 +451,13 @@ class EndpointForm(ModelForm):
             inputs = {
                 "legend_text": "Create new endpoint",
                 "help_text":   """
-                    Create a new endpoint. An endpoint may should describe one
-                    measure-of-effect which was measured in the study. It may
-                    or may not contain quantitative data.""",
+                    Create a new endpoint. An endpoint should describe 
+                    one measure-of-effect which was measured in the study. 
+                    It may or may not contain quantitative data. For 
+                    endpoint terminology, use the reference document 
+                    "<a href="https://hawcprd.epa.gov/assessment/100000039/">Recommended 
+                    Terminology for Outcomes/Endpoints</a>."
+                    """,
                 "cancel_url": self.instance.animal_group.get_absolute_url()
             }
 
@@ -457,18 +484,26 @@ class EndpointForm(ModelForm):
         helper.add_fluid_row('data_reported', 3, "span4")
         helper.add_fluid_row('data_type', 3, "span4")
         helper.add_fluid_row('response_units', 3, "span4")
-        helper.add_fluid_row('NOEL', 3, "span4")
-        helper.add_fluid_row('monotonicity', 3, ["span2", "span5", "span5"])
+        helper.add_fluid_row('NOEL', 4, "span3")
+        helper.add_fluid_row('statistical_test', 3, ["span6", "span3", "span3"])
+        helper.add_fluid_row('litter_effects', 2, "span6")
 
         url = reverse('assessment:effect_tag_create', kwargs={'pk': self.instance.assessment.pk})
         helper.addBtnLayout(helper.layout[4], 0, url, "Add new effect tag", "span6")
 
         return helper
 
+    LIT_EFF_REQ = "Litter effects required if a reproductive/developmental study"
+    LIT_EFF_NOT_REQ = "Litter effects must be NA if non-reproductive/developmental study"
+    LIT_EFF_NOTES_REQ = 'Notes are required if litter effects are "Other"'
+    LIT_EFF_NOTES_NOT_REQ = "Litter effect notes should be blank if effects are not-applicable"
+
     def clean(self):
         cleaned_data = super().clean()
         obs_time = cleaned_data.get("observation_time")
         observation_time_units = cleaned_data.get("observation_time_units")
+        litter_effects = cleaned_data.get("litter_effects")
+        litter_effect_notes = cleaned_data.get("litter_effect_notes")
 
         if obs_time is not None and observation_time_units == 0:
             err = "If reporting an endpoint-observation time, time-units must be specified."
@@ -477,6 +512,22 @@ class EndpointForm(ModelForm):
         if obs_time is None and observation_time_units > 0:
             err = "An observation-time must be reported if time-units are specified"
             self.add_error('observation_time', err)
+
+        experiment_type = self.instance.animal_group.experiment.type
+
+        if experiment_type in ["Rp", "Dv"]:
+            if litter_effects == "NA":
+                self.add_error('litter_effects', self.LIT_EFF_REQ)
+        elif experiment_type != "Ot" and litter_effects != "NA":
+            self.add_error('litter_effects', self.LIT_EFF_NOT_REQ)
+
+        if litter_effects == "O" and litter_effect_notes == "":
+            self.add_error('litter_effect_notes', self.LIT_EFF_NOTES_REQ)
+
+        if litter_effects == "NA" and litter_effect_notes != "":
+            self.add_error('litter_effect_notes', self.LIT_EFF_NOTES_NOT_REQ)
+
+        return cleaned_data
 
     def clean_confidence_interval(self):
         confidence_interval = self.cleaned_data['confidence_interval']
@@ -489,10 +540,6 @@ class EndpointForm(ModelForm):
     def clean_variance_type(self):
         data_type = self.cleaned_data.get("data_type")
         variance_type = self.cleaned_data.get("variance_type")
-        if data_type == "C" and variance_type == 0:
-            raise forms.ValidationError(
-                "If entering continuous data, the variance type must be SD"
-                "(standard-deviation) or SE (standard error)")
         return variance_type
 
     def clean_response_units(self):
@@ -525,8 +572,9 @@ class EndpointGroupForm(forms.ModelForm):
 
         if data_type == 'C':
             var = data.get("variance")
-            if var is not None and var_type in (0, 3):
-                msg = 'Variance must be numeric, or the endpoint-field "variance-type" should be "not reported"'
+            if var is not None and var_type == 3:
+                variance_name = models.Endpoint.VARIANCE_NAME[var_type]
+                msg = 'Variance data should not be provided if "' + variance_name + '" is the selected Variance Type.'
                 self.add_error('variance', msg)
         elif data_type == 'P':
             if data.get("lower_ci") is None and data.get("upper_ci") is not None:
@@ -576,13 +624,26 @@ class UploadFileForm(forms.Form):
 
 
 class EndpointFilterForm(forms.Form):
-
+    
     ORDER_BY_CHOICES = (
         ('animal_group__experiment__study__short_citation', 'study'),
+        ('animal_group__experiment__name', 'experiment name'),
+        ('animal_group__name', 'animal group'),
         ('name', 'endpoint name'),
+        ('animal_group__dosing_regime__doses__dose_units_id', 'dose units'),
         ('system', 'system'),
         ('organ', 'organ'),
         ('effect', 'effect'),
+        ('-NOEL', 'NOAEL'),
+        ('-LOEL', 'LOAEL'),
+        # BMD/BMDL is stored in output which is a JsonField on the bmd Model object. We want to sort on a sub-field of that.
+        # when/if HAWC upgrades to Django 2.1 (see yekta's comment on https://stackoverflow.com/questions/36641759/django-1-9-jsonfield-order-by)
+        # could possibly do something like this instead.
+        # for now we use a custom sort string and handle it in EndpointList class
+        # ('bmd_model__model__output__-BMD', 'BMD'),
+        # ('bmd_model__model__output__-BMDL', 'BMDLS'),
+        ('customBMD', 'BMD'),
+        ('customBMDLS', 'BMDLS'),
         ('effect_subtype', 'effect subtype'),
         ('animal_group__experiment__chemical', 'chemical'),
     )
@@ -591,6 +652,12 @@ class EndpointFilterForm(forms.Form):
         label='Study reference',
         lookup_class=AnimalStudyLookup,
         help_text="ex: Smith et al. 2010",
+        required=False)
+
+    chemical = forms.CharField(
+        label='Chemical name',
+        widget=selectable.AutoCompleteWidget(lookups.ExpChemicalLookup),
+        help_text="ex: sodium",
         required=False)
 
     cas = forms.CharField(
@@ -658,6 +725,12 @@ class EndpointFilterForm(forms.Form):
         help_text="ex: alanine aminotransferase (ALT)",
         required=False)
 
+    effect_subtype = forms.CharField(
+        label='Effect Subtype',
+        widget=selectable.AutoCompleteWidget(lookups.RelatedEndpointEffectSubtypeLookup),
+        help_text="ex: ",
+        required=False)
+
     tags = forms.CharField(
         label='Tags',
         widget=selectable.AutoCompleteWidget(EffectTagLookup),
@@ -719,6 +792,7 @@ class EndpointFilterForm(forms.Form):
     def get_query(self):
 
         studies = self.cleaned_data.get('studies')
+        chemical = self.cleaned_data.get('chemical')
         cas = self.cleaned_data.get('cas')
         lifestage_exposed = self.cleaned_data.get('lifestage_exposed')
         lifestage_assessed = self.cleaned_data.get('lifestage_assessed')
@@ -730,12 +804,17 @@ class EndpointFilterForm(forms.Form):
         system = self.cleaned_data.get('system')
         organ = self.cleaned_data.get('organ')
         effect = self.cleaned_data.get('effect')
+        NOEL = self.cleaned_data.get('NOEL')
+        LOEL = self.cleaned_data.get('LOEL')
+        effect_subtype = self.cleaned_data.get('effect_subtype')
         tags = self.cleaned_data.get('tags')
         dose_units = self.cleaned_data.get('dose_units')
 
         query = Q()
         if studies:
             query &= Q(animal_group__experiment__study__in=studies)
+        if chemical:
+            query &= Q(animal_group__experiment__chemical__icontains=chemical)
         if cas:
             query &= Q(animal_group__experiment__cas__icontains=cas)
         if lifestage_exposed:
@@ -758,6 +837,12 @@ class EndpointFilterForm(forms.Form):
             query &= Q(organ__icontains=organ)
         if effect:
             query &= Q(effect__icontains=effect)
+        if NOEL:
+            query &= Q(NOEL__icontains=NOEL)
+        if LOEL:
+            query &= Q(LOEL__icontains=LOEL)
+        if effect_subtype:
+            query &= Q(effect_subtype__icontains=effect_subtype)
         if tags:
             query &= Q(effects__name__icontains=tags)
         if dose_units:

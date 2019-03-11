@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 
+import _ from 'underscore';
 import AggregateGraph from 'robTable/components/AggregateGraph';
 import RiskOfBiasDisplay from 'robTable/components/RiskOfBiasDisplay';
 import ShowAll from 'robTable/components/ShowAll';

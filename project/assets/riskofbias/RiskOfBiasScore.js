@@ -61,7 +61,7 @@ _.extend(RiskOfBiasScore, {
     score_text_description: {
         0: 'Not applicable',
         1: 'Critically deficient',
-        2: 'Poor',
+        2: 'Deficient',
         10: 'Not reported',
         3: 'Adequate',
         4: 'Good',

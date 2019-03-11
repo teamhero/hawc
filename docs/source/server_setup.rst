@@ -56,6 +56,9 @@ please specify in the docker-compose `.env` file (example secrets below):
     PHANTOMJS_PATH=/usr/local/bin/phantomjs
     PUBMED_EMAIL=myEmail@email.com
 
+    # Enum; one of {"PRIME", "EPA"}
+    HAWC_FLAVOR=PRIME
+
     # required if using BMDS
     BMDS_HOST=http://bmdhost.com
     BMDS_PASSWORD=myBmdsPassword

@@ -1,3 +1,5 @@
+import _ from 'underscore';
+
 import { combineReducers } from 'redux';
 
 import config from 'shared/reducers/Config';

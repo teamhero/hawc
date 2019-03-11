@@ -89,7 +89,7 @@ class Assessment(models.Model):
     enable_project_management = models.BooleanField(
         default=True,
         help_text="Enable project management module for data extraction and "
-                  "risk of bias. If enabled, each study will have multiple "
+                  "study evaluation. If enabled, each study will have multiple "
                   "tasks which can be assigned and tracked for completion.")
     enable_data_extraction = models.BooleanField(
         default=True,
@@ -358,7 +358,7 @@ class BaseEndpoint(models.Model):
     # Some denormalization but required for efficient capture of all endpoints
     # in assessment; major use case in HAWC.
 
-    name = models.CharField(max_length=128, verbose_name="Endpoint name")
+    name = models.CharField(max_length=128, verbose_name="Endpoint/Adverse outcome")
     effects = models.ManyToManyField(EffectTag, blank=True, verbose_name="Tags")
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)

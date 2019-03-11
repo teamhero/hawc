@@ -144,6 +144,7 @@ class About(TemplateView):
         context = super().get_context_data(**kwargs)
         context['GIT_COMMIT'] = settings.GIT_COMMIT
         context['COMMIT_URL'] = settings.COMMIT_URL
+        context['HAWC_FLAVOR'] = settings.HAWC_FLAVOR
         context['counts'] = self.get_object_counts()
         return context
 
@@ -181,6 +182,11 @@ class Error500(TemplateView):
 class AssessmentList(LoginRequiredMixin, ListView):
     model = models.Assessment
     template_name = "assessment/assessment_home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['show_v2_license'] = not self.request.user.license_v2_accepted
+        return context
 
 
 class AssessmentFullList(LoginRequiredMixin, ListView):
@@ -400,7 +406,7 @@ class CleanExtractedData(TeamMemberOrHigherMixin, BaseEndpointList):
     '''
     To add a model to clean,
      - add TEXT_CLEANUP_FIELDS = {...fields} to the model
-     - add model count dict to assessment.views.AssessmentEndpointList
+     - add model count dict to assessment.api.AssessmentEndpointList
      - add model serializer that uses utils.api.DynamicFieldsMixin
      - add api view that inherits from assessment.api.CleanupFieldsBaseViewSet
         with model={model} & serializer_class={new serializer}

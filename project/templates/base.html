@@ -92,6 +92,13 @@
     {% block content_outer %}
     <div id="container" class="container-fluid ">
 
+      {% if SERVER_ROLE == 'staging' %}
+        <div>
+          <h1 style="color: #F00">Test Environment</h1>
+          <h3>Go to <a href="https://hawcprd.epa.gov">https://hawcprd.epa.gov</a> for EPA HAWC.</h3>
+        </div>
+      {% endif %}
+
       {% block messages_base %}
         {% include "messages.html" %}
       {% endblock messages_base %}

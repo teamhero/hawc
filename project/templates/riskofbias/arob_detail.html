@@ -1,22 +1,22 @@
 {% extends 'portal.html' %}
 
 {% block title %}
-  {{assessment}} | Risk of bias requirements | HAWC
+  {{assessment}} | Study evaluation requirements | HAWC
 {% endblock %}
 
 {% block breadcrumbs %}
   <li><a href="{{assessment.get_absolute_url}}">{{ assessment }}</a><span class="divider">/</span></li>
   {% if crud == "Read" %}
-    <li class="active">Risk of bias requirements<span class="divider">/</span></li>
+    <li class="active">Study evaluation requirements<span class="divider">/</span></li>
   {% else %}
-    <li><a href="{% url 'riskofbias:arob_detail' assessment.pk %}">Risk of bias requirements</a><span class="divider">/</span></li>
+    <li><a href="{% url 'riskofbias:arob_detail' assessment.pk %}">Study evaluation requirements</a><span class="divider">/</span></li>
     <li class="active">Edit<span class="divider">/</span></li>
   {% endif %}
 {% endblock breadcrumbs %}
 
 {% block content %}
 
-  <h1>Risk of bias requirements
+  <h1>Study evaluation requirements
     {% if obj_perms.edit %}
       <div class="btn-group pull-right">
         <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Actions
@@ -37,7 +37,7 @@
             {% if obj_perms.edit_assessment %}
             <li class="divider"></li>
             <li class="disabled"><a tabindex="-1" href="#">Data cleanup</a></li>
-            <li><a href="{% url 'assessment:clean_study_metrics' assessment.pk %}">Clean risk of bias responses</a></li>
+            <li><a href="{% url 'assessment:clean_study_metrics' assessment.pk %}">Clean study evaluation responses</a></li>
             {% endif %}
           {% elif crud == "Update" %}
             <li class="disabled"><a tabindex="-1" href="#">Risk of bias changes</a></li>
@@ -103,7 +103,9 @@
             <strong>Required for animal bioassay: </strong>
               {%if metric.required_animal %}<i class='fa fa-check'></i>{% else %}<i class='fa fa-minus'></i>{% endif %}<br>
             <strong>Required for epidemiological: </strong>
-              {%if metric.required_epi %}<i class='fa fa-check'></i>{% else %}<i class='fa fa-minus'></i>{% endif %}
+              {%if metric.required_epi %}<i class='fa fa-check'></i>{% else %}<i class='fa fa-minus'></i>{% endif %}<br>
+            <strong>Required for in-vitro: </strong>
+              {%if metric.required_invitro %}<i class='fa fa-check'></i>{% else %}<i class='fa fa-minus'></i>{% endif %}
           </td>
           <td>
             {{metric.description|safe}}<br>

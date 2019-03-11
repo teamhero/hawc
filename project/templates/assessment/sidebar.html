@@ -6,26 +6,30 @@
 
     <li class="nav-header">Available modules</li>
 
-    {% if assessment.enable_literature_review %}
+
+    {% if assessment.enable_literature_review and request.user.is_authenticated %}
         <li><a href="{% url 'lit:overview' assessment.pk %}">Literature review</a></li>
     {% endif %}
 
-    {% if assessment.enable_project_management %}
+    {% if assessment.enable_project_management and request.user.is_authenticated %}
         <li><a href="{% url 'mgmt:assessment_dashboard' assessment.pk %}">Management dashboard</a></li>
     {% endif %}
 
     {% if assessment.enable_data_extraction %}
         <li><a href="{% url 'study:list' assessment.pk %}">Study list</a></li>
 
-        {% if assessment.enable_risk_of_bias %}
-            <li><a href="{% url 'riskofbias:arob_detail' assessment.pk %}">Risk of bias</a></li>
+        {% if assessment.enable_risk_of_bias and request.user.is_authenticated %}
+            <li><a href="{% url 'riskofbias:arob_detail' assessment.pk %}">Study evaluation</a></li>
         {% endif %}
 
-        <li><a href="{% url 'assessment:endpoint_list' assessment.pk %}">Endpoint list</a></li>
+        {% if request.user.is_authenticated %}
+            <li><a href="{% url 'assessment:endpoint_list' assessment.pk %}">Endpoint list</a></li>
+        {% endif %}
+
         <li><a href="{% url 'summary:visualization_list' assessment.pk %}">Visualizations</a></li>
     {% endif %}
 
-    {% if assessment.enable_summary_text %}
+    {% if assessment.enable_summary_text and request.user.is_authenticated %}
         <li><a href="{% url 'summary:list' assessment.pk %}">Executive summary</a></li>
     {% endif %}
 

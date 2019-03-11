@@ -1,3 +1,5 @@
+import _ from 'underscore';
+
 import 'babel-polyfill';
 
 import * as types from 'textCleanup/constants/ActionTypes';

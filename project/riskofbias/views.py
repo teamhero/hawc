@@ -41,7 +41,7 @@ class ARoBTextEdit(ProjectManagerOrHigherMixin, BaseUpdate):
     model = models.RiskOfBiasAssessment
     template_name = 'riskofbias/arob_text_form.html'
     form_class = forms.RobTextForm
-    success_message = 'Risk of bias help text has been updated.'
+    success_message = 'Study evaluation help text has been updated.'
 
     def get_object(self, queryset=None):
         return get_object_or_404(self.model, assessment_id=self.assessment.pk)
@@ -59,7 +59,7 @@ class ARoBCopy(ProjectManagerOrHigherMixin, MessageMixin, FormView):
     parent_model = Assessment
     template_name = 'riskofbias/arob_copy.html'
     form_class = forms.RiskOfBiasCopyForm
-    success_message = 'Risk of bias settings have been updated.'
+    success_message = 'Study evaluation settings have been updated.'
 
     def get_assessment(self, request, *args, **kwargs):
         return get_object_or_404(self.parent_model, pk=kwargs['pk'])
@@ -116,7 +116,7 @@ class ARoBReviewersUpdate(ProjectManagerOrHigherMixin, BaseUpdateWithFormset):
     model = Assessment
     form_class = forms.NumberOfReviewersForm
     formset_factory = forms.RoBReviewerFormset
-    success_message = 'Risk of Bias reviewers updated.'
+    success_message = 'Study evaluation reviewers updated.'
     template_name = 'riskofbias/reviewers_form.html'
 
     def get_assessment(self, request, *args, **kwargs):
@@ -183,7 +183,7 @@ class RoBDomainCreate(BaseCreate):
     parent_template_name = 'assessment'
     model = models.RiskOfBiasDomain
     form_class = forms.RoBDomainForm
-    success_message = 'Risk of bias domain created.'
+    success_message = 'Study evaluation domain created.'
 
     def get_success_url(self):
         return reverse_lazy('riskofbias:arob_update',
@@ -193,7 +193,7 @@ class RoBDomainCreate(BaseCreate):
 class RoBDomainUpdate(BaseUpdate):
     model = models.RiskOfBiasDomain
     form_class = forms.RoBDomainForm
-    success_message = 'Risk of bias domain updated.'
+    success_message = 'Study evaluation domain updated.'
 
     def get_success_url(self):
         return reverse_lazy('riskofbias:arob_update',
@@ -201,7 +201,7 @@ class RoBDomainUpdate(BaseUpdate):
 
 
 class RoBDomainDelete(BaseDelete):
-    success_message = 'Risk of bias domain deleted.'
+    success_message = 'Study evaluation domain deleted.'
     model = models.RiskOfBiasDomain
 
     def get_success_url(self):
@@ -215,7 +215,7 @@ class RoBMetricCreate(BaseCreate):
     parent_template_name = 'domain'
     model = models.RiskOfBiasMetric
     form_class = forms.RoBMetricForm
-    success_message = 'Risk of bias metric created.'
+    success_message = 'Study evaluation metric created.'
 
     def get_success_url(self):
         return reverse_lazy('riskofbias:arob_update',
@@ -225,7 +225,7 @@ class RoBMetricCreate(BaseCreate):
 class RoBMetricUpdate(BaseUpdate):
     model = models.RiskOfBiasMetric
     form_class = forms.RoBMetricForm
-    success_message = 'Risk of bias metric updated.'
+    success_message = 'Study evaluation metric updated.'
 
     def get_success_url(self):
         return reverse_lazy('riskofbias:arob_update',
@@ -233,7 +233,7 @@ class RoBMetricUpdate(BaseUpdate):
 
 
 class RoBMetricDelete(BaseDelete):
-    success_message = 'Risk of bias metric deleted.'
+    success_message = 'Study evaluation metric deleted.'
     model = models.RiskOfBiasMetric
 
     def get_success_url(self):
@@ -251,8 +251,8 @@ class StudyRoBExport(StudyList):
         exporter = exports.RiskOfBiasFlat(
             self.object_list,
             export_format="excel",
-            filename='{}-risk-of-bias'.format(self.assessment),
-            sheet_name='risk of bias'
+            filename='{}-study-evaluation'.format(self.assessment),
+            sheet_name='study evaluation'
         )
         return exporter.build_response()
 
@@ -270,8 +270,8 @@ class StudyRoBCompleteExport(TeamMemberOrHigherMixin, StudyList):
         exporter = exports.RiskOfBiasCompleteFlat(
             self.object_list,
             export_format="excel",
-            filename='{}-risk-of-bias-complete'.format(self.assessment),
-            sheet_name='risk of bias'
+            filename='{}-study-evaluation-complete'.format(self.assessment),
+            sheet_name='study evaluation'
         )
         return exporter.build_response()
 

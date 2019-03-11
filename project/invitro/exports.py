@@ -1,6 +1,8 @@
 from copy import copy
 from django.apps import apps
 
+from study.models import Study
+from riskofbias.models import RiskOfBiasScore
 from utils.helper import FlatFileExporter
 
 
@@ -65,6 +67,7 @@ class DataPivotEndpoint(FlatFileExporter):
             'minimum dose',
             'maximum dose',
             'number of doses',
+            'Overall study confidence'
         ]
 
         num_cats = 0
@@ -100,6 +103,15 @@ class DataPivotEndpoint(FlatFileExporter):
 
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
+            study_id = ser['experiment']['study']['id']
+            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
+            if fROB == -1:
+                finalROB = 'N/A'
+            else:
+                fROB = (fROB+10)%11
+                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
+                    if cnt == fROB:
+                        finalROB = text
 
             doseRange = getDoseRange(ser)
 
@@ -159,7 +171,8 @@ class DataPivotEndpoint(FlatFileExporter):
                 ser['trend_test'],
                 doseRange[0],
                 doseRange[1],
-                number_doses
+                number_doses,
+                finalROB
             ]
 
             # extend rows to include blank placeholders, and apply

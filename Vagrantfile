@@ -13,6 +13,8 @@ Vagrant.configure("2") do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "ubuntu/xenial64"
+  # config.vm.box = "tknerr/baseimage-ubuntu-16.04"
+  # config.vm.box_version = "1.0.0"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -49,6 +51,7 @@ Vagrant.configure("2") do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.synced_folder ".", "/vagrant", type: "smb"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -59,7 +62,14 @@ Vagrant.configure("2") do |config|
     vb.gui = false
   
     # Customize the amount of memory on the VM:
-    vb.memory = "3072"
+    vb.memory = "2048"
+    vb.cpus = "2"
+  end
+
+  config.vm.provider "hyperv" do |h|
+  
+    # Customize the amount of memory on the VM:
+    h.memory = "3072"
   end
   #
   # View the documentation for the provider you are using for more

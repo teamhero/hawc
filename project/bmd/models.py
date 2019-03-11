@@ -16,11 +16,11 @@ import bmds
 
 
 BMDS_CHOICES = (
-    ('BMDS230', 'BMDS v2.3.0'),
     ('BMDS231', 'BMDS v2.3.1'),
     ('BMDS240', 'BMDS v2.4.0'),
     ('BMDS260', 'BMDS v2.6.0'),
     ('BMDS2601', 'BMDS v2.6.0.1'),
+    ('BMDS270', 'BMDS v2.7.0'),
 )
 
 
@@ -215,7 +215,7 @@ class Session(models.Model):
             model.save_model(resp)
         self.save()
 
-    def get_endpoint_dataset(self):
+    def get_endpoint_dataset(self, doses_to_drop: int=0):
         ds = self.endpoint.get_json(json_encode=False)
         doses = [
             dose['dose']
@@ -223,19 +223,31 @@ class Session(models.Model):
             if dose['dose_units']['id'] == self.dose_units_id
         ]
         grps = ds['groups']
+
+        # only get doses where data are reported
+        doses = [d for d, grp in zip(doses, grps) if grp['isReported']]
+
         if self.endpoint.data_type == 'C':
-            return bmds.ContinuousDataset(
+            Cls = bmds.ContinuousDataset
+            kwargs = dict(
                 doses=doses,
-                ns=[d['n'] for d in grps],
-                means=[d['response'] for d in grps],
-                stdevs=[d['stdev'] for d in grps],
+                ns=[d['n'] for d in grps if d['isReported']],
+                means=[d['response'] for d in grps if d['isReported']],
+                stdevs=[d['stdev'] for d in grps if d['isReported']],
             )
         else:
-            return bmds.DichotomousDataset(
+            Cls = bmds.DichotomousDataset
+            kwargs = dict(
                 doses=doses,
-                ns=[d['n'] for d in grps],
-                incidences=[d['incidence'] for d in grps],
+                ns=[d['n'] for d in grps if d['isReported']],
+                incidences=[d['incidence'] for d in grps if d['isReported']],
             )
+
+        # drop doses from the top
+        for i in range(doses_to_drop):
+            [lst.pop() for lst in kwargs.values()]
+
+        return Cls(**kwargs)
 
     def get_bmr_overrides(self, session, index):
         # convert bmr overrides from GUI to modeling version
@@ -252,9 +264,22 @@ class Session(models.Model):
         session = getattr(self, '_session', None)
 
         if session is None:
+
+            # drop doses is complicated. In the UI, doses are dropped at the
+            # model level, but in the bmds library, they're dropped at the
+            # session level. Therefore, we drop doses only if ALL models have
+            # the same drop_dose value, by default zero doses are dropped.
+            doses_to_drop = {
+                model.overrides.get('dose_drop', 0) for model in
+                self.models.all()
+            }
+            doses_to_drop = doses_to_drop.pop() \
+                if len(doses_to_drop) == 1 \
+                else 0
+
             version = self.endpoint.assessment.bmd_settings.version
             Session = bmds.BMDS.versions[version]
-            dataset = self.get_endpoint_dataset()
+            dataset = self.get_endpoint_dataset(doses_to_drop=doses_to_drop)
             session = Session(
                 self.endpoint.data_type,
                 dataset=dataset
@@ -286,6 +311,9 @@ class Session(models.Model):
         return LogicField.objects\
             .filter(assessment=self.endpoint.assessment_id)
 
+    def get_study(self):
+        if self.endpoint is not None:
+            return self.endpoint.get_study()
 
 class Model(models.Model):
     objects = managers.ModelManager()
@@ -330,11 +358,13 @@ class Model(models.Model):
         return self.session.get_assessment()
 
     def save_model(self, model):
-        self.execution_error = (model.outfile == '')
         self.dfile = model.as_dfile()
-        self.outfile = model.outfile
-        self.output = model.output
-        self.date_executed = now()
+        self.execution_error = not model.has_successfully_executed
+
+        if model.has_successfully_executed:
+            self.outfile = model.outfile
+            self.output = model.output
+            self.date_executed = now()
 
         if hasattr(model, 'plot_base64'):
             fn = os.path.join(self.IMAGE_UPLOAD_TO, str(self.id) + '.emf')

@@ -266,6 +266,7 @@ class CrossviewForm extends BaseVisualForm {
             ['effect', 'effects'],
             ['study', 'studies'],
             ['effect_tag', 'effect_tags'],
+            ['effect_subtype', 'effect_subtypes'],
         ];
 
         _.each(fields, function(d){

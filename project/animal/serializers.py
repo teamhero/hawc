@@ -20,7 +20,6 @@ class ExperimentSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['url'] = instance.get_absolute_url()
         ret['type'] = instance.get_type_display()
-        ret['litter_effects'] = instance.get_litter_effects_display()
         ret['is_generational'] = instance.is_generational()
         ret['cas_url'] = instance.cas_url
         return ret
@@ -111,6 +110,7 @@ class EndpointSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+
         ret['url'] = instance.get_absolute_url()
         ret['dataset_increasing'] = instance.dataset_increasing
         ret['variance_name'] = instance.variance_name
@@ -120,15 +120,24 @@ class EndpointSerializer(serializers.ModelSerializer):
         ret['monotonicity'] = instance.get_monotonicity_display()
         ret['trend_result'] = instance.get_trend_result_display()
         ret['additional_fields'] = json.loads(instance.additional_fields)
+        ret['litter_effects_display'] = instance.get_litter_effects_display()
+        ret['experiment_type'] = instance.animal_group.experiment.type
         models.EndpointGroup.getStdevs(ret['variance_type'], ret['groups'])
         models.EndpointGroup.percentControl(ret['data_type'], ret['groups'])
         models.EndpointGroup.getConfidenceIntervals(ret['data_type'], ret['groups'])
+        models.EndpointGroup.get_incidence_summary(ret['data_type'], ret['groups'])
         models.Endpoint.setMaximumPercentControlChange(ret)
 
         ret['bmd'] = None
-        bmd = instance.get_selected_bmd_model()
-        if bmd:
-            ret['bmd'] = ModelSerializer().to_representation(bmd)
+        ret['bmd_notes'] = ''
+        ret['bmd_url'] = ''
+        selected_model = instance.get_selected_bmd_model()
+        if selected_model:
+            ret['bmd_notes'] = selected_model.notes
+            if selected_model.model_id is not None:
+                ret['bmd'] = ModelSerializer().to_representation(selected_model.model)
+            else:
+                ret['bmd_url'] = instance.bmd_sessions.latest().get_absolute_url()
 
         return ret
 
@@ -138,26 +147,48 @@ class EndpointSerializer(serializers.ModelSerializer):
 
 
 class ExperimentCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    study_short_citation = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Experiment
-        cleanup_fields = model.TEXT_CLEANUP_FIELDS
+        cleanup_fields = ('study_short_citation',) + model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
 
+    def get_study_short_citation(self, obj):
+        return obj.study.short_citation
 
 class AnimalGroupCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    study_short_citation = serializers.SerializerMethodField()
 
     class Meta:
         model = models.AnimalGroup
-        cleanup_fields = model.TEXT_CLEANUP_FIELDS
+        cleanup_fields = ('study_short_citation',) + model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
 
+    def get_study_short_citation(self, obj):
+        return obj.experiment.study.short_citation
 
 class EndpointCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-
+    study_short_citation = serializers.SerializerMethodField()
+    
     class Meta:
         model = models.Endpoint
-        cleanup_fields = model.TEXT_CLEANUP_FIELDS
+        cleanup_fields = ('study_short_citation',) + model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
+
+    def get_study_short_citation(self, obj):
+        return obj.animal_group.experiment.study.short_citation
+
+
+class DosingRegimeCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    study_short_citation = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.DosingRegime
+        cleanup_fields = ('study_short_citation',) + model.TEXT_CLEANUP_FIELDS
+        fields = cleanup_fields + ('id', )
+
+    def get_study_short_citation(self, obj):
+        return obj.dosed_animals.experiment.study.short_citation
 
 SerializerHelper.add_serializer(models.Endpoint, EndpointSerializer)

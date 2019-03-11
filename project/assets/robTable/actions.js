@@ -3,6 +3,8 @@ import fetch from 'isomorphic-fetch';
 import * as types from 'robTable/constants';
 import h from 'robTable/utils/helpers';
 
+import _ from 'underscore';
+
 
 function requestStudy(){
     return {

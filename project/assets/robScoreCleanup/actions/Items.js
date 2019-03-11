@@ -1,5 +1,5 @@
-import fetch from 'isomorphic-fetch';
 import _ from 'underscore';
+import fetch from 'isomorphic-fetch';
 
 import { setError, resetError } from 'robScoreCleanup/actions/Errors';
 import * as types from 'robScoreCleanup/constants';

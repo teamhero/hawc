@@ -94,6 +94,8 @@ class IVChemical(models.Model):
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
 
+    def get_study(self):
+        return self.study
 
 class IVCellType(models.Model):
     objects = managers.IVCellTypeManager()
@@ -173,6 +175,9 @@ class IVCellType(models.Model):
         self.study_id = cw[Study.COPY_NAME][self.study_id]
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
+
+    def get_study(self):
+        return self.study
 
 
 class IVExperiment(models.Model):
@@ -274,6 +279,9 @@ class IVExperiment(models.Model):
         for child in children:
             child.copy_across_assessments(cw)
 
+    def get_study(self):
+        return self.study
+
 
 class IVEndpointCategory(AssessmentRootedTagTree):
     cache_template_taglist = 'invitro.ivendpointcategory.taglist.assessment-{0}'
@@ -326,15 +334,13 @@ class IVEndpoint(BaseEndpoint):
         ('NR', 'Not reported'))
 
     MONOTONICITY_CHOICES = (
+        (8, "--"),
         (0, "N/A, single dose level study"),
         (1, "N/A, no effects detected"),
-        (2, "yes, visual appearance of monotonicity but no trend"),
+        (2, "visual appearance of monotonicity"),
         (3, "yes, monotonic and significant trend"),
-        (4, "yes, visual appearance of non-monotonic but no trend"),
-        (5, "yes, non-monotonic and significant trend"),
-        (6, "no pattern"),
-        (7, "unclear"),
-        (8, "not-reported"))
+        (4, "visual appearance of non-monotonicity"),
+        (6, "no pattern/unclear"))
 
     OVERALL_PATTERN_CHOICES = (
         (0, "not-available"),
@@ -417,16 +423,17 @@ class IVEndpoint(BaseEndpoint):
         default=0,
         choices=OBSERVATION_TIME_UNITS)
     NOEL = models.SmallIntegerField(
-        verbose_name="NOEL",
+        verbose_name="NOAEL",
         default=-999,
-        help_text='No observed effect level')
+        help_text='No observed adverse effect level')
     LOEL = models.SmallIntegerField(
-        verbose_name="LOEL",
+        verbose_name="LOAEL",
         default=-999,
-        help_text='Lowest observed effect level')
+        help_text='Lowest observed adverse effect level')
     monotonicity = models.PositiveSmallIntegerField(
         default=8,
-        choices=MONOTONICITY_CHOICES)
+        choices=MONOTONICITY_CHOICES,
+        help_text="OPTIONAL")
     overall_pattern = models.PositiveSmallIntegerField(
         default=0,
         choices=OVERALL_PATTERN_CHOICES)

@@ -21,11 +21,22 @@ class EndpointListTable {
                 'Animal group',
                 'Endpoint',
                 'Units',
-                'NOEL',
-                'LOEL',
+                'NOAEL',
+                'LOAEL',
+                'BMD',
+                'BMDLS',
             ];
         tbl.setColGroup([12, 16, 17, 31, 10, 7, 7]);
         tbl.addHeaderRow(headers);
+
+        var headersToSortKeys = tbl.makeHeaderToSortKeyMapFromOrderByDropdown("select#id_order_by", {
+            'experiment name': 'experiment',
+            'endpoint name': 'endpoint',
+            'dose units': 'units'
+        });
+
+        tbl.enableSortableHeaderLinks($("#initial_order_by").val(), headersToSortKeys);
+
         this.endpoints.forEach(function(v){
             tbl.addRow(v.build_endpoint_list_row());
         });

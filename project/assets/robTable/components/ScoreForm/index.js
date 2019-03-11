@@ -23,7 +23,7 @@ class ScoreForm extends Component {
             scoreChoices: {
                 0: 'Not applicable',
                 1: 'Critically deficient',
-                2: 'Poor',
+                2: 'Deficient',
                 3: 'Adequate',
                 4: 'Good',
                 10: 'Not reported',

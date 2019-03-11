@@ -5,6 +5,7 @@ import collections
 import itertools
 
 from django.db import models, transaction
+from django.db.models import Prefetch
 from django.apps import apps
 from django.core.exceptions import (ValidationError, ObjectDoesNotExist,
                                     MultipleObjectsReturned)
@@ -26,14 +27,21 @@ class Study(Reference):
     objects = managers.StudyManager()
 
     COI_REPORTED_CHOICES = (
+        (4, '---'),
         (0, 'Authors report they have no COI'),
         (1, 'Authors disclosed COI'),
-        (2, 'Unknown'),
+        (2, 'Not reported, but a COI is inferred based on author affiliation and/or funding source'),
+        (5, 'Not reported, but no COI is inferred based on author affiliation and/or funding source'),
         (3, 'Not reported'))
 
     TEXT_CLEANUP_FIELDS = (
+        'short_citation',
+        'full_citation',
+        'study_identifier',
         'coi_details',
         'funding_source',
+        'ask_author',
+        'summary',
     )
 
     STUDY_TYPE_FIELDS = {
@@ -60,43 +68,69 @@ class Study(Reference):
         help_text='Study contains in-vitro data')
     short_citation = models.CharField(
         max_length=256,
-        help_text="How the study should be identified (i.e. Smith et al. (2012), etc.)")
+        help_text="""
+                Use this format: last name, year, HERO ID (e.g., Baeder, 1990, 10130). This field 
+                is used to select studies for visualizations and endpoint filters within HAWC, so 
+                you may need to add distinguishing features such as chemical name when the 
+                assessment includes multiple chemicals (e.g., Baeder, 1990, 10130 PFHS). Note: 
+                Brackets can be added to put the references in LitCiter format in document text, 
+                e.g., {Baeder, 1990, 10130} or {Baeder, 1990, 10130@@author-year}, but LitCiter 
+                will not work on HAWC visuals.
+                """)
     full_citation = models.TextField(
-        help_text="Complete study citation, in desired format.")
+        help_text="Complete study citation, in desired format. First author last name, Initial; "
+                  "Second author last name, Initial; etc. (Year). Title. Journal volume (issue): "
+                  "pages. Web link")
     coi_reported = models.PositiveSmallIntegerField(
         choices=COI_REPORTED_CHOICES,
-        default=0,
+        default=4,
         verbose_name="COI reported",
         help_text='Was a conflict of interest reported by the study authors?')
     coi_details = models.TextField(
         blank=True,
         verbose_name="COI details",
-        help_text="Details related to potential or disclosed conflict(s) of interest")
-    funding_source = models.TextField(blank=True)
+        help_text="Details related to potential or disclosed conflict(s) of interest. "
+                  "When available, cut and paste the COI declaration with quotations. "
+                  "Provide details when a COI is inferred.")
+    funding_source = models.TextField(
+        blank=True,
+        help_text="When reported, cut and paste the funding source information with quotations, e.g., " +
+                    "\"The study was sponsored by Hoechst AG and Dow Europe\".")
     study_identifier = models.CharField(
         max_length=128,
         blank=True,
         verbose_name="Internal study identifier",
-        help_text="Reference descriptor for assessment-tracking purposes "
-                  "(for example, \"{Author, year, #EndNoteNumber}\")")
+        help_text="""
+                This field may be used in HAWC visualizations when there is a preference not to 
+                display the HERO ID number, so use author year format, e.g., Smith, 1978, Smith 
+                and Jones, 1978 or Smith et al., 1978 (for more than 3 authors).
+                """)
     contact_author = models.BooleanField(
         default=False,
-        help_text="Was the author contacted for clarification of methods or results?")
+        help_text="Was the author contacted for clarification of methods, results, or to request additional data?")
     ask_author = models.TextField(
         blank=True,
         verbose_name="Correspondence details",
-        help_text="Details on correspondence between data-extractor and author, if needed.")
+        help_text="Details on correspondence between data-extractor and author (if author contacted). "
+                  "Please include date and details of the correspondence. The files documenting "
+                  "the correspondence can also be added to HAWC as attachments and HERO as a "
+                  "new record, but first it is important to redact confidential or personal "
+                  "information (e.g., email address).")
     published = models.BooleanField(
         default=False,
-        help_text="If True, this study, risk of bias, and extraction details "
-                  "may be visible to reviewers and/or the general public "
-                  "(if assessment-permissions allow this level of visibility). "
-                  "Team-members and project-management can view both "
-                  "published and unpublished studies.")
+        help_text="If True, this study, study evaluation, and extraction details may be visible "
+                  "to reviewers and/or the public (if assessment-permissions allow this level "
+                  "of visibility). Team-members and project-management can view both published "
+                  "and unpublished studies.")
     summary = models.TextField(
         blank=True,
-        verbose_name="Summary and/or extraction comments",
-        help_text="Study summary or details on data-extraction needs.")
+        verbose_name="Extraction comments",
+        help_text="This field is often left blank, but used to add comments on data extraction, "
+                  "e.g., reference to full study reports or indicating which outcomes/endpoints "
+                  "in a study were not extracted.")
+    editable = models.BooleanField(
+        default=True,
+        help_text='Project-managers and team-members are allowed to edit this study.')
 
     COPY_NAME = "studies"
 
@@ -223,7 +257,7 @@ class Study(Reference):
         try:
             return final.get_final_url()
         except AttributeError:
-            raise Http404('Final RoB does not exist')
+            raise Http404('Overall study confidence does not exist')
 
     def get_assessment(self):
         return self.assessment
@@ -277,7 +311,8 @@ class Study(Reference):
             'study-contact_author',
             'study-ask_author',
             'study-summary',
-            'study-published'
+            'study-published',
+            'study-editable'
         )
 
     @staticmethod
@@ -298,7 +333,7 @@ class Study(Reference):
             ser['contact_author'],
             ser['ask_author'],
             cleanHTML(ser['summary']),
-            ser['published']
+            ser['published'],
         )
 
     @staticmethod
@@ -315,15 +350,21 @@ class Study(Reference):
 
     def get_crumbs(self):
         return get_crumbs(self, parent=self.assessment)
+    
+    def get_crumbs_icon(self):
+        if self.editable:
+            return None
+        else:
+            return '<i title="Study is locked" class="fa fa-lock" aria-hidden="true"></i>'
 
     def get_final_rob(self):
         try:
             return self.riskofbiases.get(final=True, active=True)
         except ObjectDoesNotExist:
-            return None
+            return self.riskofbiases.objects.none()
         except MultipleObjectsReturned:
             raise ValidationError(
-                'Multiple active final risk of bias reviews for "{}", '
+                'Multiple active final study evaluation reviews for "{}", '
                 'there should only be one per study.'.format(self))
 
     def get_active_robs(self, with_final=True):
@@ -337,6 +378,20 @@ class Study(Reference):
                .filter(active=True, final=False)\
                .order_by('last_updated')\
                .prefetch_related('author')
+			   
+    def get_overall_confidence(self):
+        final_confidence_set = self.riskofbiases\
+                .prefetch_related('scores__metric__domain')\
+                .filter(active=True, final=True, scores__metric__domain__is_overall_confidence=True)
+					   
+        if final_confidence_set.exists():
+            if final_confidence_set.count() != 1:
+                return -1
+            else: 
+                fc = final_confidence_set.values_list('scores__score', flat=True)[0]
+                return (fc+1)%11
+        else:
+            return -1
 
     def optimized_for_serialization(self):
         return self.__class__.objects\
@@ -347,6 +402,18 @@ class Study(Reference):
                 'riskofbiases__scores__metric__domain',
             ).first()
 
+    def get_study(self):
+        return self
+
+    def user_can_edit_study(self, assessment, user):
+        if user.is_superuser:
+            return True
+        elif user.is_anonymous():
+            return False
+        else:
+            return (self.editable and
+                    (user in assessment.project_manager.all() or
+                     user in assessment.team_members.all()))
 
 class Attachment(models.Model):
     objects = managers.AttachmentManager()

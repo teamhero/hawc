@@ -73,7 +73,7 @@ class RiskOfBiasForm extends Component {
                     <Completeness number={this.state.notesLeft} />
                     <button className='btn btn-primary space'
                             type='submit'>
-                        Update risk of bias
+                        Update study evaluation
                     </button>
                     <button className='btn space'
                             onClick={this.handleCancel}>Cancel</button>

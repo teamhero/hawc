@@ -57,6 +57,12 @@ Mac/Linux
 Update the settings file with any changes you'd like to make for your local
 development environment.
 
+Current HAWC has two possible application "flavors", where the application is slightly
+different depending on which flavor is selected. To change, modify the ``HAWC_FLAVOR``
+environment variable in the local settings. Possible values include:
+ - PRIME (default application)
+ - EPA (EPA application)
+
 Windows
 ~~~~~~~
 

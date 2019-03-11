@@ -83,12 +83,6 @@ class StudyPopulationForm(forms.ModelForm):
 
     CREATE_LEGEND = "Create new study-population"
 
-    CREATE_HELP_TEXT = """
-        Create a new study population. Each study-population is a
-        associated with an epidemiology study. There may be
-        multiple study populations with a single study,
-        though this is typically unlikely."""
-
     UPDATE_HELP_TEXT = "Update an existing study-population."
 
     CRITERION_FIELDS = [
@@ -118,6 +112,9 @@ class StudyPopulationForm(forms.ModelForm):
     class Meta:
         model = models.StudyPopulation
         exclude = ('study', 'criteria')
+        labels = {
+            'comments': 'Recruitment description' # could also change field name in models.py from comments to recruitment_description, but this seems less disruptive!
+        }
 
     def __init__(self, *args, **kwargs):
         study = kwargs.pop('parent', None)
@@ -137,6 +134,9 @@ class StudyPopulationForm(forms.ModelForm):
                 {'related': self.instance.study.assessment_id})
             if self.instance.id:
                 self.fields[fld].initial = getattr(self.instance, fld)
+
+            # set the help text here for the correct criteria field
+            self.fields[fld].help_text = self.instance.CRITERIA_HELP_TEXTS.get(fld, "")
 
         self.helper = self.setHelper()
 
@@ -182,7 +182,6 @@ class StudyPopulationForm(forms.ModelForm):
         else:
             inputs = {
                 "legend_text": self.CREATE_LEGEND,
-                "help_text":   self.CREATE_HELP_TEXT,
                 "cancel_url": self.instance.study.get_absolute_url()
             }
 
@@ -196,9 +195,12 @@ class StudyPopulationForm(forms.ModelForm):
 
         url = reverse('epi:studycriteria_create',
                       kwargs={'pk': self.instance.study.assessment.pk})
-        helper.addBtnLayout(helper.layout[6], 0, url, "Create criteria", "span4")
-        helper.addBtnLayout(helper.layout[6], 1, url, "Create criteria", "span4")
-        helper.addBtnLayout(helper.layout[6], 2, url, "Create criteria", "span4")
+
+        # remove magic number 6; breaks if we change number of elements in the form. This still isn't great; what if comments went away?
+        btn_target_idx = helper.find_layout_idx_for_field_name('comments') - 1
+        helper.addBtnLayout(helper.layout[btn_target_idx], 0, url, "Create criteria", "span4")
+        helper.addBtnLayout(helper.layout[btn_target_idx], 1, url, "Create criteria", "span4")
+        helper.addBtnLayout(helper.layout[btn_target_idx], 2, url, "Create criteria", "span4")
 
         return helper
 
@@ -326,15 +328,19 @@ class ExposureForm(forms.ModelForm):
         helper.add_fluid_row('measured', 3, "span4")
         helper.add_fluid_row('metric_description', 3, "span4")
         helper.add_fluid_row('age_of_exposure', 3, "span6")
-        helper.add_fluid_row('n', 3, "span4")
-        helper.add_fluid_row('variance', 2, "span6")
-        helper.add_fluid_row('lower_ci', 4, "span3")
 
         url = reverse(
             'assessment:dose_units_create',
             kwargs={'pk': self.instance.study_population.study.assessment_id}
         )
         helper.addBtnLayout(helper.layout[4], 2, url, "Create units", "span4")
+
+        # we want a single "help text" that spans the chemical exposure route checkboxes (inhalation, dermal, oral, etc.)
+        # if we just attach help_text attribute in the model, it will appear grouped with inhalation. Doing it this way gives
+        # a little more layout control; just need to find the right spot to do it
+        inhalation_idx = helper.find_layout_idx_for_field_name('inhalation')
+        if inhalation_idx is not None:
+            helper.layout[inhalation_idx].append(cfl.HTML('<div style="margin-bottom:20px">' + self.instance.ROUTE_HELP_TEXT + '</div>'))
 
         return helper
 
@@ -357,6 +363,9 @@ class OutcomeForm(forms.ModelForm):
     class Meta:
         model = models.Outcome
         exclude = ('assessment', 'study_population')
+        labels = {
+            'summary': 'Comments'
+        }
 
     def __init__(self, *args, **kwargs):
         assessment = kwargs.pop('assessment', None)
@@ -365,6 +374,7 @@ class OutcomeForm(forms.ModelForm):
         self.fields['name'].widget = selectable.AutoCompleteWidget(
             lookup_class=BaseEndpointLookup,
             allow_new=True)
+        self.fields['name'].help_text = self.instance.NAME_HELP_TEXT
         self.fields['system'].widget = selectable.AutoCompleteWidget(
             lookup_class=lookups.SystemLookup,
             allow_new=True)
@@ -379,7 +389,7 @@ class OutcomeForm(forms.ModelForm):
             allow_new=True)
         self.fields['effects'].widget = selectable.AutoCompleteSelectMultipleWidget(
             lookup_class=EffectTagLookup)
-        self.fields['effects'].help_text = 'Tags used to help categorize effect description.'
+        self.fields['effects'].help_text = self.instance.TAGS_HELP_TEXT
         if assessment:
             self.instance.assessment = assessment
         if study_population:
@@ -610,14 +620,6 @@ class OutcomeSelectorForm(CopyAsNewSelectorForm):
 
 class ComparisonSet(forms.ModelForm):
 
-    HELP_TEXT_CREATE = """Create a new comparison set. Each group is a
-        collection of people, and all groups in this collection are
-        comparable to one-another. For example, you may a new comparison set
-        which contains two groups: cases and controls. Alternatively, for
-        cohort-based studies, you may create a new comparison set with four
-        different groups, one for each quartile of exposure based on exposure
-        measurements.
-    """
     HELP_TEXT_UPDATE = """Update an existing comparison set."""
 
     class Meta:
@@ -663,7 +665,6 @@ class ComparisonSet(forms.ModelForm):
         else:
             inputs = {
                 "legend_text": "Create new comparison set",
-                "help_text": self.HELP_TEXT_CREATE,
                 "cancel_url": self.parent.get_absolute_url()
             }
 
@@ -745,6 +746,38 @@ BlankGroupFormset = modelformset_factory(
     can_delete=False,
     extra=1)
 
+class CentralTendencyForm(forms.ModelForm):
+
+    class Meta:
+        model = models.CentralTendency
+        exclude = ('exposure',)
+
+class BaseCentralTendencyFormset(BaseModelFormSet):
+
+    def clean(self):
+        super().clean()
+
+        # check that there is at least one exposure-group
+        count = len([f for f in self.forms if f.is_valid() and f.clean()])
+        if count < 1:
+            raise forms.ValidationError("At least one central tendency is required.")
+
+
+CentralTendencyFormset = modelformset_factory(
+    models.CentralTendency,
+    form=CentralTendencyForm,
+    formset=BaseCentralTendencyFormset,
+    can_delete=True,
+    extra=0)
+
+
+BlankCentralTendencyFormset = modelformset_factory(
+    models.CentralTendency,
+    form=CentralTendencyForm,
+    formset=BaseCentralTendencyFormset,
+    can_delete=False,
+    extra=1)
+
 
 class GroupNumericalDescriptionsForm(forms.ModelForm):
 
@@ -772,15 +805,17 @@ class ResultForm(forms.ModelForm):
     ADJUSTMENT_FIELDS = ["factors_applied", "factors_considered"]
 
     factors_applied = selectable.AutoCompleteSelectMultipleField(
-        help_text="All factors included in final model",
-        lookup_class=lookups.AdjustmentFactorLookup,
-        required=False)
+        help_text="All adjustment factors included in  final statistical model"
+        ,lookup_class=lookups.AdjustmentFactorLookup
+        ,required=False
+    )
 
     factors_considered = selectable.AutoCompleteSelectMultipleField(
-        label="Adjustment factors considered",
-        help_text="Factors considered, but not included in the final model",
-        lookup_class=lookups.AdjustmentFactorLookup,
-        required=False)
+        label="Adjustment factors considered"
+        ,help_text=models.OPTIONAL_NOTE
+        ,lookup_class=lookups.AdjustmentFactorLookup
+        ,required=False
+    )
 
     class Meta:
         model = models.Result
@@ -789,7 +824,11 @@ class ResultForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         outcome = kwargs.pop('parent', None)
         super().__init__(*args, **kwargs)
+
         self.fields['comments'] = self.fields.pop('comments')  # move to end
+
+        self.fields['resulttags'].widget = selectable.AutoCompleteSelectMultipleWidget(
+            lookup_class=EffectTagLookup)
 
         if outcome:
             self.instance.outcome = outcome
@@ -850,7 +889,7 @@ class ResultForm(forms.ModelForm):
         for fld in list(self.fields.keys()):
             widget = self.fields[fld].widget
             if type(widget) != forms.CheckboxInput:
-                if fld in self.ADJUSTMENT_FIELDS:
+                if fld in self.ADJUSTMENT_FIELDS or fld == "resulttags":
                     widget.attrs['class'] = 'span10'
                 else:
                     widget.attrs['class'] = 'span12'
@@ -874,17 +913,22 @@ class ResultForm(forms.ModelForm):
         helper.form_class = None
 
         helper.add_fluid_row('name', 2, "span6")
-        helper.add_fluid_row('metric', 2, "span6")
+        helper.add_fluid_row('metric', 3, "span4")
         helper.add_fluid_row('data_location', 2, "span6")
         helper.add_fluid_row('dose_response', 3, "span4")
         helper.add_fluid_row('statistical_power', 4, "span3")
         helper.add_fluid_row('factors_applied', 2, "span6")
         helper.add_fluid_row('estimate_type', 3, "span4")
+        helper.add_fluid_row("resulttags", 1, "span6")
 
-        url = reverse('epi:adjustmentfactor_create',
-                      kwargs={'pk': self.instance.outcome.assessment_id})
-        helper.addBtnLayout(helper.layout[8], 0, url, "Add new adjustment factor", "span6")
-        helper.addBtnLayout(helper.layout[8], 1, url, "Add new adjustment factor", "span6")
+        url = reverse('assessment:effect_tag_create', kwargs={'pk': self.instance.outcome.assessment_id})
+        helper.addBtnLayout(helper.layout[8], 0, url, "Add new result tag", "span6")
+
+        url = reverse('epi:adjustmentfactor_create', kwargs={'pk': self.instance.outcome.assessment_id})
+        # remove magic number 9; breaks if we change number of elements in the form. This still isn't great; what if comments went away?
+        btn_target_idx = helper.find_layout_idx_for_field_name('comments') - 1
+        helper.addBtnLayout(helper.layout[btn_target_idx], 0, url, "Add new adjustment factor", "span6")
+        helper.addBtnLayout(helper.layout[btn_target_idx], 1, url, "Add new adjustment factor", "span6")
 
         return helper
 

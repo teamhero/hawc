@@ -13,7 +13,7 @@
 {% block content %}
 
   <h1>{{object}}
-    {% if obj_perms.edit %}
+    {% if obj_perms.edit or obj_perms.edit_assessment %}
       <div class="btn-group pull-right">
         <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Actions
           <span class="caret"></span>
@@ -21,19 +21,24 @@
         <ul class="dropdown-menu">
 
             <li class="disabled"><a tabindex="-1" href="#">Study editing</a></li>
+            {% if obj_perms.edit_assessment %}
+            <li><a href="{% url 'study:editability_update' object.pk object.editable|yesno:"False,True"%}">{{ object.editable|yesno:"Lock study,Unlock study" }}</a></li>
+            {% endif %}
+            {% if obj_perms.edit %}
             <li><a href="{% url 'study:update' object.pk %}">Update study details</a></li>
             <li><a href="{% url 'lit:ref_edit' object.pk %}">Update reference</a></li>
             <li><a href="{% url 'study:delete' object.pk %}">Delete study</a></li>
             <li><a href="{% url 'study:attachment_create' object.pk %}">Add an attachment</a></li>
+            {% endif %}
 
-            {% if object.bioassay %}
+            {% if obj_perms.edit and object.bioassay %}
               <li class="divider"></li>
               <li class="disabled"><a tabindex="-1" href="#">Animal bioassay editing</a></li>
               <li><a href="{% url 'animal:experiment_new' object.pk %}">Create new experiment</a></li>
               <li><a href="{% url 'animal:experiment_copy_selector' object.pk %}">Copy from existing</a></li>
             {% endif %}
 
-            {% if object.in_vitro %}
+            {% if obj_perms.edit and object.in_vitro %}
               <li class="divider"></li>
               <li class="disabled"><a tabindex="-1" href="#">In-vitro analysis editing</a></li>
               <li><a href="{% url 'invitro:experiment_create' object.pk %}">Create new experiment</a></li>
@@ -41,14 +46,14 @@
               <li><a href="{% url 'invitro:celltype_create' object.pk %}">Create new cell-type</a></li>
             {% endif %}
 
-            {% if object.epi %}
+            {% if obj_perms.edit and object.epi %}
               <li class="divider"></li>
               <li class="disabled"><a tabindex="-1" href="#">Epidemiology editing</a></li>
               <li><a href="{% url 'epi:sp_create' object.pk %}">Create new study population</a></li>
               <li><a href="{% url 'epi:sp_copy_selector' object.pk %}">Copy from existing</a></li>
             {% endif %}
 
-            {% if object.epi_meta %}
+            {% if obj_perms.edit and object.epi_meta %}
               <li class="divider"></li>
               <li class="disabled"><a tabindex="-1" href="#">Epidemiology meta-analysis editing</a></li>
               <li><a href="{% url 'meta:protocol_create' object.pk %}">Create new protocol</a></li>
@@ -56,6 +61,7 @@
         </ul>
       </div>
     {% endif %}
+
   </h1>
 
   <div id="study_details"></div>
@@ -64,7 +70,7 @@
 
     {% if assessment.enable_risk_of_bias and object.riskofbiases.count > 0 %}
       <div class="row-fluid">
-          <h3>Risk of bias visualization
+          <h3>Study evaluation visualization
             <a class="btn btn-primary pull-right" href="{% url 'riskofbias:rob_detail' object.pk %}">View details</a>
           </h3>
           <div class="span12">

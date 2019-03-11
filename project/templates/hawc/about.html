@@ -41,8 +41,8 @@
         <li>Tagged references: {{counts.references_tagged|intcomma}} ({{counts.references_tagged_percent|percentage}})</li>
         <li>Studies with data extracted: {{counts.studies|intcomma}}</li>
         <li>Assessments with studies: {{counts.assessments_with_studies|intcomma}} ({{counts.assessments_with_studies_percent|percentage}})</li>
-        <li>Risk of bias scores: {{counts.rob_scores|intcomma}}</li>
-        <li>Studies with risk of bias: {{counts.studies_with_rob|intcomma}} ({{counts.studies_with_rob_percent|percentage}})</li>
+        <li>Study evaluation scores: {{counts.rob_scores|intcomma}}</li>
+        <li>Studies with evaluations: {{counts.studies_with_rob|intcomma}} ({{counts.studies_with_rob_percent|percentage}})</li>
         <li>Animal bioassay endpoints: {{counts.endpoints|intcomma}}</li>
         <li>Animal bioassay endpoints with data extracted: {{counts.endpoints_with_data|intcomma}} ({{counts.endpoints_with_data_percent|percentage}})</li>
         <li>Epidemiology outcomes: {{counts.outcomes|intcomma}}</li>
@@ -53,6 +53,32 @@
         <li>Assessments with visuals: {{counts.assessments_with_visuals|intcomma}} ({{counts.assessments_with_visuals_percent|percentage}})</li>
       </ul>
       <p><i>Last updated: </i>{{counts.updated}}</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="span12">
+      <h2>Data Extraction Fields</h2>
+      <table class="table table-compressed table-striped">
+        <colgroup>
+          <col style="width:50%">
+          <col style="width:50%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Data extraction fields</td>
+            <td><a href="{{STATIC_URL}}docs/downloads/HAWC_Data_Extraction_Fields.xlsx">Spreadsheet
+              <img class="ff" src="{{STATIC_URL}}img/excel_icon.png"
+                 alt="PDF file-format"></a></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -76,14 +102,18 @@
                   <li><a href="#epiMetaExtraction" data-toggle="tab">Epidemiology meta analysis</a></li>
                   <li><a href="#invitroExtraction" data-toggle="tab">In vitro data extraction</a></li>
                   <li><a href="#dataCleanup" data-toggle="tab">Data cleanup</a></li>
-                  <li><a href="#rob" data-toggle="tab">Risk of bias assessment</a></li>
+                  <li><a href="#rob" data-toggle="tab">Study evaluation (Risk of Bias) assessment</a></li>
                   <li><a href="#viz" data-toggle="tab">Creating visualizations</a></li>
               </ul>
           </div>
 
           <div class="tab-content">
               <div id="started" class="videoTab tab-pane active">
-                  <iframe width="560" height="315" src="https://www.youtube.com/embed/DSXFTtylrQU" frameborder="0" allowfullscreen></iframe>
+                  {% if HAWC_FLAVOR == "EPA" %}
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/LWtZWttBhkA" frameborder="0" allowfullscreen></iframe>
+                  {% else %}
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/DSXFTtylrQU" frameborder="0" allowfullscreen></iframe>
+                  {% endif %}
                   <iframe width="560" height="315" src="https://www.youtube.com/embed/-XsmG38lvps" frameborder="0" allowfullscreen></iframe>
               </div>
               <div id="importing" class="videoTab tab-pane">
@@ -182,7 +212,7 @@
             </td>
             <td>2015 National Toxicology Program (NTP) Board of Scientific Counselors</td>
             <td><a href="{{STATIC_URL}}docs/posters/2015_HAWC_BSC.pdf">Slides
-              <img class="ff" src="{{STATIC_URL}}/img/pdf_icon.png"
+              <img class="ff" src="{{STATIC_URL}}img/pdf_icon.png"
                  alt="PDF file-format"></a></td>
           </tr>
 
@@ -193,7 +223,7 @@
             </td>
             <td>2014 Society of Toxicology (SOT)</td>
             <td><a href="{{STATIC_URL}}docs/posters/2014_HAWC_SOT_final.pdf">Poster
-              <img class="ff" src="{{STATIC_URL}}/img/pdf_icon.png"
+              <img class="ff" src="{{STATIC_URL}}img/pdf_icon.png"
                  alt="PDF file-format"></a></td>
           </tr>
 
@@ -206,11 +236,11 @@
             <td>2014 Webinar</td>
             <td>
               <a href="{{STATIC_URL}}docs/posters/2014_HAWC_Webinar.pdf">Slides
-                <img class="ff" src="{{STATIC_URL}}/img/pdf_icon.png"
+                <img class="ff" src="{{STATIC_URL}}img/pdf_icon.png"
                    alt="PDF file-format"></a><br>
               <a href="https://www.youtube.com/watch?v=hhQh-mNTmqY"
                  title="YouTube hyperlink">Video
-                <img class="ff ytb" src="{{STATIC_URL}}/img/youtube_icon.png"
+                <img class="ff ytb" src="{{STATIC_URL}}img/youtube_icon.png"
                  alt="YouTube hyperlink"></a>
             </td>
           </tr>
@@ -222,7 +252,7 @@
             </td>
             <td>2013 OpenTox USA</td>
             <td><a href="{{STATIC_URL}}docs/posters/2013_HAWC_OpenTox_final.pdf">Poster
-              <img class="ff" src="{{STATIC_URL}}/img/pdf_icon.png"
+              <img class="ff" src="{{STATIC_URL}}img/pdf_icon.png"
                    alt="PDF file-format"></a></td>
           </tr>
 
@@ -234,7 +264,7 @@
             </td>
             <td>2013 Society of Toxicology (SOT)</td>
             <td><a href="{{STATIC_URL}}docs/posters/2013_HAWC_SOT_final.pdf">Poster
-              <img class="ff" src="{{STATIC_URL}}/img/pdf_icon.png"
+              <img class="ff" src="{{STATIC_URL}}img/pdf_icon.png"
                    alt="PDF file-format"></a></td>
           </tr>
         </tbody>

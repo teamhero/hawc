@@ -5,6 +5,7 @@ from copy import copy
 
 from assessment.models import DoseUnits
 from study.models import Study
+from riskofbias.models import RiskOfBiasScore
 from utils.helper import FlatFileExporter
 
 from . import models
@@ -146,6 +147,13 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             return '|{0}|'.format('|'.join(effs))
         return ''
 
+    @classmethod  
+    def _get_observation_time_and_time_units(cls, e):
+        return '{} {}'.format(
+            e['observation_time'],
+            e['observation_time_units']
+        )
+
     def _get_header_row(self):
         # move qs.distinct() call here so we can make qs annotations.
         self.queryset = self.queryset.distinct('pk')
@@ -182,6 +190,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'diagnostic',
             'tags',
             'observation time',
+            'observation time text',
             'data type',
             'doses',
             'dose units',
@@ -190,10 +199,13 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'maximum endpoint change',
 
             'low_dose',
-            'NOEL',
-            'LOEL',
+            'NOAEL',
+            'LOAEL',
             'FEL',
             'high_dose',
+
+            'trend test value',
+            'trend test result',
 
             'key',
             'dose index',
@@ -205,19 +217,34 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'lower_ci',
             'upper_ci',
             'pairwise significant',
+            'pairwise significant value',
             'percent control mean',
             'percent control low',
-            'percent control high'
+            'percent control high',
+            'dichotomous summary',
+            'percent affected',
+            'percent lower ci',
+            'percent upper ci',
+			'Overall study confidence'
         ]
 
     def _get_data_rows(self):
 
         preferred_units = self.kwargs.get('preferred_units', None)
-
+ 
         rows = []
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
             doses = self._get_doses_list(ser, preferred_units)
+            study_id = ser['animal_group']['experiment']['study']['id']
+            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
+            if fROB == -1:
+                finalROB = 'N/A'
+            else:
+                fROB = (fROB+10)%11
+                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
+                    if cnt == fROB:
+                        finalROB = text
 
             # build endpoint-group independent data
             row = [
@@ -253,6 +280,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
                 ser['effect_subtype'],
                 ser['diagnostic'],
                 self._get_tags(ser),
+                self._get_observation_time_and_time_units(ser),
                 ser['observation_time_text'],
                 ser['data_type_label'],
                 self._get_doses_str(doses),
@@ -274,6 +302,11 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             else:
                 row.extend([None] * 5)
 
+            row.extend([
+                ser['trend_value'],
+                ser['trend_result'],
+            ])
+
             # endpoint-group information
             for i, eg in enumerate(ser['groups']):
                 row_copy = copy(row)
@@ -288,10 +321,16 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
                     eg['lower_ci'],
                     eg['upper_ci'],
                     eg['significant'],
+                    eg['significance_level'],
                     eg['percentControlMean'],
                     eg['percentControlLow'],
-                    eg['percentControlHigh']
+                    eg['percentControlHigh'],
+                    eg['dichotomous_summary'],
+                    eg['percent_affected'],
+                    eg['percent_lower_ci'],
+                    eg['percent_upper_ci'],
                 ])
+                row_copy.append(finalROB)
                 rows.append(row_copy)
 
         return rows
@@ -333,6 +372,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
             'diagnostic',
             'tags',
             'observation time',
+            'observation time text',
             'data type',
             'doses',
             'dose units',
@@ -340,16 +380,21 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
             'expected adversity direction',
 
             'low_dose',
-            'NOEL',
-            'LOEL',
+            'NOAEL',
+            'LOAEL',
             'FEL',
             'high_dose',
+            'BMD',
+            'BMDL',
+            'trend test value',
+            'trend test result',
         ]
 
         num_doses = self.queryset.model.max_dose_count(self.queryset)
         rng = range(1, num_doses + 1)
         header.extend(['Dose {0}'.format(i) for i in rng])
         header.extend(['Significant {0}'.format(i) for i in rng])
+        header.append('Overall study confidence');
 
         # distinct applied last so that queryset can add annotations above
         # in self.queryset.model.max_dose_count
@@ -383,6 +428,16 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
 
         return significance_list
 
+    @staticmethod
+    def _get_bmd_values(bmd, preferred_units):
+        # only return BMD values if they're in the preferred units
+        if bmd and bmd['dose_units'] in preferred_units:
+            return [
+                bmd['output']['BMD'],
+                bmd['output']['BMDL']
+            ]
+        return [None, None]
+
     def _get_data_rows(self):
 
         preferred_units = self.kwargs.get('preferred_units', None)
@@ -391,7 +446,16 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
             doses = self._get_doses_list(ser, preferred_units)
-
+            study_id = ser['animal_group']['experiment']['study']['id']
+            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
+            if fROB == -1:
+                finalROB = 'N/A'
+            else:
+                fROB = (fROB+10)%11
+                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
+                    if cnt == fROB:
+                        finalROB = text
+				
             # build endpoint-group independent data
             row = [
                 ser['animal_group']['experiment']['study']['id'],
@@ -426,6 +490,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
                 ser['effect_subtype'],
                 ser['diagnostic'],
                 self._get_tags(ser),
+                self._get_observation_time_and_time_units(ser),
                 ser['observation_time_text'],
                 ser['data_type_label'],
                 self._get_doses_str(doses),
@@ -446,6 +511,14 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
             else:
                 row.extend([None] * 5)
 
+            # bmd/bmdl information
+            row.extend(self._get_bmd_values(ser['bmd'], preferred_units))
+
+            row.extend([
+                ser['trend_value'],
+                ser['trend_result'],
+            ])
+
             dose_list = [self._get_dose(doses, i) for i in range(len(doses))]
             sigs = self._get_significance_and_direction(ser['groups'])
 
@@ -454,6 +527,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
 
             row.extend(dose_list)
             row.extend(sigs)
+            row.append(finalROB)
 
             rows.append(row)
 

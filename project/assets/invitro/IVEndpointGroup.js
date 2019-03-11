@@ -12,9 +12,9 @@ class IVEndpointGroup {
             getDose = function(dose){
                 var txt = dose;
                 if(opts.isNOEL)
-                    txt += tbl.footnotes.add_footnote('NOEL (No Observed Effect Level)');
+                    txt += tbl.footnotes.add_footnote('NOAEL (No Observed Adverse Effect Level)');
                 if(opts.isLOEL)
-                    txt += tbl.footnotes.add_footnote('LOEL (Lowest Observed Effect Level)');
+                    txt += tbl.footnotes.add_footnote('LOAEL (Lowest Observed Adverse Effect Level)');
                 return txt;
             },
             getNumeric = function(val){

@@ -51,11 +51,11 @@ class RoBDomainForm(forms.ModelForm):
                                   args=[self.instance.assessment.pk])
         }
         if self.instance.id:
-            inputs['legend_text'] = 'Update risk of bias domain'
+            inputs['legend_text'] = 'Update study evaluation domain'
             inputs['help_text'] = 'Update an existing domain.'
         else:
-            inputs['legend_text'] = 'Create new risk of bias domain'
-            inputs['help_text'] = 'Create a new risk of bias domain.'
+            inputs['legend_text'] = 'Create new study evaluation domain'
+            inputs['help_text'] = 'Create a new study evaluation domain.'
 
         helper = BaseFormHelper(self, **inputs)
         helper['name'].wrap(cfl.Field, css_class='span6')
@@ -88,11 +88,11 @@ class RoBMetricForm(forms.ModelForm):
                                   args=[self.instance.domain.assessment.pk])
         }
         if self.instance.id:
-            inputs['legend_text'] = 'Update risk of bias metric'
+            inputs['legend_text'] = 'Update study evaluation metric'
             inputs['help_text'] = 'Update an existing metric.'
         else:
-            inputs['legend_text'] = 'Create new risk of bias metric'
-            inputs['help_text'] = 'Create a new risk of bias metric.'
+            inputs['legend_text'] = 'Create new study evaluation metric'
+            inputs['help_text'] = 'Create a new study evaluation metric.'
 
         helper = BaseFormHelper(self, **inputs)
         helper['name'].wrap(cfl.Field, css_class='span12')
@@ -127,7 +127,7 @@ class BaseRoBFormSet(BaseModelFormSet):
             metric = form.cleaned_data['metric']
             if metric in metrics:
                 raise forms.ValidationError(
-                    'Risk of bias metrics must be unique for each study.')
+                    'Study evaluation metrics must be unique for each study.')
             metrics.append(metric)
 
 
@@ -265,8 +265,8 @@ class RiskOfBiasCopyForm(forms.Form):
 
     def setHelper(self):
         inputs = {
-            'legend_text': 'Copy risk of bias approach from existing assessments',  # noqa
-            'help_text': 'Copy risk of bias metrics and domains from an existing HAWC assessment which you have access to.',  # noqa
+            'legend_text': 'Copy study evaluation approach from existing assessments',  # noqa
+            'help_text': 'Copy study evaluation metrics and domains from an existing HAWC assessment which you have access to.',  # noqa
             'cancel_url': reverse(
                 'riskofbias:arob_detail', args=[self.assessment.id])
         }

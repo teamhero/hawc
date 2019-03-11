@@ -1,3 +1,5 @@
+import _ from 'underscore';
+
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
@@ -52,7 +54,7 @@ const NoFinalReviewWarning = () => {
     return (
         <div className="container">
             <span className="alert alert-warning span12">
-                Final Reviewer assignment required for risk of bias aggregation graph.
+                Final Reviewer assignment required for study evaluation aggregation graph.
             </span>
         </div>
     );

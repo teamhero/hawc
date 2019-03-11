@@ -1,8 +1,8 @@
 from study.models import Study
+from riskofbias.models import RiskOfBiasScore
 from utils.helper import FlatFileExporter
 
 from . import models
-
 
 class OutcomeComplete(FlatFileExporter):
 
@@ -62,6 +62,8 @@ class OutcomeDataPivot(FlatFileExporter):
             'diagnostic',
             'age of outcome measurement',
 
+            'tags',
+
             'comparison set id',
             'comparison set name',
 
@@ -69,15 +71,26 @@ class OutcomeDataPivot(FlatFileExporter):
             'exposure name',
             'exposure metric',
             'exposure measured',
-            'exposure estimate',
-            'exposure lower bound interval',
-            'exposure upper bound interval',
             'dose units',
             'age of exposure',
+
+            # central tendency fields - start
+            'estimate type',
+            'estimate',
+            'variance type',
+            'variance',
+            'lower bound interval',
+            'upper bound interval',
+            'lower CI',
+            'upper CI',
+            'lower range',
+            'upper range',
+            # central tendency fields - end
 
             'result id',
             'result name',
             'result population description',
+            'result tags',
             'statistical metric',
             'statistical metric abbreviation',
             'statistical metric description',
@@ -91,18 +104,12 @@ class OutcomeDataPivot(FlatFileExporter):
             'exposure group name',
             'exposure group comparison name',
             'exposure group numeric',
+            'Reference/Exposure group',
+            'Result, summary numerical',
 
             'key',
             'result group id',
             'N',
-            'estimate',
-            'lower CI',
-            'upper CI',
-            'lower range',
-            'upper range',
-            'lower bound interval',
-            'upper bound interval',
-            'variance',
             'statistical significance',
             'statistical significance (numeric)',
             'main finding',
@@ -110,12 +117,22 @@ class OutcomeDataPivot(FlatFileExporter):
             'percent control mean',
             'percent control low',
             'percent control high',
-        ]
+            'Overall study confidence'
+       ]
 
     def _get_data_rows(self):
         rows = []
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
+            study_id = ser['study_population']['study']['id']
+            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
+            if fROB == -1:
+                finalROB = 'N/A'
+            else:
+                fROB = (fROB+10)%11
+                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
+                    if cnt == fROB:
+                        finalROB = text
             row = [
                 ser['study_population']['study']['id'],
                 ser['study_population']['study']['short_citation'],
@@ -135,6 +152,8 @@ class OutcomeDataPivot(FlatFileExporter):
                 ser['effect_subtype'],
                 ser['diagnostic'],
                 ser['age_of_measurement'],
+
+                self._get_tags(ser),
             ]
             for res in ser['results']:
                 row_copy = list(row)
@@ -152,56 +171,87 @@ class OutcomeDataPivot(FlatFileExporter):
                         res["comparison_set"]["exposure"]["name"],
                         res["comparison_set"]["exposure"]["metric"],
                         res["comparison_set"]["exposure"]["measured"],
-                        res["comparison_set"]["exposure"]["estimate"],
-                        res["comparison_set"]["exposure"]["lower_bound_interval"],
-                        res["comparison_set"]["exposure"]["upper_bound_interval"],
                         res["comparison_set"]["exposure"]["metric_units"]["name"],
                         res["comparison_set"]["exposure"]["age_of_exposure"],
                     ])
                 else:
                     row_copy.extend(['-'] * 6)
 
-                # outcome details
-                row_copy.extend([
-                    res['id'],
-                    res['name'],
-                    res['population_description'],
-                    res['metric']['metric'],
-                    res['metric']['abbreviation'],
-                    res['metric_description'],
-                    res['comments'],
-                    res['dose_response'],
-                    res['statistical_power'],
-                    res['statistical_test_results'],
-                    res['ci_units'],
-                ])
+                # now that we have multiple central tendencies, need to clone rows for each CT -START
+                rowsClonedForCT = 0
+                if res["comparison_set"]["exposure"]:
+                    cts = res["comparison_set"]["exposure"]["central_tendencies"]
+                    for ct in cts:
+                        row_copyCT = list(row_copy)
+                        row_copyCT.extend([
+                            ct["estimate_type"],
+                            ct["estimate"],
+                            ct["variance_type"],
+                            ct["variance"],
+                            ct["lower_bound_interval"],
+                            ct["upper_bound_interval"],
+                            ct["lower_ci"],
+                            ct["upper_ci"],
+                            ct["lower_range"],
+                            ct["upper_range"],
+                        ])
+                        self.addOutcomesAndGroupsToRowAndAppend(rows, res, ser, finalROB, row_copyCT)
+                        rowsClonedForCT += 1
 
-                for rg in res['results']:
-                    row_copy2 = list(row_copy)
-                    row_copy2.extend([
-                        rg['group']['group_id'],
-                        rg['group']['name'],
-                        rg['group']['comparative_name'],
-                        rg['group']['numeric'],
+                # if we had no ct's (should never happen) or no exposures, extend with dummy values
+                if rowsClonedForCT == 0:
+                    row_copy.extend(['-'] * 4)
+                    self.addOutcomesAndGroupsToRowAndAppend(rows, res, ser, finalROB, row_copy)
+                # clone rows for multiple central tendencies-END
 
-                        rg['id'],
-                        rg['id'],  # repeat for data-pivot key
-                        rg['n'],
-                        rg['estimate'],
-                        rg['lower_ci'],
-                        rg['upper_ci'],
-                        rg['lower_range'],
-                        rg['upper_range'],
-                        rg['lower_bound_interval'],
-                        rg['upper_bound_interval'],
-                        rg['variance'],
-                        rg['p_value_text'],
-                        rg['p_value'],
-                        rg['is_main_finding'],
-                        rg['main_finding_support'],
-                        rg['percentControlMean'],
-                        rg['percentControlLow'],
-                        rg['percentControlHigh'],
-                    ])
-                    rows.append(row_copy2)
         return rows
+
+    def addOutcomesAndGroupsToRowAndAppend(self, rows, res, ser, finalROB, row):
+        # outcome details
+        row.extend([
+            res['id'],
+            res['name'],
+            res['population_description'],
+            self._get_tags(res),
+            res['metric']['metric'],
+            res['metric']['abbreviation'],
+            res['metric_description'],
+            res['comments'],
+            res['dose_response'],
+            res['statistical_power'],
+            res['statistical_test_results'],
+            res['ci_units'],
+        ])
+
+        for rg in res['results']:
+            row_copy2 = list(row)
+            row_copy2.extend([
+                rg['group']['group_id'],
+                rg['group']['name'],
+                rg['group']['comparative_name'],
+                rg['group']['numeric'],
+                ser['study_population']['study']['short_citation'] + ' (' + rg['group']['name'] + ', n=' + str(rg['n']) + ')',
+                str(rg['estimate']) + ' (' + str(rg['lower_ci']) + ' - ' + str(rg['upper_ci']) + ')',
+
+                rg['id'],
+                rg['id'],  # repeat for data-pivot key
+                rg['n'],
+                rg['estimate'],
+                rg['lower_ci'],
+                rg['upper_ci'],
+                rg['lower_range'],
+                rg['upper_range'],
+                rg['lower_bound_interval'],
+                rg['upper_bound_interval'],
+                rg['variance'],
+                rg['p_value_text'],
+                rg['p_value'],
+                rg['is_main_finding'],
+                rg['main_finding_support'],
+                rg['percentControlMean'],
+                rg['percentControlLow'],
+                rg['percentControlHigh'],
+            ])
+            row_copy2.append(finalROB)
+
+            rows.append(row_copy2)

@@ -14,6 +14,10 @@ project/hawc/settings/local.py
 project/static/css/hawc_d3_aggregated.css
 project/celerybeat*
 
+#Vim swapfiles
+*.swp
+*.swo
+
 # folders
 __pycache__
 .idea/*
@@ -25,6 +29,8 @@ public/static
 public/media
 venv
 .vagrant
+sql
+.pytest_cache
 
 # javascript
 node_modules
@@ -49,3 +55,5 @@ notebooks/*.ipynb
 .DS_Store
 
 .vscode
+project/package-lock.json
+yarn.lock

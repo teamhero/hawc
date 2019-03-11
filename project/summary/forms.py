@@ -5,7 +5,9 @@ from django.db.models import QuerySet
 from crispy_forms import layout as cfl
 from django import forms
 from django.core.urlresolvers import reverse
+import pandas as pd
 from selectable import forms as selectable
+from xlrd import XLRDError, open_workbook
 
 from assessment.models import EffectTag
 from study.models import Study
@@ -35,7 +37,7 @@ class PrefilterMixin(object):
 
     PREFILTER_COMBO_FIELDS = [
         'studies',
-        'systems', 'organs', 'effects',
+        'systems', 'organs', 'effects', 'effect_subtypes',
         'episystems', 'epieffects',
         'iv_categories', 'iv_chemicals',
         'effect_tags',
@@ -96,6 +98,16 @@ class PrefilterMixin(object):
                     label="Effects to include",
                     help_text="""Select one or more effects to include in the plot.
                                  If no effect is selected, no endpoints will be available.""")),
+                ("prefilter_effect_subtype", forms.BooleanField(
+                    required=False,
+                    label="Prefilter by effect sub-type",
+                    help_text="Prefilter endpoints on plot to include selected effects.")),
+                ("effect_subtypes", forms.MultipleChoiceField(
+                    required=False,
+                    widget=forms.SelectMultiple,
+                    label="Effect Sub-Types to include",
+                    help_text="""Select one or more effect sub-types to include in the plot.
+                                 If no effect sub-type is selected, no endpoints will be available.""")),
             ])
 
         if "epi" in self.prefilter_include:
@@ -198,6 +210,10 @@ class PrefilterMixin(object):
                     self.fields["prefilter_epieffect"].initial = True
                     self.fields["epieffects"].initial = v
 
+            if k == "effect_subtype__in":
+                self.fields["prefilter_effect_subtype"].initial = True
+                self.fields["effect_subtypes"].initial = v
+
             if k == "effects__in":
                 self.fields["prefilter_effect_tag"].initial = True
                 self.fields["effect_tags"].initial = v
@@ -240,6 +256,8 @@ class PrefilterMixin(object):
             choices = Endpoint.objects.get_organ_choices(assessment_id)
         elif field_name == "effects":
             choices = Endpoint.objects.get_effect_choices(assessment_id)
+        elif field_name == "effect_subtypes":
+            choices = Endpoint.objects.get_effect_subtype_choices(assessment_id)
         elif field_name == "iv_categories":
             choices = IVEndpointCategory.get_choices(assessment_id)
         elif field_name == "iv_chemicals":
@@ -295,6 +313,9 @@ class PrefilterMixin(object):
 
         if data.get('prefilter_effect') is True:
             prefilters["effect__in"] = data.get("effects", [])
+
+        if data.get('prefilter_effect_subtype') is True:
+            prefilters["effect_subtype__in"] = data.get("effect_subtypes", [])
 
         if data.get('prefilter_episystem') is True:
             prefilters["system__in"] = data.get("episystems", [])
@@ -422,7 +443,9 @@ class VisualForm(forms.ModelForm):
             self.instance.assessment = assessment
         if visual_type is not None:  # required if value is 0
             self.instance.visual_type = visual_type
-
+        if self.instance.visual_type != 2:
+            self.fields['sort_order'].widget = forms.HiddenInput()
+			
     def setHelper(self):
 
         for fld in list(self.fields.keys()):
@@ -468,8 +491,8 @@ class EndpointAggregationSelectMultipleWidget(selectable.AutoCompleteSelectMulti
     """
 
     def render(self, name, value, attrs=None):
-        if value and isinstance(value, QuerySet):
-            value = Endpoint.objects.filter(id__in=value.values_list('id', flat=True))
+        if value:
+            value = [value.id for value in value]
         return super(selectable.AutoCompleteSelectMultipleWidget, self).render(name, value, attrs)
 
 
@@ -581,12 +604,35 @@ class DataPivotUploadForm(DataPivotForm):
         model = models.DataPivotUpload
         exclude = ('assessment', )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['file'].help_text += """<br>
-            For more details on saving in this format from Excel,
-            <a href="{0}" target="_blank">click here</a>.
-            """.format(reverse('summary:dp_excel-unicode'))
+    def clean(self):
+        cleaned_data = super().clean()
+        excel_file = cleaned_data.get('excel_file')
+        worksheet_name = cleaned_data.get('worksheet_name', '')
+        if worksheet_name == '':
+            worksheet_name = 0
+
+        if excel_file:
+            # see if it loads
+            try:
+                worksheet_names = open_workbook(file_contents=excel_file.read()).sheet_names()
+            except XLRDError:
+                self.add_error("excel_file", "Unable to read Excel file. Please upload an Excel file in XLSX format.")
+                return
+
+            # check worksheet name
+            if worksheet_name:
+                if worksheet_name not in worksheet_names:
+                    self.add_error('worksheet_name', f"Worksheet name {worksheet_name} not found.")
+                    return
+
+            df = pd.read_excel(excel_file, sheet_name=worksheet_name)
+
+            # check data
+            if df.shape[0] < 2:
+                self.add_error("excel_file", "Must contain at least 2 rows of data.")
+
+            if df.shape[1] < 2:
+                self.add_error("excel_file", "Must contain at least 2 columns.")
 
 
 class DataPivotQueryForm(PrefilterMixin, DataPivotForm):
