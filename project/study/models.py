@@ -312,7 +312,6 @@ class Study(Reference):
             'study-ask_author',
             'study-summary',
             'study-published',
-            'study-editable'
         )
 
     @staticmethod
