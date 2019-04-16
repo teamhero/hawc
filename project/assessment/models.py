@@ -209,6 +209,44 @@ class Assessment(models.Model):
     def get_crumbs(self):
         return get_crumbs(self)
 
+    # get the names of the rob headers for this study/assessment. Optionally filter by type (epi, animal). Does NOT return overall confidence.
+    def get_rob_visualization_headers(self, filter_by_requirement=None):
+        # importing it here to avoid circular import issues...
+        from riskofbias.models import RiskOfBiasMetric
+
+        if filter_by_requirement is not None:
+            if filter_by_requirement != "epi" and filter_by_requirement != "animal" and filter_by_requirement != "invitro":
+                print("WARNING - unsupported filter '%s' passed to get_final_rob_visualiation_headers" % filter_by_requirement)
+
+        rob_headers = []
+
+        metrics = RiskOfBiasMetric.objects.filter(domain__assessment=self)
+
+        for m in metrics:
+            # print("metric domain=[%s], name=[%s], shortname=[%s], useshort=[%s], requiredanimal=[%s], requiredepi=[%s]; overall? [%s]" % (m.domain, m.name, m.short_name, m.use_short_name, m.required_animal, m.required_epi, m.domain.is_overall_confidence))
+            include_metric_in_results = filter_by_requirement is None
+
+            if not include_metric_in_results:
+                if filter_by_requirement == "epi" and m.required_epi:
+                    include_metric_in_results = True
+                elif filter_by_requirement == "animal" and m.required_animal:
+                    include_metric_in_results = True
+                elif filter_by_requirement == "invitro" and m.required_invitro:
+                    include_metric_in_results = True
+
+            if include_metric_in_results:
+                domain = m.domain
+
+                if not domain.is_overall_confidence:
+                    if m.use_short_name:
+                        rob_header = ("RoB (%s)" % m.short_name)
+                    else:
+                        rob_header = ("RoB (%s: %s)" % (domain.name, m.name))
+
+                    rob_headers.append(rob_header)
+
+        return rob_headers
+
 
 class Attachment(models.Model):
     objects = managers.AttachmentManager()

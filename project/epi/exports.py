@@ -1,3 +1,5 @@
+import json
+
 from study.models import Study
 from riskofbias.models import RiskOfBiasScore
 from utils.helper import FlatFileExporter
@@ -41,8 +43,16 @@ class OutcomeComplete(FlatFileExporter):
 
 class OutcomeDataPivot(FlatFileExporter):
 
+    def get_rob_headers(self):
+        # grab a single study from this pivot and get the RoB visualization headers for it.
+        for obj in self.queryset:
+            assessment = obj.get_assessment()
+            return assessment.get_rob_visualization_headers("epi")
+
     def _get_header_row(self):
-        return [
+        self.queryset = self.queryset.distinct('pk')
+        
+        headers = [
             'study id',
             'study name',
             'study identifier',
@@ -126,21 +136,21 @@ class OutcomeDataPivot(FlatFileExporter):
             'percent control low',
             'percent control high',
             'Overall study confidence'
-       ]
+        ]
+        headers.extend(self.get_rob_headers())
+        return headers
 
     def _get_data_rows(self):
         rows = []
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
             study_id = ser['study_population']['study']['id']
-            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
-            if fROB == -1:
-                finalROB = 'N/A'
-            else:
-                fROB = (fROB+10)%11
-                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
-                    if cnt == fROB:
-                        finalROB = text
+
+            study = Study.objects.get(pk=study_id)
+            rob_data = study.get_final_rob_visualization_data("epi")
+            finalROB = rob_data.overall_score
+            robScores = rob_data.rob_scores
+
             row = [
                 ser['study_population']['study']['id'],
                 ser['study_population']['study']['short_citation'],
@@ -212,6 +222,40 @@ class OutcomeDataPivot(FlatFileExporter):
                     self.addOutcomesAndGroupsToRowAndAppend(rows, res, ser, finalROB, row_copy)
                 # clone rows for multiple central tendencies-END
 
+                for rg in res['results']:
+                    row_copy2 = list(row_copy)
+                    row_copy2.extend([
+                        rg['group']['group_id'],
+                        rg['group']['name'],
+                        rg['group']['comparative_name'],
+                        rg['group']['numeric'],
+                        ser['study_population']['study']['short_citation'] + ' (' + rg['group']['name'] + ', n=' + str(rg['n']) + ')',
+                        str(rg['estimate']) + ' (' + str(rg['lower_ci']) + ' - ' + str(rg['upper_ci']) + ')',
+
+                        rg['id'],
+                        rg['id'],  # repeat for data-pivot key
+                        rg['n'],
+                        rg['estimate'],
+                        rg['lower_ci'],
+                        rg['upper_ci'],
+                        rg['lower_range'],
+                        rg['upper_range'],
+                        rg['lower_bound_interval'],
+                        rg['upper_bound_interval'],
+                        rg['variance'],
+                        rg['p_value_text'],
+                        rg['p_value'],
+                        rg['is_main_finding'],
+                        rg['main_finding_support'],
+                        rg['percentControlMean'],
+                        rg['percentControlLow'],
+                        rg['percentControlHigh'],
+                    ])
+                    row_copy2.append(finalROB)
+
+                    row_copy2.extend(robScores)
+ 
+                    rows.append(row_copy2)
         return rows
 
     def addOutcomesAndGroupsToRowAndAppend(self, rows, res, ser, finalROB, row):

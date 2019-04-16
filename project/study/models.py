@@ -356,47 +356,48 @@ class Study(Reference):
         else:
             return '<i title="Study is locked" class="fa fa-lock" aria-hidden="true"></i>'
     
-    # get the names of the rob headers for this study/assessment
-    def get_final_rob_visualization_headers(self):
-        rob_headers = []
-        for score in self.get_final_rob().scores.all():
-            metric = score.metric
-            domain = metric.domain
-
-            if not domain.is_overall_confidence:
-                if metric.use_short_name:
-                    rob_header = ("RoB (%s)" % metric.short_name)
-                else:
-                    rob_header = ("RoB (%s: %s)" % (domain.name, metric.name))
-
-                rob_headers.append(rob_header)
-        return rob_headers
-
     # fetch the overall and individual metric RoB scores for this study, in a format that the DataPivot and other
     # visualizations can use -- JSON encoded strings. rob_scores should correspond to the headers retrieved from
-    # get_final_rob_visualization_headers
-    def get_final_rob_visualization_data(self):
+    # Assessment.get_rob_visualization_headers
+    def get_final_rob_visualization_data(self, data_type_restriction):
         overall_score = None
         rob_scores = []
 
-        for score in self.get_final_rob().scores.all():
-            if not score.metric.domain.is_overall_confidence:
-                # print("study [%s]: domain=[%s], metric=[%s], score=[%s]" % (ser['study_population']['study']['short_citation'], score.metric.domain.name, score.metric.name, score.score))
-                rob_scores.append(json.dumps({
-                    "sortValue": "%s" % score.score, # sort js code expects strings; see DataPivotVisualization::alphanum
-                    "display": score.get_score_display()
-                }))
-            else:
-                overall_display = score.get_score_display()
-                # if we have a -1 or a lookup issue (get_score_display not finding an
-                # entry in RISK_OF_BIAS_SCORE_CHOICES), treat it as n/a
-                if (score.score == -1 or isinstance(overall_display, int)):
-                    overall_display = "N/A"
+        finalRoB = self.get_final_rob()
 
-                overall_score = json.dumps({
-                    "sortValue": "%s" % score.score,
-                    "display": overall_display
-                })
+        if finalRoB is not None:
+            for score in self.get_final_rob().scores.all():
+                if not score.metric.domain.is_overall_confidence:
+                    # print("study [%s]: domain=[%s], metric=[%s], score=[%s]" % (ser['study_population']['study']['short_citation'], score.metric.domain.name, score.metric.name, score.score))
+                    rob_scores.append(json.dumps({
+                        "sortValue": "%s" % score.score, # sort js code expects strings; see DataPivotVisualization::alphanum
+                        "display": score.get_score_display()
+                    }))
+                else:
+                    overall_display = score.get_score_display()
+                    # if we have a -1 or a lookup issue (get_score_display not finding an
+                    # entry in RISK_OF_BIAS_SCORE_CHOICES), treat it as n/a
+                    if (score.score == -1 or isinstance(overall_display, int)):
+                        overall_display = "N/A"
+
+                    overall_score = json.dumps({
+                        "sortValue": "%s" % score.score,
+                        "display": overall_display
+                    })
+        else:
+            # if this study has no final RoB data, we still want to put some placeholder data there. So fetch the headers and add dummy values.
+            headers = self.get_assessment().get_rob_visualization_headers(data_type_restriction)
+
+            for h in headers:
+                rob_scores.append(json.dumps({
+                    "sortValue": "-1",
+                    "display": "N/A"
+                }))
+
+            overall_score = json.dumps({
+                "sortValue": "-1",
+                "display": "N/A"
+            })
 
         return StudyRiskOfBiasVisualizationData(overall_score, rob_scores)
 
@@ -404,7 +405,13 @@ class Study(Reference):
         try:
             return self.riskofbiases.get(final=True, active=True)
         except ObjectDoesNotExist:
-            return self.riskofbiases.objects.none()
+            # fails; RelatedManager doesn't have an "objects" attribute...
+            # return self.riskofbiases.objects.none()
+
+            # self.riskofbiases is riskofbias.RiskOfBias.None at this point; .all() give us an empty QuerySet
+            # return self.riskofbiases.all()
+
+            return None
         except MultipleObjectsReturned:
             raise ValidationError(
                 'Multiple active final study evaluation reviews for "{}", '

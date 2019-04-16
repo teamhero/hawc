@@ -93,6 +93,12 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
     visualizations.
     """
 
+    def get_rob_headers(self):
+        # grab a single study from this pivot and get the RoB visualization headers for it.
+        for obj in self.queryset:
+            assessment = obj.get_assessment()
+            return assessment.get_rob_visualization_headers("animal")
+
     @classmethod
     def _get_doses_list(cls, ser, preferred_units):
         # compact the dose-list to only one set of dose-units; using the
@@ -157,7 +163,8 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
     def _get_header_row(self):
         # move qs.distinct() call here so we can make qs annotations.
         self.queryset = self.queryset.distinct('pk')
-        return [
+        
+        headers = [
             'study id',
             'study name',
             'study identifier',
@@ -227,6 +234,8 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'percent upper ci',
 			'Overall study confidence'
         ]
+        headers.extend(self.get_rob_headers())
+        return headers
 
     def _get_data_rows(self):
 
@@ -237,15 +246,11 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             ser = obj.get_json(json_encode=False)
             doses = self._get_doses_list(ser, preferred_units)
             study_id = ser['animal_group']['experiment']['study']['id']
-            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
-            if fROB == -1:
-                finalROB = 'N/A'
-            else:
-                fROB = (fROB+10)%11
-                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
-                    if cnt == fROB:
-                        finalROB = text
 
+            study = Study.objects.get(pk=study_id)
+            rob_data = study.get_final_rob_visualization_data("animal")
+            finalROB = rob_data.overall_score
+            robScores = rob_data.rob_scores                                                                            
             # build endpoint-group independent data
             row = [
                 ser['animal_group']['experiment']['study']['id'],
@@ -331,6 +336,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
                     eg['percent_upper_ci'],
                 ])
                 row_copy.append(finalROB)
+                row_copy.extend(robScores)
                 rows.append(row_copy)
 
         return rows
@@ -396,9 +402,12 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
         header.extend(['Significant {0}'.format(i) for i in rng])
         header.append('Overall study confidence');
 
+        header.extend(self.get_rob_headers())
+
         # distinct applied last so that queryset can add annotations above
         # in self.queryset.model.max_dose_count
         self.queryset = self.queryset.distinct('pk')
+
         self.num_doses = num_doses
 
         return header
@@ -447,14 +456,11 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
             ser = obj.get_json(json_encode=False)
             doses = self._get_doses_list(ser, preferred_units)
             study_id = ser['animal_group']['experiment']['study']['id']
-            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
-            if fROB == -1:
-                finalROB = 'N/A'
-            else:
-                fROB = (fROB+10)%11
-                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
-                    if cnt == fROB:
-                        finalROB = text
+
+            study = Study.objects.get(pk=study_id)
+            rob_data = study.get_final_rob_visualization_data("animal")
+            finalROB = rob_data.overall_score
+            robScores = rob_data.rob_scores                                                                            
 				
             # build endpoint-group independent data
             row = [
@@ -528,6 +534,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
             row.extend(dose_list)
             row.extend(sigs)
             row.append(finalROB)
+            row.extend(robScores)
 
             rows.append(row)
 
