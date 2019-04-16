@@ -26,6 +26,12 @@ def getDoseRange(ser):
 
 class DataPivotEndpoint(FlatFileExporter):
 
+    def get_rob_headers(self):
+        # grab a single study from this pivot and get the RoB visualization headers for it.
+        for obj in self.queryset:
+            assessment = obj.get_assessment()
+            return assessment.get_rob_visualization_headers("invitro")
+
     def _get_header_row(self):
         header = [
             'study id',
@@ -69,6 +75,7 @@ class DataPivotEndpoint(FlatFileExporter):
             'number of doses',
             'Overall study confidence'
         ]
+        header.extend(self.get_rob_headers())
 
         num_cats = 0
         if self.queryset.count() > 0:
@@ -104,14 +111,11 @@ class DataPivotEndpoint(FlatFileExporter):
         for obj in self.queryset:
             ser = obj.get_json(json_encode=False)
             study_id = ser['experiment']['study']['id']
-            fROB = Study.objects.get(pk=study_id).get_overall_confidence()
-            if fROB == -1:
-                finalROB = 'N/A'
-            else:
-                fROB = (fROB+10)%11
-                for cnt, text in RiskOfBiasScore.RISK_OF_BIAS_SCORE_CHOICES:
-                    if cnt == fROB:
-                        finalROB = text
+
+            study = Study.objects.get(pk=study_id)
+            rob_data = study.get_final_rob_visualization_data("invitro")
+            finalROB = rob_data.overall_score
+            robScores = rob_data.rob_scores                                                                            
 
             doseRange = getDoseRange(ser)
 
@@ -174,6 +178,8 @@ class DataPivotEndpoint(FlatFileExporter):
                 number_doses,
                 finalROB
             ]
+
+            row.extend(robScores)
 
             # extend rows to include blank placeholders, and apply
             cats.extend([None] * (self.num_cats-len(cats)))
