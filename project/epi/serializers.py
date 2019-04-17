@@ -40,6 +40,11 @@ class ExposureLinkSerializer(serializers.ModelSerializer):
         model = models.Exposure
         fields = ('id', 'name', 'url')
 
+class StudyPopulationCountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Country
+        fields = ('code', 'name')
+
 
 class OutcomeLinkSerializer(serializers.ModelSerializer):
     url = serializers.CharField(source='get_absolute_url', read_only=True)
@@ -111,7 +116,7 @@ class StudyPopulationSerializer(serializers.ModelSerializer):
     exposures = ExposureLinkSerializer(many=True)
     can_create_sets = serializers.BooleanField(read_only=True)
     comparison_sets = ComparisonSetLinkSerializer(many=True)
-    country = serializers.CharField(source='country.name', read_only=True)
+    countries = StudyPopulationCountrySerializer(many=True)
     url = serializers.CharField(source='get_absolute_url', read_only=True)
     design = serializers.CharField(source='get_design_display', read_only=True)
 
