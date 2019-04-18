@@ -37,6 +37,21 @@ class RelatedLookup(ModelLookup):
     """
     related_filter = None  # filter-string
 
+    # given a string path like "related_item__some_field__foo". Rather than having to at compile time do:
+    # obj.related_item.some_field.foo
+    # this method instead drills down into the object. I was unable to find a Django method that would
+    # do this for me, but if one exists, this could either be ripped out or rewritten to use it.
+    def get_underscore_field_val(self, obj, underscore_path, default_val = None):
+        driller = obj
+        try:
+            path_chunks = underscore_path.split("__")
+            for chunk in path_chunks:
+                driller = getattr(driller, chunk)
+        except:
+            return default_val
+
+        return driller
+
     def get_query(self, request, term):
         id_ = tryParseInt(request.GET.get('related'), -1)
 

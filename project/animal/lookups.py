@@ -104,6 +104,8 @@ class EndpointStatisticalTestLookup(DistinctStringLookup):
 
 
 class EndpointByStudyLookup(RelatedLookup):
+    user_specified_search_fields = [ "animal_group__experiment__name", "animal_group__name", "name" ]
+
     # Return names of endpoints available for a particular study
     model = models.Endpoint
     search_fields = (
@@ -114,14 +116,41 @@ class EndpointByStudyLookup(RelatedLookup):
     related_filter = 'animal_group__experiment__study'
 
     def get_item_label(self, obj):
+        placeholder = " | ".join(["{}"] * len(self.user_specified_search_fields))
+
+        vals = []
+        for f in self.user_specified_search_fields:
+            vals.append(self.get_underscore_field_val(obj, f))
+
+        return placeholder.format(*vals)
+        """
         return "{} | {} | {}".format(
             obj.animal_group.experiment,
             obj.animal_group,
             obj
         )
+        """
 
     def get_item_value(self, obj):
         return self.get_item_label(obj)
+
+    def get_query(self, request, term):
+        order_by = request.GET['order_by']
+        search_fields = request.GET.get('search_fields')
+        # preserve this so we can return a dynamic representation of the Endpoint...
+        self.user_specified_search_fields = search_fields.split(",")
+
+        # update the search_fields tuple to match the fields we're going to show...
+        self.search_fields = tuple([ f + "__icontains" for f in self.user_specified_search_fields ])
+
+        if len(self.search_fields) > 0:
+            # we distinct on the whole row; if we specify just a single column, we also have to sort by it.
+            return super().get_query(request, term)\
+                .distinct()\
+                .order_by(order_by)
+                # .distinct('name')\
+        else:
+            return None
 
 
 class EndpointByAssessmentLookup(RelatedLookup):
