@@ -23,6 +23,10 @@ class ExperimentForm(ModelForm):
     class Meta:
         model = models.Experiment
         exclude = ('study',)
+        # need to list them to get has_multiple_generations in right position...
+        fields = ( 'name', 'type', 'has_multiple_generations', 'chemical', 'cas',
+                    'chemical_source', 'purity_available', 'purity_qualifier', 'purity',
+                    'vehicle', 'guideline_compliance', 'description',)
 
     def __init__(self, *args, **kwargs):
         parent = kwargs.pop('parent', None)
@@ -46,7 +50,12 @@ class ExperimentForm(ModelForm):
             lookup_class=lookups.ExpGlpLookup,
             allow_new=True)
 
+        # rather than a checkbox, let's match the display on the experiment_detail page
+        self.fields['has_multiple_generations'].widget = forms.Select(
+            choices=((True, 'Yes'), (False, 'No')))
+
         self.helper = self.setHelper()
+
 
     def setHelper(self):
 
@@ -79,7 +88,7 @@ class ExperimentForm(ModelForm):
 
         helper = BaseFormHelper(self, **inputs)
         helper.form_class = None
-        helper.add_fluid_row('name', 2, "span6")
+        helper.add_fluid_row('name', 3, "span4")
         helper.add_fluid_row('chemical', 3, "span4")
         helper.add_fluid_row('purity_available', 4, ["span2", "span2", "span2", "span6"])
         return helper

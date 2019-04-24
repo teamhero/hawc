@@ -131,6 +131,9 @@ class Experiment(models.Model):
     last_updated = models.DateTimeField(
         auto_now=True)
 
+    has_multiple_generations = models.BooleanField(
+        default=False)
+
     COPY_NAME = 'experiments'
 
     def __str__(self):
@@ -140,7 +143,8 @@ class Experiment(models.Model):
         return reverse('animal:experiment_detail', args=[str(self.pk)])
 
     def is_generational(self):
-        return self.type in ["Rp", "Dv"]
+        # return self.type in ["Rp", "Dv"]
+        return self.has_multiple_generations
 
     def get_assessment(self):
         return self.study.get_assessment()
@@ -167,7 +171,8 @@ class Experiment(models.Model):
             'experiment-purity',
             'experiment-vehicle',
             'experiment-guideline_compliance',
-            'experiment-description'
+            'experiment-description',
+            'experiment-has_multiple_generations'
         )
 
     @staticmethod
@@ -185,7 +190,8 @@ class Experiment(models.Model):
             ser['purity'],
             ser['vehicle'],
             ser['guideline_compliance'],
-            cleanHTML(ser['description'])
+            cleanHTML(ser['description']),
+            ser['has_multiple_generations']
         )
 
     @classmethod
