@@ -403,6 +403,8 @@ class DataPivot(models.Model):
         unique_together = (("assessment", "slug"), )
         ordering = ('title', )
 
+    COPY_NAME = "data_pivots"
+
     def __str__(self):
         return self.title
 
@@ -460,9 +462,27 @@ class DataPivot(models.Model):
     def copy_across_assessments(copy_to_assessment, copy_from_assessment):
         # copy Data pivots to assessment
         for dp in copy_from_assessment.datapivots.all():
-            dp.id = None
-            dp.assessment = copy_to_assessment
-            dp.save()
+            data_pivot_old = dp
+            if DataPivotUpload.objects.filter(
+                assessment=copy_from_assessment
+            ).count() > 0:
+                DataPivotUpload.copy_across_data_pivot_upload(copy_from_assessment, copy_to_assessment, data_pivot_old)
+            
+            if DataPivotQuery.objects.filter(
+                assessment=copy_from_assessment
+            ).count() > 0:
+                #dp.id = None
+                #dp.assessment = copy_to_assessment
+                #dp.slug = dp.slug + '-c'
+                #dp.save()
+                DataPivotQuery.copy_across_data_pivot_query(copy_from_assessment, copy_to_assessment, data_pivot_old)
+                
+            if DataPivotUpload.objects.filter(assessment=copy_from_assessment).count() < 0 and DataPivotQuery.objects.filter(
+                assessment=copy_from_assessment
+            ).count() < 0:
+                dp.id = None
+                dp.assessment = copy_to_assessment
+                dp.save()  
 
 
 class DataPivotUpload(DataPivot):
@@ -482,6 +502,20 @@ class DataPivotUpload(DataPivot):
     @property
     def visual_type(self):
         return "Data pivot (file upload)"
+
+    @staticmethod
+    def copy_across_data_pivot_upload(copy_from_assessment, copy_to_assessment, data_pivot):
+        data_pivot_uploads = DataPivotUpload.objects.filter(assessment=copy_from_assessment)
+        for upload in data_pivot_uploads:
+            data_pivot = upload.datapivot_ptr
+            data_pivot.id = None
+            data_pivot.assessment = copy_to_assessment
+            data_pivot.save()
+
+            upload.id = None
+            upload.datapivot_ptr = data_pivot
+            upload.assessment = copy_to_assessment
+            upload.save()
 
 
 class DataPivotQuery(DataPivot):
@@ -666,7 +700,27 @@ class DataPivotQuery(DataPivot):
             return "Data pivot (in vitro)"
         else:
             raise ValueError("Unknown type")
+    
+    @staticmethod
+    def copy_across_data_pivot_query(copy_from_assessment, copy_to_assessment, data_pivot):
+        data_pivot_queries = DataPivotQuery.objects.filter(assessment=copy_from_assessment)
+        for query in data_pivot_queries:
+            data_pivot = query.datapivot_ptr
+            data_pivot.id = None
+            data_pivot.assessment = copy_to_assessment
+            data_pivot.save()
 
+            query.id = None
+            query.datapivot_ptr = data_pivot
+            query.assessment = copy_to_assessment
+            #query.title = query.title + "-c"
+            #query.slug = query.slug + "-c"
+            query.save()
+
+            #query.id = None
+            #query.datapivot_ptr = dp
+            #query.assessment = copy_to_assessment
+            #query.save()
 
 class Prefilter(object):
     """
