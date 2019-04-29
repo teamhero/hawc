@@ -10,7 +10,10 @@ class DynamicFormset {
         this.$el = $formset;
         this.prefix = prefix;
         this.options = options || {oneFormRequired: false};
-        this.$el.find('.formset th').tooltip({trigger: 'hover'});
+        this.$el.find('.formset th').tooltip({
+			trigger: 'hover',
+			tooltipClass: "formsetFieldLabelTooltip",
+		});
         this.$el.on('click', '#addFormToFormset', this.addForm.bind(this));
         this.$el.on('click', '.deleteForm', this.deleteForm.bind(this));
     }

@@ -140,6 +140,10 @@ ul.sponsors {
   transition: all 0.2s ease-in-out;
 }
 
+.formsetFieldLabelTooltip {
+	width: 700px;
+}
+
 
 /* Risk of Bias */
 .rob_score{
