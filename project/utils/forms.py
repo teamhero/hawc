@@ -88,6 +88,20 @@ class BaseFormHelper(cf.FormHelper):
             self.layout.index(firstField),
             cfl.HTML("""<h4>{0}</h4>""".format(text)))
 
+    def find_layout_idx_for_field_name(self, searchName):
+        layoutIdx = 0
+        for layoutElement in self.layout:
+            if isinstance(layoutElement, cfl.LayoutObject):
+                for fieldName in layoutElement.get_field_names():
+                    if isinstance(fieldName, list) and len(fieldName) > 1:
+                        if fieldName[1] == searchName:
+                            return layoutIdx
+            elif isinstance(layoutElement, str):
+                if layoutElement == searchName:
+                    return layoutIdx
+            layoutIdx += 1
+        return None
+
 
 class CopyAsNewSelectorForm(forms.Form):
     label = None

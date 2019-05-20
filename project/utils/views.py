@@ -63,6 +63,52 @@ class AssessmentPermissionsMixin(object):
     by the assessment object but not including the assessment object.
     """
 
+    # new method - tries to determine the relevant study for a given operation,
+    # and then checks its editable status. If not set, raises a PermissionDenied.
+    def deny_for_locked_study(self, user, assessment, obj):
+        # print("#" * 100)
+        # print("fetching study for class [" + str(type(self)) + "] with model [" + str(self.model) + "]")
+        # print("relevant instance is [" + str(type(obj)) + "]: [" + str(obj) + "]")
+
+        study_editability = self.check_study_editability(user, assessment, obj)
+        if study_editability is not None:
+            if study_editability is False:
+                # print("x" * 100) # bailing early
+                raise PermissionDenied
+
+        # print("#" * 100)
+
+    def check_study_editability(self, user, assessment, obj):
+        # retrieve the related study from this instance
+        # could also do this by defining some kind of base class that Study, Experiment, etc.
+        # inherit from, and define the get_study method on there. Then we just
+        # check an "is-a" instead of looking for the attribute manually.
+        study = None
+        study_fetch_method = getattr(obj, 'get_study', None)
+        if callable(study_fetch_method):
+            study = study_fetch_method()
+
+        if assessment.user_can_edit_object(user):
+            if study is not None:
+                if study.user_can_edit_study(assessment, user):
+                    return True
+                else:
+                    return False
+            return None
+        else:
+            return False
+
+    # could be a model element (Study, Endpoint, etc.) or a view to create a new one (EndpointCreate, etc.)
+    def get_contextual_object_for_study_editability_check(self):
+        if hasattr(self, "object") and self.object is not None:
+            # looking at a specific object directly
+            return self.object
+        elif hasattr(self, "parent") and self.parent is not None:
+            # looking at a Create view; can look at the parent/container object to determine study editable status
+            return self.parent
+        else:
+            return None
+
     def permission_check_user_can_view(self):
         # Check to see if the user is being re-directed from the EPA's Single-Sign-On portal
         apps.get_model("myuser", "HAWCUser").objects.lookup_by_epa_sso_uid(self.request)
@@ -79,6 +125,7 @@ class AssessmentPermissionsMixin(object):
         if self.model == Assessment:
             canEdit = self.assessment.user_can_edit_assessment(self.request.user)
         else:
+            self.deny_for_locked_study(self.request.user, self.assessment, self.get_contextual_object_for_study_editability_check())
             canEdit = self.assessment.user_can_edit_object(self.request.user)
         if not canEdit:
             raise PermissionDenied
@@ -150,7 +197,14 @@ class AssessmentPermissionsMixin(object):
             return {'view': False, 'edit': False, 'edit_assessment': False}
 
         logging.debug('Permissions added')
-        return self.assessment.user_permissions(self.request.user)
+        user_perms = self.assessment.user_permissions(self.request.user)
+
+        contextual_obj = self.get_contextual_object_for_study_editability_check()
+        study_perm_check = self.check_study_editability(self.request.user, self.assessment, contextual_obj)
+        if study_perm_check is not None:
+            user_perms['edit'] = study_perm_check
+
+        return user_perms
 
 
 class TimeSpentOnPageMixin(object):
@@ -280,6 +334,10 @@ class CopyAsNewSelectorMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # prevents users from doing a "Copy as New" / "Copy from Existing" etc. on a study that has just been locked.
+        if context['obj_perms']['edit'] is False:
+            raise PermissionDenied
+        
         related_id = self.get_related_id()
         context['form'] = self.form_class(parent_id=related_id)
         return context
