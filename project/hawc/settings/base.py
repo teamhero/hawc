@@ -25,6 +25,7 @@ if (len(_admin_names) > 0 and len(_admin_emails) > 0):
     ADMINS = list(zip(_admin_names.split('|'), _admin_emails.split('|')))
 MANAGERS = ADMINS
 
+HAWC_FLAVOR = os.getenv("HAWC_FLAVOR", "EPA")
 
 # Template processors
 TEMPLATES = [
@@ -44,6 +45,7 @@ TEMPLATES = [
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.request',
+                'hawc.context_processors.from_settings',
             ),
         }
     },
@@ -125,7 +127,11 @@ CELERY_BROKER_URL = os.getenv('DJANGO_BROKER_URL')
 CELERY_RESULT_EXPIRES = 60 * 60 * 5  # 5 hours
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_ACCEPT_CONTENT = ('json', 'pickle', )
-
+CELERY_IMPORTS = (
+    'assessment.tasks',
+    'bmd.tasks',
+    'lit.tasks',
+)
 
 # Cache settings
 CACHES = {
@@ -268,7 +274,7 @@ BMDS_USERNAME = os.getenv('BMDS_USERNAME', 'username')
 BMDS_PASSWORD = os.getenv('BMDS_PASSWORD', 'password')
 
 # increase allowable fields in POST for updating reviewers
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 # Chemspider token details
 CHEMSPIDER_TOKEN = os.getenv('CHEMSPIDER_TOKEN', '')
@@ -302,3 +308,10 @@ WEBPACK_LOADER = {
         'IGNORE': ['.+/.map']
     }
 }
+
+EMAIL_HOST = os.environ.get('DJANGO_EMAIL_HOST', None)
+EMAIL_HOST_USER = os.environ.get('DJANGO_EMAIL_USER', None)
+EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_EMAIL_PASSWORD', None)
+EMAIL_PORT = int(os.environ.get('DJANGO_EMAIL_PORT', 25))
+# EMAIL_USE_SSL = bool(os.environ.get('DJANGO_EMAIL_USE_SSL') == 'False')
+EMAIL_USE_SSL = False
