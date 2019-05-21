@@ -8,8 +8,6 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 
-from model_utils import Choices
-
 from reversion import revisions as reversion
 
 from assessment.models import Assessment
