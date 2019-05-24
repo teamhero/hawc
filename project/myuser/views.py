@@ -36,7 +36,7 @@ def create_account(request):
             user.save()
 
             # create a new user profile
-             models.UserProfile.objects.create(user=user)
+            models.UserProfile.objects.create(user=user)
 
             # after save, log user in
             user = authenticate(request, email=form.cleaned_data['email'], password=pw)
