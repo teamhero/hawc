@@ -40,7 +40,9 @@ class HAWCUser(AbstractBaseUser, PermissionsMixin):
     )
 
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
-
+    license_v1_accepted = models.BooleanField(default=False)
+    license_v2_accepted = models.BooleanField(default=False)
+    
     epa_sso_uid = models.CharField(
         _("EPA single-sign-on User ID"),
         max_length=254,
