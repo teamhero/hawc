@@ -211,10 +211,10 @@ class Assessment(models.Model):
         else:
             return (user in self.project_manager.all())
 
-    def user_can_view_attachments(self, user):
+    def user_is_part_of_team(self, user):
         """
         Used for permissions-checking if attachments for a study can be
-        viewed. Checks to ensure user is authenticated and >= team-member.
+        viewed. Checks to ensure user is part of the team.
         """
         if user.is_superuser:
             return True
@@ -450,7 +450,7 @@ class BaseEndpoint(models.Model):
     # Some denormalization but required for efficient capture of all endpoints
     # in assessment; major use case in HAWC.
 
-    name = models.CharField(max_length=128, verbose_name="Endpoint name")
+    name = models.CharField(max_length=128, verbose_name="Endpoint/Adverse outcome")
     effects = models.ManyToManyField(EffectTag, blank=True, verbose_name="Tags")
     created = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)

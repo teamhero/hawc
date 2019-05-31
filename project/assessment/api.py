@@ -40,7 +40,8 @@ class AssessmentLevelPermissions(permissions.BasePermission):
     list_actions = ['list', 'create']
 
     def has_object_permission(self, request, view, obj):
-        view.assessment = obj.get_assessment()
+        if not hasattr(view, 'assessment'):
+            view.assessment = obj.get_assessment()
         if request.method in permissions.SAFE_METHODS:
             return view.assessment.user_can_view_object(request.user)
         elif obj == view.assessment:
@@ -205,12 +206,45 @@ class AssessmentEndpointList(AssessmentViewset):
             'url': "{}{}".format(app_url, 'animal-groups/'),
         })
 
+        count = apps.get_model('animal', 'DosingRegime')\
+            .objects\
+            .get_qs(instance.id)\
+            .count()
+        instance.items.append({
+            "count": count,
+            "title": "animal bioassay dosing regimes",
+            'type': 'dosing-regime',
+            'url': "{}{}".format(app_url, 'dosing-regime/'),
+        })
+
         # epi
         instance.items.append({
             "count": instance.outcome_count,
             "title": "epidemiological outcomes assessed",
             'type': 'epi',
             'url': "{}{}".format(app_url, 'epi/')
+        })
+
+        count = apps.get_model('epi', 'StudyPopulation')\
+            .objects\
+            .get_qs(instance.id)\
+            .count()
+        instance.items.append({
+            "count": count,
+            "title": "epi study populations",
+            'type': 'study-populations',
+            'url': "{}{}".format(app_url, 'study-populations/'),
+        })
+
+        count = apps.get_model('epi', 'Exposure')\
+            .objects\
+            .get_qs(instance.id)\
+            .count()
+        instance.items.append({
+            "count": count,
+            "title": "epi exposures",
+            'type': 'exposures',
+            'url': "{}{}".format(app_url, 'exposures/'),
         })
 
         # in vitro
@@ -242,6 +276,18 @@ class AssessmentEndpointList(AssessmentViewset):
             "title": "studies",
             "type": "study",
             "url": "{}{}".format(app_url, 'study/'),
+            })
+
+        # reference
+        count = apps.get_model('lit', 'Reference')\
+            .objects\
+            .get_qs(instance.id)\
+            .count()
+        instance.items.append({
+            "count": count,
+            "title": "references",
+            "type": "reference",
+            "url": "{}{}".format(app_url, 'reference/'),
             })
 
         serializer = self.get_serializer(instance)
