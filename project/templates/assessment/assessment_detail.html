@@ -10,7 +10,7 @@
 
 {% block content %}
   <h1>{{object}}
-    {% if crud == "Read" %}
+    {% if crud == "Read" and request.user.is_authenticated %}
       <div class="btn-group pull-right">
         <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Actions
           <span class="caret"></span>

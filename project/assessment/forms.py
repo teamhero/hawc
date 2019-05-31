@@ -196,10 +196,7 @@ class StrainForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         kwargs.pop('parent', None)
-        super().__init__(*args, **kwargs)
-
-    def clean_name(self):
-        return self.cleaned_data['name'].title()
+        super().__init__(*args, **kwargs) 
 
 
 class DoseUnitsForm(forms.ModelForm):
