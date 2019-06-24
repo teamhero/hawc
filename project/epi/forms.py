@@ -959,7 +959,7 @@ class GroupResultForm(forms.ModelForm):
 
     class Meta:
         model = models.GroupResult
-        exclude = ('result', 'significant') # significant will be calculated based on value of significance_level
+        exclude = ('result', )
 
     def __init__(self, *args, **kwargs):
         study_population = kwargs.pop('study_population', None)

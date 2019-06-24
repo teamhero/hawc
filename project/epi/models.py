@@ -1565,6 +1565,14 @@ class Result(models.Model):
 class GroupResult(models.Model):
     objects = managers.GroupResultManager()
 
+    P_VALUE_QUALIFIER_CHOICES = (
+        (' ', '-'),
+        ('-', 'n.s.'),
+        ('<', '<'),
+        ('=', '='),
+        ('>', '>'),
+    )
+
     MAIN_FINDING_CHOICES = (
         (3, "not-reported"),
         (2, "supportive"),
@@ -1610,16 +1618,19 @@ class GroupResult(models.Model):
         null=True,
         verbose_name='Upper range',
         help_text="Note upper range value when available. " + HAWC_VIS_NOTE_UNSTYLED)
-    significant = models.BooleanField(
-        default=False,
-        verbose_name="Statistically significant from control")
-    significance_level = models.FloatField(
-        null=True,
+    p_value_qualifier = models.CharField(
+        max_length=1,
+        choices=P_VALUE_QUALIFIER_CHOICES,
+        default="-",
+        verbose_name='p-value qualifier',
+        help_text="Select n.s. if results are not statistically significant; otherwise, choose the appropriate qualifier. " + 
+                    HAWC_VIS_NOTE_UNSTYLED)
+    p_value = models.FloatField(
         blank=True,
-        default=None,
-        validators=[MinValueValidator(0), MaxValueValidator(1)],
-        verbose_name="Significance Level (if significant)",
-        help_text="For p-values, 0.05 or <0.05 should be coded as 0.05; 0.01 or <0.01 should be coded as 0.01; 0.001 or <0.001 should be coded as 0.001.")
+        null=True,
+        verbose_name='p-value',
+        validators=[MinValueValidator(0.), MaxValueValidator(1.)],
+        help_text="Note p-value when available. " + HAWC_VIS_NOTE_UNSTYLED)
     is_main_finding = models.BooleanField(
         blank=True,
         verbose_name="Main finding",
@@ -1648,9 +1659,16 @@ class GroupResult(models.Model):
     class Meta:
         ordering = ('result', 'group__group_id')
 
-    def clean(self):
-        self.significant = (self.significance_level is not None and
-                            self.significance_level > 0)
+    @property
+    def p_value_text(self):
+        txt = self.get_p_value_qualifier_display()
+        if self.p_value is not None:
+            if txt in ["=", "-", "n.s."]:
+                txt = "{0:g}".format(self.p_value)
+            else:
+                txt = "{0}{1:g}".format(txt, self.p_value)
+
+        return txt
 
     @property
     def lower_bound_interval(self):
@@ -1677,8 +1695,8 @@ class GroupResult(models.Model):
             "result_group-upper_range",
             "result_group-lower_bound_interval",
             "result_group-upper_bound_interval",
-            "result_group-significant",
-            "result_group-significance_level",
+            "result_group-p_value_qualifier",
+            "result_group-p_value",
             "result_group-is_main_finding",
             "result_group-main_finding_support",
             "result_group-created",
@@ -1698,8 +1716,8 @@ class GroupResult(models.Model):
             ser["upper_range"],
             ser["lower_bound_interval"],
             ser["upper_bound_interval"],
-            ser["significant"],
-            ser["significance_level"],
+            ser["p_value_qualifier"],
+            ser["p_value"],
             ser["is_main_finding"],
             ser["main_finding_support"],
             ser["created"],

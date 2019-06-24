@@ -76,13 +76,10 @@ class ResultGroup {
                         '{0} - {1}'.printf(d.lower_range, d.upper_range) :
                         '-';
                 },
-                isSignificant(){
-                    return d.significant ? "Yes" : "No";
-                },
-                significanceLevel(){
-                    return (_.isNumber(d.significance_level)) ?
-                        '{0}'.printf(d.significance_level) :
-                        '&nbsp;';
+                pvalue(){
+                    return (_.isNumber(d.p_value)) ?
+                        '{0} {1}'.printf(d.p_value_qualifier, d.p_value) :
+                        d.p_value_qualifier;
                 },
             };
 

@@ -29,8 +29,7 @@ class ResultGroupTable {
                  hasData(this.res.resultGroups, 'upper_ci')),
             range: (hasData(this.res.resultGroups, 'lower_range') &&
                     hasData(this.res.resultGroups, 'upper_range')),
-            isSignificant: true,
-            significanceLevel: true
+            pvalue: true,
         };
     }
 
@@ -51,8 +50,7 @@ class ResultGroupTable {
                 variance:  15,
                 ci: 25,
                 range: 15,
-                isSignificant: 15,
-                significanceLevel: 15,
+                pvalue: 15,
             },
             cols = _.chain(this.visibleCol)
                     .map(function(v, k){ if (v) return weights[k];})
@@ -99,11 +97,8 @@ class ResultGroupTable {
                 range(){
                     return 'Range';
                 },
-                isSignificant(){
-                    return 'Significant?'
-                },
-                significanceLevel(){
-                    return 'Significance Level'
+                pvalue(){
+                    return '<i>p</i>-value';
                 },
             };
 
