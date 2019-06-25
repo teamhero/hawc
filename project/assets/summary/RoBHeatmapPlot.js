@@ -81,7 +81,12 @@ class RoBHeatmapPlot extends D3Visualization {
 
         var dataset = [],
             included_metrics = this.data.settings.included_metrics,
-            studies, metrics, xIsStudy;
+            studies, 
+            metrics, 
+            xIsStudy,
+            study_label_field = this.data.settings.study_label_field
+                ? this.data.settings.study_label_field
+                : 'short_citation';
 
         _.each(this.data.aggregation.metrics_dataset, function(metric){
             _.chain(metric.rob_scores)
@@ -96,7 +101,8 @@ class RoBHeatmapPlot extends D3Visualization {
                  dataset.push({
                      riskofbias:         rob,
                      study:              rob.study,
-                     study_label:        rob.study.data.short_citation,
+                     study_id:           rob.study.id,
+                     study_label:        rob.study.data[study_label_field],
                      metric:             rob.data.metric,
                      metric_label:       metric_name,
                      score:              rob.data.score,
@@ -108,7 +114,7 @@ class RoBHeatmapPlot extends D3Visualization {
         });
 
         studies = _.chain(dataset)
-                   .map(function(d){return d.study_label;})
+                   .map((d) => d.study_label)
                    .uniq()
                    .value();
 
