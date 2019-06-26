@@ -76,7 +76,7 @@
           {% evidenceprofile_listobjects evidenceProfile.cross_stream_inferences %}
         </td>
         <td rowspan="{{tableBodyRows|safe}}">
-          {% evidenceprofile_confidencejudgement evidenceProfile.cross_stream_confidence_judgement %}
+          {% evidenceprofile_confidencejudgement evidenceProfile.cross_stream_confidence_judgement False %}
         </td>
       </tr>
 
@@ -204,9 +204,14 @@
       font-weight: bold;
     }
 
-    i.judgementScore_pips {
+    em.judgementScore_pips {
       padding-left: 0.5px;
       padding-right: 0.5px;
+      font-weight: bold;
+    }
+
+    div.judgementScore_score {
+      text-align: center;
       font-weight: bold;
     }
 

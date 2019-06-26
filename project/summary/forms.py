@@ -751,12 +751,11 @@ class EvidenceProfileForm(forms.ModelForm):
             [
                 (
                     "confidence_judgement_score",
-                    forms.ChoiceField(
-                        required = False,
+                    forms.CharField(
+                        required = True,
                         label = "Total Judgement Score Across All Streams",
-                        choices = confidenceJudgementChoices,
                         initial = initial_confidence_judgement["score"] if ("score" in initial_confidence_judgement) else "",
-                        widget = forms.Select(
+                        widget = forms.TextInput(
                             attrs={
                                 "style": "width:175px;"
                             }
@@ -894,7 +893,7 @@ class EvidenceProfileForm(forms.ModelForm):
                     },
                     "confidence_judgement_score": {
                         "required": True,
-                        "type": "integer",
+                        "type": "string",
                         "valid_options": confidence_judgement_value_list,
                         "can_be_empty": False,
                     },
