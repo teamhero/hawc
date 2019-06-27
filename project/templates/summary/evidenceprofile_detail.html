@@ -141,7 +141,7 @@
                     <hr style="margin:-6px 0 0 0;" />
                     <br />
 
-                    {% evidenceprofile_summaryoffindings scenario.summary_of_findings %}
+                    {% evidenceprofile_summaryoffindings scenario.summary_of_findings|safe %}
                   {% endif %}
                 </td>
               {% endif %}
@@ -155,7 +155,7 @@
                     <hr style="margin:-6px 0 0 0;" />
                     <br />
 
-                    {% evidenceprofile_summaryoffindings stream.summary_of_findings %}
+                    {% evidenceprofile_summaryoffindings stream.summary_of_findings|safe %}
                   {% endif %}
                 </td>
               {% endif %}

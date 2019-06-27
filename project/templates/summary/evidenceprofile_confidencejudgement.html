@@ -1,10 +1,10 @@
 {% if showPips %}
 	<div style="text-align:center; color:#{{pipColor|safe}};">{% for pip in pips %}<em class="fa judgementScore_pips">{{pip|safe}}</em>{% endfor %}</div>
 {% else %}
-	<div class="judgementScore_score"><em>{{confidenceJudgement.score}}</em></div>
+	<div class="judgementScore_score"><em>{{confidenceJudgement.score|safe}}</em></div>
 {% endif %}
 {% if "name" in confidenceJudgement %}
-    <div class="judgementScore_name">{{confidenceJudgement.name}}</div>
+    <div class="judgementScore_name">{{confidenceJudgement.name|safe}}</div>
 {% endif %}
-<div class="smallTitle">{{confidenceJudgement.title}}</div>
-<div class="smallTextBlock"style="padding-top:4px;">{{confidenceJudgement.explanation}}</div>
+<div class="smallTitle">{{confidenceJudgement.title|safe}}</div>
+<div class="smallTextBlock"style="padding-top:4px;">{{confidenceJudgement.explanation|safe}}</div>
