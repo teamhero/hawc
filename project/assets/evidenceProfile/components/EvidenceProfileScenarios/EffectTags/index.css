@@ -47,7 +47,7 @@
 	padding: 0 5px 0 0;
 }
 
-.effectTagDiv_name {
+.effectTagDiv_details {
 	float: left;
 	width: 400px;
 	margin: 0 0 0 0;
@@ -59,10 +59,4 @@
 	width: 33px;
 	margin: 0 0 0 0;
 	padding: 0 0 0 5px;
-}
-
-.effectTagDiv_studiesFormset {
-	width: 100%;
-	margin: 0 0 0 0;
-	padding: 3px 0 0 5px;
 }

@@ -412,7 +412,7 @@ class EvidenceProfileNew(BaseCreate):
         context = super().get_context_data(**kwargs)
 
         # Set the desired additional context attributes to their initialized, empty values
-        context.update(getEvidenceProfileContextData(self.object))
+        context.update(getEvidenceProfileContextData(self.object, self.assessment))
 
         return context
 
@@ -480,7 +480,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
         context = super().get_context_data(**kwargs)
 
         # Set the desired additional context attributes based on the values of the existing Evidence Profile
-        context.update(getEvidenceProfileContextData(self.object))
+        context.update(getEvidenceProfileContextData(self.object, self.assessment))
 
         return context
 
@@ -629,7 +629,6 @@ class EvidenceProfileDetail(GetEvidenceProfileObjectMixin, BaseDetail):
         # The stream names will span two fewer columns than the total width
         returnValue["streamNameSpan"] = len(returnValue["columnsToShow"]) - 2
         returnValue["columnWidth"] = 100 / len(returnValue["columnsToShow"])
-        print(returnValue["columnWidth"])
 
         return returnValue
 
@@ -644,7 +643,7 @@ class EvidenceProfileDelete(GetEvidenceProfileObjectMixin, BaseDelete):
 
 
 # This function returns the set of serialized objects that are commonly used as context data for Evidence Profile objects
-def getEvidenceProfileContextData(object):
+def getEvidenceProfileContextData(object:models.EvidenceProfile, assessment:Assessment):
     returnValue = {}
 
     # Get serializer objects that will be used to generate serialized objects from lookup tables
@@ -672,6 +671,15 @@ def getEvidenceProfileContextData(object):
     # Load the entire EvidenceProfile object into a dictionary object and convert it to a JSON-formatted string (this will then be treated as an object
     # by the client-side JavaScript)
     returnValue["evidenceProfile"] = json.dumps(getEvidenceProfileDictionary(object))
+
+    # Load all of the Studies that are part of this Evidence Profile's parent Assessment
+    availableStudies = Study.objects.get_choices(assessment)
+    returnValue["availableStudies"] = json.dumps(
+        {
+            "studies": [{study[0]:study[1]} for study in availableStudies],
+            "values": [study[0] for study in availableStudies],
+        }
+    )
 
     return returnValue
 

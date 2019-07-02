@@ -126,15 +126,7 @@
                       effectTagSearchURL: "/assessment/api/effecttag-autosuggest/?format=json",
                       effectTagCreateURL: "/assessment/api/effecttag-create/?format=json&assessment_id={{assessment.id}}",
                       effectTags: evidenceProfile.Library.setEffectTags({{effect_tags|safe}}),
-                      studiesFormset: {
-                        tableIdPattern: "table_studies_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
-                        addButtonIdPattern: "add_study_row_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
-                        buttonSetPrefixPattern: "btn_study_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
-                        fieldPrefixPattern: "stream_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
-                        studyIdPrefixPattern: "tr_study_<<streamIndex>>_<<scenarioIndex>>_<<effectTagIndex>>",
-                        buttonSetRegEx: new RegExp("^btn_study_(\\d+)_(\\d+)_(\\d+)_(\\d+)_(moveup|movedown|remove)$", "gi"),
-                        studySearchURL: "/study/api/study-autosuggest/?format=json&assessment_id={{assessment.id}}",
-                      }
+                      availableStudies: {{availableStudies|safe}},
                     },
                     confidenceFactorsIncreaseFormset: {
                       tableIdPattern: "table_confidenceFactorsIncrease_<<streamIndex>>_<<scenarioIndex>>",

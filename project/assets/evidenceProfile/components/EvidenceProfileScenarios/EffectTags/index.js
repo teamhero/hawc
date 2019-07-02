@@ -7,8 +7,6 @@ import "./index.css";
 import fetch from 'isomorphic-fetch';
 import h from 'shared/utils/helpers';
 
-import {renderStudiesFormset} from "./Studies";
-
 // Set the colors to be used as shades for the alternating Effect Tags within this Scenario
 let shade1 = "#EEFFFF";
 let shade2 = "#CCFFFF";
@@ -105,10 +103,9 @@ class EffectTagsFormset extends Component {
                 streamIndex={this.props.streamIndex}
                 scenarioIndex={this.props.scenarioIndex}
                 name={this.effectTags[i].name}
-                studies={this.effectTags[i].studies}
-                studyTitles={this.effectTags[i].studyTitles}
                 effectTags_optionSet={this.props.config.effectTags}
-                studies_config={this.props.config.studiesFormset}
+                studies={this.effectTags[i].studies}
+                studies_optionSet={this.props.config.availableStudies}
                 divId={this.divId}
                 idPrefix={this.effectTagIdPrefix}
                 fieldPrefix={this.fieldPrefix}
@@ -198,9 +195,9 @@ class EffectTagsFormset extends Component {
                     streamIndex={this.props.streamIndex}
                     scenarioIndex={this.props.scenarioIndex}
                     name={this.effectTags[effectTagIndex].name}
-                    studies={this.effectTags[effectTagIndex].studies}
                     effectTags_optionSet={this.props.config.effectTags}
-                    studies_config={this.props.config.studiesFormset}
+                    studies={this.effectTags[effectTagIndex].studies}
+                    studies_optionSet={this.props.config.availableStudies}
                     divId={this.divId}
                     idPrefix={this.effectTagIdPrefix}
                     fieldPrefix={this.fieldPrefix}
@@ -568,6 +565,16 @@ class EffectTagDiv extends Component {
         this.plusOne = this.props.index + 1;
         this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne + "_effectTag";
         this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
+
+        /*
+        var studies = this.props.studies;
+        this.studyOptionSet = this.props.studies_optionSet.studies.map(
+            function(currentValue, index) {
+                let optionValue = parseInt(Object.keys(currentValue)[0]);
+                return <option key={index} value={optionValue}>{currentValue[optionValue]}</option>;
+            }
+        );
+        */
     }
 
     render() {
@@ -616,7 +623,7 @@ class EffectTagDiv extends Component {
                         </button>
                     </div>
 
-                    <div className={"effectTagDiv_name"}>
+                    <div className={"effectTagDiv_details"}>
                         <input id={this.fieldPrefix + "_pk"} type="hidden" name={this.fieldPrefix + "_pk"} value={this.pk} />
                         <span id={this.fieldPrefix + "_name"}>{this.name}</span>
 
@@ -631,6 +638,14 @@ class EffectTagDiv extends Component {
                             effectTagCreateURL={this.props.effectTagCreateURL}
                             index={this.props.index}
                             effectTagReferences={this.props.effectTagReferences}
+                        />
+
+                        <strong>Studies Within This Tag</strong><br />
+                        <EffectTagStudies
+                            id={this.fieldPrefix + "_studies"}
+                            name={this.fieldPrefix + "_studies"}
+                            value={this.props.studies}
+                            optionSet={this.props.studies_optionSet}
                         />
                     </div>
 
@@ -699,27 +714,8 @@ class EffectTagDiv extends Component {
                 </div>
 
                 <br className={"effectTagsClearBoth"} />
-
-                <div className={"effectTagDivRow"}>
-                    <div
-                        ref={
-                            (input) => {
-                                this.scenariosFormsetReference = input;
-                            }
-                        }
-                        id={this.fieldPrefix + "_studiesFormset"}
-                        className={"effectTagDiv_studiesFormset"}
-                    >
-                    </div>
-                </div>
-
-                <br className={"effectTagsClearBoth"} />
             </div>
         )
-    }
-
-    componentDidMount() {
-        renderStudiesFormset(this.props.profileId, this.props.studies, this.props.studyTitles, this.fieldPrefix + "_studiesFormset", this.props.studies_config);
     }
 }
 
@@ -902,6 +898,55 @@ class EffectTagAutoSuggest extends Component {
                     }
                 }
             />
+        );
+    }
+}
+
+
+// This Component class is used to create a select multiple field for the studies included within this effect tag
+class EffectTagStudies extends Component {
+    constructor(props) {
+        // First, call the super-class's constructor and properly bind its updateField method
+        super(props);
+        this.updateField = this.updateField.bind(this);
+
+        // Make sure that the value saved in state is an array object
+        // If the incoming value came in as a simple value, save it as the only element in a single-element array
+        this.state = {
+            value: (Array.isArray(this.props.value)) ? this.props.value : [this.props.value]
+        };
+    }
+
+    updateField(event) {
+        // var newValue = Array.from(event.target.selectedOptions, (item) => item.value);
+        this.setState(
+            {
+                value: Array.from(event.target.selectedOptions, (item) => item.value)
+            }
+        );
+    }
+
+    // Place the desired input element on the page
+    render() {
+        return (
+            <select
+                multiple="multiple"
+                className="span12 selectmultiple"
+                size="10"
+                id={this.props.id}
+                name={this.props.name}
+                value={this.state.value}
+                onChange={(e) => this.updateField(e)}
+            >
+                {
+                    this.props.optionSet.studies.map(
+                        function(currentValue, index) {
+                            var optionValue = Object.keys(currentValue)[0];
+                            return <option key={index} value={optionValue}>{currentValue[optionValue]}</option>;
+                        }
+                    )
+                }
+            </select>
         );
     }
 }
