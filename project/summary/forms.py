@@ -737,7 +737,8 @@ class EvidenceProfileForm(forms.ModelForm):
         # Get the initial values for the fields related to cross-stream confidence judgements
         initial_confidence_judgement = {}
         try:
-            initial_confidence_judgement = json.loads(self.instance.cross_stream_confidence_judgement)
+            loaded_confidence_judgement = json.loads(self.instance.cross_stream_confidence_judgement)
+            initial_confidence_judgement = loaded_confidence_judgement if (type(loaded_confidence_judgement) == dict) else {}
         except:
             pass
 
@@ -814,7 +815,7 @@ class EvidenceProfileForm(forms.ModelForm):
             inputs = {
                 "legend_text": "Create new evidence profile",
                 "help_text":   "Create an evidence profile for this assessment.",
-                "cancel_url": self.instance.get_list_url(self.instance.assessment.id)
+                "cancel_url": self.instance.get_list_url(self.instance.assessment.id) if ((hasattr(self, "instance")) and (hasattr(self.instance, "assessment"))) else "",
             }
 
         # Set the basic helper attributes fron the 'inputs' object just created, and then set some specialized ones for this class
@@ -839,8 +840,8 @@ class EvidenceProfileForm(forms.ModelForm):
         confidence_judgement_value_list = []
         confidence_judgement_dict = {}
         for confidenceJudgement in ConfidenceJudgement.objects.all().order_by("value"):
-            confidence_judgement_value_list.append(confidenceJudgement.value)
-            confidence_judgement_dict[confidenceJudgement.value] = confidenceJudgement.name
+            confidence_judgement_value_list.append(str(confidenceJudgement.value))
+            confidence_judgement_dict[str(confidenceJudgement.value)] = confidenceJudgement.name
 
         # Initialize a dict to hold objects made up of related sets of form data, along with information about their form field naming conventions
         # This object will be used as a temporary store to be built up while iterating over the incoming form key/value pairs; and then ordering of
@@ -964,7 +965,7 @@ class EvidenceProfileForm(forms.ModelForm):
                 "parent_field": "effectTags",
                 "ordering_field": "order",
                 "retain_ordering_field": True,
-                "re_match": r"^stream_(\d+)_(\d+)_(\d+)_effectTag_(order|pk)$",
+                "re_match": r"^stream_(\d+)_(\d+)_(\d+)_effectTag_(order|pk|studies)$",
                 "re_replace_with": r"\1,\2,\3,\4",
                 "field_validation": {
                     "pk": {
@@ -972,20 +973,11 @@ class EvidenceProfileForm(forms.ModelForm):
                         "type": "integer",
                         "can_be_empty": False,
                     },
-                },
-            },
-            "studies": {
-                "parent_object_type": "effect_tags",
-                "parent_field": "studies",
-                "ordering_field": "order",
-                "retain_ordering_field": True,
-                "re_match": r"^stream_(\d+)_(\d+)_(\d+)_(\d+)_study_(order|pk)$",
-                "re_replace_with": r"\1,\2,\3,\4,\5",
-                "field_validation": {
-                    "pk": {
+                    "studies": {
                         "required": True,
-                        "type": "integer",
-                        "can_be_empty": False,
+                        "type": "integer_csv",
+                        "can_be_empty": True,
+                        "valid_options": [study[0] for study in Study.objects.get_choices(self.instance.assessment)] if ((hasattr(self, "instance")) and (hasattr(self.instance, "assessment"))) else [],
                     },
                 },
             },
@@ -1048,7 +1040,8 @@ class EvidenceProfileForm(forms.ModelForm):
                 ut_dict["desired_order"] = []
 
         # Iterate over the submitted form fields to build the various unordered objects that will be added to the sets of objects initialized above
-        for form_key, form_value in self.submitted_data.items():
+        for form_key in self.submitted_data:
+            form_value = ",".join(self.submitted_data.getlist(form_key))
 
             # Iterate over the sets of unordered object types to check and see if this form field belongs in one of them
             for ut_key, ut_dict in unordered_types.items():
@@ -1093,7 +1086,7 @@ class EvidenceProfileForm(forms.ModelForm):
                                 ut_dict["objects"][object_key] = {}
 
                             # Add this form field's value to this object in the objects attribute
-                            ut_dict["objects"][object_key][field_name] = self.submitted_data[form_key]
+                            ut_dict["objects"][object_key][field_name] = form_value
 
         # Now iterate through each of the different types of unordered objects to validate the objects that have been built up from the submitted
         # form fields
@@ -1147,9 +1140,20 @@ class EvidenceProfileForm(forms.ModelForm):
                                             except:
                                                 object_ok = False
 
+                                        elif (field_dict["type"] == "integer_csv"):
+                                            # This field is supposed to be a comma-delimited set of integers, attempt to convert it to a list of integers
+                                            try:
+                                                o_dict[field_key] = list(map(int, o_dict[field_key].split(",")))
+                                            except:
+                                                object_ok = False
+
                                     if ((object_ok) and ("valid_options" in field_dict)):
-                                        check = [option for option in field_dict["valid_options"] if (option == o_dict[field_key])]
-                                        if (len(check) == 0):
+                                        # The field is syntactically valid and the field's configuration includes a list of valid options, only retain the
+                                        # valid ones
+                                        check = [option for option in field_dict["valid_options"] if (((type(o_dict[field_key]) == list) and (option in o_dict[field_key])) or (option == o_dict[field_key]))]
+                                        if ((len(check) == 0) or ((type(o_dict[field_key]) == list) and (len(check) != len(o_dict[field_key])))):
+                                            # Either no values were saved in check, or the field being checked was a list and not all of the list values were valid,
+                                            # either way, flag this object as not being okay
                                             object_ok = False
 
                     if (object_ok):
@@ -1297,11 +1301,10 @@ class EvidenceProfileForm(forms.ModelForm):
                                     )
 
                                     if ((effectTag["original_key"] in unordered_types["effect_tags"]["objects"]) and ("studies" in unordered_types["effect_tags"]["objects"][effectTag["original_key"]])):
-                                        # This effectTag object has a studies attribute, iterate through it to add each study's primary key to the studies[].studies array
+                                        # This effectTag object has a studies attribute, copy it over to the new scenario object
                                         studyIndex = len(scenario["studies"]) - 1
                                         if (studyIndex >= 0):
-                                            for study in unordered_types["effect_tags"]["objects"][effectTag["original_key"]]["studies"]:
-                                                scenario["studies"][studyIndex]["studies"].append(study["pk"])
+                                            scenario["studies"][studyIndex]["studies"] = unordered_types["effect_tags"]["objects"][effectTag["original_key"]]["studies"]
 
                             if ("confidenceFactorsIncrease" in unordered_types["stream_scenarios"]["objects"][scenario["original_key"]]):
                                 # This scenario has a set of confidenceFactorsIncrease values, iterate over them to build the

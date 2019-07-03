@@ -565,16 +565,6 @@ class EffectTagDiv extends Component {
         this.plusOne = this.props.index + 1;
         this.fieldPrefix = this.props.fieldPrefix + "_" + this.plusOne + "_effectTag";
         this.buttonSetPrefix = this.props.buttonSetPrefix + "_" + this.plusOne;
-
-        /*
-        var studies = this.props.studies;
-        this.studyOptionSet = this.props.studies_optionSet.studies.map(
-            function(currentValue, index) {
-                let optionValue = parseInt(Object.keys(currentValue)[0]);
-                return <option key={index} value={optionValue}>{currentValue[optionValue]}</option>;
-            }
-        );
-        */
     }
 
     render() {
