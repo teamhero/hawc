@@ -775,7 +775,7 @@ def getEvidenceProfileDictionary(object):
         # This is an existing evidence profile and at least one study_id is part of the evidence profile, get each study's title and short citation
 
         # First, query the database and build a set of matching study objects
-        studies = {study[0]:(study[1] + " (" + study[2] + ")") for study in Study.objects.filter(assessment=returnValue["assessment"]).filter(id__in=study_id_list).values_list("id", "title", "short_citation")}
+        studies = {study.id:{"citation":study.short_citation , "title":study.title, "overall_confidence":study.get_overall_confidence()} for study in Study.objects.filter(assessment=returnValue["assessment"]).filter(id__in=study_id_list)}
 
         # Next, add the study titles/citations to each effect tag grouping within the evidence profile
         for stream in returnValue["streams"]:
@@ -784,11 +784,47 @@ def getEvidenceProfileDictionary(object):
                     for effectTag in scenario["studies"]:
                         # Initialize a dictionary within this effect tag grouping that will map study titles/citations to the studies within this effect tag
                         effectTag["studyTitles"] = {}
+                        effectTag["studyCitations"] = {}
+                        effectTag["studyConfidences"] = {}
 
-                        # Iterate through the studies within this effect tag
-                        for study_id in effectTag["studies"]:
-                            if (study_id in studies):
-                                effectTag["studyTitles"][study_id] = studies[study_id]
+                        effectTagStudies = effectTag["studies"].copy()
+                        if (len(effectTagStudies) > 0):
+                            # At least one study was included within this effect tag
+
+                            # First, clear out this effect tag's set of studies to only retain the ones that match studies found in the studies dictionary object
+                            # created about 18 or so lines above
+                            effectTag["studies"] = []
+
+                            # Iterate through the effect tag's study ID values to find the ones that are in the database
+                            studiesList = []
+                            for study_id in effectTagStudies:
+                                if (study_id in studies):
+                                    # This study ID matches a study retrieved from the database, include its retrieved details in studiesList
+                                    studiesList.append(
+                                        {
+                                            "id": study_id,
+                                            "citation": studies[study_id]["citation"],
+                                            "title": studies[study_id]["title"],
+                                            "overall_confidence": studies[study_id]["overall_confidence"],
+                                        }
+                                    )
+
+                            if (len(studiesList) > 0):
+                                # At least one study was included, sort them according to overall confidence and citation, and save them in their
+                                # appropriate locations within effectTag
+                                for study in sorted(
+                                    sorted(
+                                        studiesList
+                                        ,key=lambda study_1:study_1["citation"]
+                                        ,reverse=False
+                                    )
+                                    ,key=lambda study_2:study_2["overall_confidence"]
+                                    ,reverse=True
+                                ):
+                                    effectTag["studies"].append(study["id"])
+                                    effectTag["studyCitations"][study["id"]] = study["citation"]
+                                    effectTag["studyTitles"][study["id"]] = study["title"]
+                                    effectTag["studyConfidences"][study["id"]] = study["overall_confidence"]
 
     return returnValue
 

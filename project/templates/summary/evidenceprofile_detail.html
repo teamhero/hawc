@@ -115,7 +115,7 @@
                   {% if effect.studies %}
                     <ul style="padding-bottom:3px;">
                       {% for study in effect.studies %}
-                        <li class="smallTextBlock"><span class="moveLILeft"><em>{{effect.studyTitles|keyvalue:study}}</em></li>
+                        <li class="smallTextBlock"><span class="moveLILeft"><em>{{effect.studyCitations|keyvalue:study}}</em></li>
                       {% endfor %}
                     </ul>
                   {% else %}

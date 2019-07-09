@@ -117,6 +117,8 @@ class EndpointAggregation extends BaseVisual {
             'Study', 'Experiment', 'Animal Group', 'Endpoint',
             'NOEL', 'LOEL', 'BMD', 'BMDL']);
 
+        console.log(this.endpoints);
+
         this.endpoints.forEach(function(e){
             tbl.addRow([
                 '<a href="{0}">{1}</a>'.printf(
