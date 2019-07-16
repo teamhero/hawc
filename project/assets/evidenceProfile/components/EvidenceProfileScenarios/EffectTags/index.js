@@ -36,14 +36,11 @@ class EffectTagsFormset extends Component {
         // Iterate over the incoming studies and use them to build the object level "effectTags" and "effectTagReferences" attributes
         let iTo = iterateOverStudies.length;
         for (let i=0; i<iTo; i++) {
-            let effectTag = iterateOverStudies[i];
-
             this.effectTags.push(
                 {
-                    id: effectTag.effecttag_id,
-                    name: (effectTag.effecttag_id in this.props.config.effectTags.index) ? this.props.config.effectTags.index[effectTag.effecttag_id] : "",
-                    studies: ("studies" in iterateOverStudies[i]) ? iterateOverStudies[i].studies : [],
-                    studyTitles: ("studyTitles" in iterateOverStudies[i]) ? iterateOverStudies[i].studyTitles : {},
+                    id: iterateOverStudies[i].effecttag_id,
+                    name: (iterateOverStudies[i].effecttag_id in this.props.config.effectTags.index) ? this.props.config.effectTags.index[iterateOverStudies[i].effecttag_id] : "",
+                    studyCitations: ("studyCitations" in iterateOverStudies[i]) ? iterateOverStudies[i].studyCitations : {},
                     caption: null,
                     div: null,
                 }
@@ -104,8 +101,7 @@ class EffectTagsFormset extends Component {
                 scenarioIndex={this.props.scenarioIndex}
                 name={this.effectTags[i].name}
                 effectTags_optionSet={this.props.config.effectTags}
-                studies={this.effectTags[i].studies}
-                studies_optionSet={this.props.config.availableStudies}
+                studyCitations={this.effectTags[i].studyCitations}
                 divId={this.divId}
                 idPrefix={this.effectTagIdPrefix}
                 fieldPrefix={this.fieldPrefix}
@@ -196,8 +192,7 @@ class EffectTagsFormset extends Component {
                     scenarioIndex={this.props.scenarioIndex}
                     name={this.effectTags[effectTagIndex].name}
                     effectTags_optionSet={this.props.config.effectTags}
-                    studies={this.effectTags[effectTagIndex].studies}
-                    studies_optionSet={this.props.config.availableStudies}
+                    studyCitations={this.effectTags[i].studyCitations}
                     divId={this.divId}
                     idPrefix={this.effectTagIdPrefix}
                     fieldPrefix={this.fieldPrefix}
@@ -634,8 +629,7 @@ class EffectTagDiv extends Component {
                         <EffectTagStudies
                             id={this.fieldPrefix + "_studies"}
                             name={this.fieldPrefix + "_studies"}
-                            value={this.props.studies}
-                            optionSet={this.props.studies_optionSet}
+                            citations={this.props.studyCitations}
                         />
                     </div>
 
@@ -898,45 +892,57 @@ class EffectTagStudies extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
         super(props);
-        this.updateField = this.updateField.bind(this);
 
-        // Make sure that the value saved in state is an array object
-        // If the incoming value came in as a simple value, save it as the only element in a single-element array
-        this.state = {
-            value: (Array.isArray(this.props.value)) ? this.props.value : [this.props.value]
-        };
-    }
+        // Create an array of citations based on the incoming this.props.citations object and sort it
+        let citations = [];
+        if (typeof(this.props.citations) == "object") {
+            // this.props.citations is an object, convert it to an array of objects and then sort it
 
-    updateField(event) {
-        // var newValue = Array.from(event.target.selectedOptions, (item) => item.value);
-        this.setState(
-            {
-                value: Array.from(event.target.selectedOptions, (item) => item.value)
+            for (var i in this.props.citations) {
+                citations[citations.length] = {
+                    id: i,
+                    citation: this.props.citations[i]
+                };
             }
-        );
+
+            if (citations.length > 1) {
+                // At least two citations were passed into this tag, sort them
+                citations = citations.sort(
+                    function(a, b) {
+                        let returnValue = 0;
+
+                        if (a.citation < b.citation) {
+                            returnValue = -1;
+                        }
+                        else if (a.citation > b.citation) {
+                            returnValue = 1;
+                        }
+
+                        return returnValue;
+                    }
+                );
+            }
+        }
+
+        // iterate over the incoming citations and produce and ordered array
+        // If the incoming value came in as a something other than an object, save it as the only element in a single-element array
+        this.state = {
+            citations: citations
+        };
     }
 
     // Place the desired input element on the page
     render() {
+        // Build a set of list items <li> for the citations
+        let citations = [];
+        for (var i=0; i<this.state.citations.length; i++) {
+            citations[i] = <li key={i} id={this.props.id + "_" + this.state.citations[i].id}>{this.state.citations[i].citation}</li>;
+        }
+
         return (
-            <select
-                multiple="multiple"
-                className="span12 selectmultiple"
-                size="10"
-                id={this.props.id}
-                name={this.props.name}
-                value={this.state.value}
-                onChange={(e) => this.updateField(e)}
-            >
-                {
-                    this.props.optionSet.studies.map(
-                        function(currentValue, index) {
-                            var optionValue = Object.keys(currentValue)[0];
-                            return <option key={index} value={optionValue}>{currentValue[optionValue]}</option>;
-                        }
-                    )
-                }
-            </select>
+            <ul id={this.props.id + "_list"} className="studyList">
+                {citations}
+            </ul>
         );
     }
 }
