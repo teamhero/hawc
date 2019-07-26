@@ -935,14 +935,36 @@ class EffectTagStudies extends Component {
     render() {
         // Build a set of list items <li> for the citations
         let citations = [];
+        let study_id = [];
         for (var i=0; i<this.state.citations.length; i++) {
-            citations[i] = <li key={i} id={this.props.id + "_" + this.state.citations[i].id}>{this.state.citations[i].citation}</li>;
+            citations[i] = <li key={i} id={this.props.id + "_" + this.state.citations[i].id}>
+                <button
+                    ref={
+                        (input) => {
+                            this.removeStudy = input;
+                        }
+                    }
+                    className="btn btn-mini"
+                    title="remove"
+                    type="button"
+                    onClick={
+                        (e) => console.log("Dude!")
+                    }
+                >
+                    <i id={this.props.id + "_remove"} className="icon-remove" />
+                </button>
+                {this.state.citations[i].citation}
+            </li>;
+            study_id[i] = this.state.citations[i].id;
         }
 
         return (
-            <ul id={this.props.id + "_list"} className="studyList">
-                {citations}
-            </ul>
+            <div id={this.props.id}>
+                <input type={"hidden"} id={this.props.id + "_study_id"} name={this.props.id + "_study_id"} value={study_id.join(",")} />
+                <ul id={this.props.id + "_list"} className="studyList">
+                    {citations}
+                </ul>
+            </div>
         );
     }
 }
