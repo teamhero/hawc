@@ -102,6 +102,7 @@ class EffectTagsFormset extends Component {
                 name={this.effectTags[i].name}
                 effectTags_optionSet={this.props.config.effectTags}
                 studyCitations={this.effectTags[i].studyCitations}
+                study_optionSet={this.props.config.availableStudies.studies}
                 divId={this.divId}
                 idPrefix={this.effectTagIdPrefix}
                 fieldPrefix={this.fieldPrefix}
@@ -193,6 +194,7 @@ class EffectTagsFormset extends Component {
                     name={this.effectTags[effectTagIndex].name}
                     effectTags_optionSet={this.props.config.effectTags}
                     studyCitations={this.effectTags[i].studyCitations}
+                    study_optionSet={this.props.config.availableStudies.studies}
                     divId={this.divId}
                     idPrefix={this.effectTagIdPrefix}
                     fieldPrefix={this.fieldPrefix}
@@ -630,6 +632,7 @@ class EffectTagDiv extends Component {
                             id={this.fieldPrefix + "_studies"}
                             name={this.fieldPrefix + "_studies"}
                             citations={this.props.studyCitations}
+                            optionSet={this.props.study_optionSet}
                         />
                     </div>
 
@@ -892,79 +895,74 @@ class EffectTagStudies extends Component {
     constructor(props) {
         // First, call the super-class's constructor and properly bind its updateField method
         super(props);
+        this.updateField = this.updateField.bind(this);
 
-        // Create an array of citations based on the incoming this.props.citations object and sort it
-        let citations = [];
-        if (typeof(this.props.citations) == "object") {
-            // this.props.citations is an object, convert it to an array of objects and then sort it
+        // Initialize the set of <option>s for this <select> with an empty "Select Type" value
+        this.optionSet = [<option key={0} value={""}>Select Studies</option>];
 
-            for (var i in this.props.citations) {
-                citations[citations.length] = {
-                    id: i,
-                    citation: this.props.citations[i]
-                };
-            }
+        if (("optionSet" in this.props) && (typeof(this.props.optionSet) === "object")) {
+            // The incoming props includes an "optionSet" object, iterate through its ordered value array to build the set of
+            // <option>s for this <select>
 
-            if (citations.length > 1) {
-                // At least two citations were passed into this tag, sort them
-                citations = citations.sort(
-                    function(a, b) {
-                        let returnValue = 0;
-
-                        if (a.citation < b.citation) {
-                            returnValue = -1;
-                        }
-                        else if (a.citation > b.citation) {
-                            returnValue = 1;
-                        }
-
-                        return returnValue;
-                    }
-                );
+            let iTo = this.props.optionSet.length;
+            for (let i=0; i<iTo; i++) {
+                let keyList = Object.keys(this.props.optionSet[i]);
+                if (keyList.length >= 1) {
+                    this.optionSet.push(<option key={(i + 1)} value={keyList[0]}>{this.props.optionSet[i][keyList[0]]}</option>);
+                }
             }
         }
 
-        // iterate over the incoming citations and produce and ordered array
-        // If the incoming value came in as a something other than an object, save it as the only element in a single-element array
+        let selectedValues = [];
+        if (("citations" in this.props) && (typeof(this.props.citations) === "object")) {
+            let i = "";
+            for (i in this.props.citations) {
+                selectedValues.push(i);
+            }
+        }
+
+        // Set the initial state of this object to the incoming props.value, defaulting to an empty string if it isn't present
         this.state = {
-            citations: citations
+            values: (selectedValues.length > 0) ? selectedValues : [""],
         };
     }
 
-    // Place the desired input element on the page
-    render() {
-        // Build a set of list items <li> for the citations
-        let citations = [];
-        let study_id = [];
-        for (var i=0; i<this.state.citations.length; i++) {
-            citations[i] = <li key={i} id={this.props.id + "_" + this.state.citations[i].id}>
-                <button
-                    ref={
-                        (input) => {
-                            this.removeStudy = input;
-                        }
-                    }
-                    className="btn btn-mini"
-                    title="remove"
-                    type="button"
-                    onClick={
-                        (e) => console.log("Dude!")
-                    }
-                >
-                    <i id={this.props.id + "_remove"} className="icon-remove" />
-                </button>
-                {this.state.citations[i].citation}
-            </li>;
-            study_id[i] = this.state.citations[i].id;
-        }
+    // This method updates the tag's state with the new value of the contained input
+    updateField(event) {
+        if (("target" in event) && (typeof(event.target) === "object") && ("options" in event.target) && (typeof(event.target.options) === "object")) {
+            // The event target includes a set of options, iterate through them to find the ones that are selected
 
+            let selectedValues = [];
+            let iTo = event.target.options.length;
+            for (let i=0; i<iTo; i++) {
+                if ((event.target.options[i].selected) && (event.target.options[i].value !== "")) {
+                    // This option has been selected and has a non-empty value, add it to selectedValues
+                    selectedValues.push(event.target.options[i].value);
+                }
+            }
+
+            // Set the state.values value to the array of selected values, defaulting to the empty string if no values were selected
+            this.setState(
+                {
+                    values: (selectedValues.length > 0) ? selectedValues : [""],
+                }
+            );
+        }
+    }
+
+    // The method generates this <select> tag's HTML code for this Component
+    render() {
         return (
-            <div id={this.props.id}>
-                <input type={"hidden"} id={this.props.id + "_study_id"} name={this.props.id + "_study_id"} value={study_id.join(",")} />
-                <ul id={this.props.id + "_list"} className="studyList">
-                    {citations}
-                </ul>
-            </div>
+            <select
+                id={this.props.id}
+                name={this.props.name}
+                value={this.state.values}
+                onChange={(e) => this.updateField(e)}
+                multiple={true}
+                size={10}
+            >
+                {this.optionSet}
+            </select>
         );
     }
 }

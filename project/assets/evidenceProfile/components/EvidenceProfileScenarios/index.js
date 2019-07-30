@@ -1082,8 +1082,8 @@ export function renderEvidenceProfileScenariosFormset(profileId, scenarios, divI
         if ((!isNaN(streamIndex)) && (streamIndex > 0)) {
             // divId matched the desired naming convention and the parent stream's ID was extracted, continue
 
-        // Clean onlyOneScenario, defaulting to a Boolean false if it is invalid
-        onlyOneScenario = ((onlyOneScenario !== null) && (typeof(onlyOneScenario) === "boolean")) ? onlyOneScenario : false;
+            // Clean onlyOneScenario, defaulting to a Boolean false if it is invalid
+            onlyOneScenario = ((onlyOneScenario !== null) && (typeof(onlyOneScenario) === "boolean")) ? onlyOneScenario : false;
 
             let scenariosFormsetDiv = document.getElementById(divId);
             if (scenariosFormsetDiv !== null) {
