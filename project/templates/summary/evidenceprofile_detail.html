@@ -100,7 +100,7 @@
           {% for scenario in stream.scenarios %}
             <tr class="bodyRow">
               {% if "outcome" in columnsToShow %}
-                <td>
+                <td class="bodyCell">
                   {% if scenario.scenario_name == "" %}
                     Scenario Has No Name
                   {% else %}
@@ -196,6 +196,11 @@
       text-align: left;
       vertical-align: top;
       padding: 0 3px 0 3px;
+    }
+
+    td.bodyCell {
+      line-height: 1em;
+      padding: 5px 3px 0 3px !important;
     }
 
     td.bodyCellStreamTitle {

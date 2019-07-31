@@ -193,7 +193,7 @@ class EffectTagsFormset extends Component {
                     scenarioIndex={this.props.scenarioIndex}
                     name={this.effectTags[effectTagIndex].name}
                     effectTags_optionSet={this.props.config.effectTags}
-                    studyCitations={this.effectTags[i].studyCitations}
+                    studyCitations={this.effectTags[effectTagIndex].studyCitations}
                     study_optionSet={this.props.config.availableStudies.studies}
                     divId={this.divId}
                     idPrefix={this.effectTagIdPrefix}
