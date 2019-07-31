@@ -222,40 +222,6 @@ class OutcomeDataPivot(FlatFileExporter):
                     self.addOutcomesAndGroupsToRowAndAppend(rows, res, ser, finalROB, row_copy)
                 # clone rows for multiple central tendencies-END
 
-                for rg in res['results']:
-                    row_copy2 = list(row_copy)
-                    row_copy2.extend([
-                        rg['group']['group_id'],
-                        rg['group']['name'],
-                        rg['group']['comparative_name'],
-                        rg['group']['numeric'],
-                        ser['study_population']['study']['short_citation'] + ' (' + rg['group']['name'] + ', n=' + str(rg['n']) + ')',
-                        str(rg['estimate']) + ' (' + str(rg['lower_ci']) + ' - ' + str(rg['upper_ci']) + ')',
-
-                        rg['id'],
-                        rg['id'],  # repeat for data-pivot key
-                        rg['n'],
-                        rg['estimate'],
-                        rg['lower_ci'],
-                        rg['upper_ci'],
-                        rg['lower_range'],
-                        rg['upper_range'],
-                        rg['lower_bound_interval'],
-                        rg['upper_bound_interval'],
-                        rg['variance'],
-                        rg['p_value_text'],
-                        rg['p_value'],
-                        rg['is_main_finding'],
-                        rg['main_finding_support'],
-                        rg['percentControlMean'],
-                        rg['percentControlLow'],
-                        rg['percentControlHigh'],
-                    ])
-                    row_copy2.append(finalROB)
-
-                    row_copy2.extend(robScores)
- 
-                    rows.append(row_copy2)
         return rows
 
     def addOutcomesAndGroupsToRowAndAppend(self, rows, res, ser, finalROB, row):
