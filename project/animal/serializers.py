@@ -122,6 +122,7 @@ class EndpointSerializer(serializers.ModelSerializer):
         ret['additional_fields'] = json.loads(instance.additional_fields)
         ret['litter_effects_display'] = instance.get_litter_effects_display()
         ret['experiment_type'] = instance.animal_group.experiment.type
+        ret['assay_type'] = instance.assay_type
         models.EndpointGroup.getStdevs(ret['variance_type'], ret['groups'])
         models.EndpointGroup.percentControl(ret['data_type'], ret['groups'])
         models.EndpointGroup.getConfidenceIntervals(ret['data_type'], ret['groups'])

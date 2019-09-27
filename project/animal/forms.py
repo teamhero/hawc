@@ -390,7 +390,7 @@ class EndpointForm(ModelForm):
                   'effects', 'diagnostic',
                   'observation_time', 'observation_time_units', 'observation_time_text',
                   'data_reported', 'data_extracted', 'values_estimated',
-                  'data_type', 'variance_type', 'confidence_interval',
+                  'data_type', 'variance_type', 'assay_type', 'confidence_interval',
                   'response_units', 'data_location', 'expected_adversity_direction',
                   'NOEL', 'LOEL', 'FEL', 'monotonicity',
                   'statistical_test', 'trend_result', 'trend_value',

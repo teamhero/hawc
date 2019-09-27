@@ -712,6 +712,7 @@ class Endpoint(BaseEndpoint):
         'observation_time_text',
         'data_location',
         'response_units',
+        'assay_type',
         'statistical_test',
         'diagnostic',
         'data_location',
@@ -861,6 +862,9 @@ class Endpoint(BaseEndpoint):
     variance_type = models.PositiveSmallIntegerField(
         default=1,
         choices=VARIANCE_TYPE_CHOICES)
+    assay_type = models.CharField(
+        max_length=256,
+        blank=True)
     confidence_interval = models.FloatField(
         blank=True,
         null=True,
@@ -1042,6 +1046,7 @@ class Endpoint(BaseEndpoint):
             "endpoint-response_units",
             "endpoint-data_type",
             "endpoint-variance_type",
+            "endpoint-assay_type",
             "endpoint-confidence_interval",
             "endpoint-data_reported",
             "endpoint-data_extracted",
@@ -1076,6 +1081,7 @@ class Endpoint(BaseEndpoint):
             ser['response_units'],
             ser['data_type'],
             ser['variance_name'],
+            ser['assay_type'],
             ser['confidence_interval'],
             ser['data_reported'],
             ser['data_extracted'],

@@ -202,6 +202,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
             'doses',
             'dose units',
             'response units',
+            'assay type',
             'expected adversity direction',
             'maximum endpoint change',
 
@@ -291,6 +292,7 @@ class EndpointGroupFlatDataPivot(FlatFileExporter):
                 self._get_doses_str(doses),
                 self._get_dose_units(doses),
                 ser['response_units'],
+                ser['assay_type'],
                 ser['expected_adversity_direction'],
                 ser['percentControlMaxChange'],
             ]
@@ -383,6 +385,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
             'doses',
             'dose units',
             'response units',
+            'assay type',
             'expected adversity direction',
 
             'low_dose',
@@ -502,6 +505,7 @@ class EndpointFlatDataPivot(EndpointGroupFlatDataPivot):
                 self._get_doses_str(doses),
                 self._get_dose_units(doses),
                 ser['response_units'],
+                ser['assay_type'],
                 ser['expected_adversity_direction'],
             ]
 
@@ -562,6 +566,7 @@ class EndpointSummary(FlatFileExporter):
             'endpoint-name',
             'endpoint-observation_time',
             'endpoint-response_units',
+            'endpoint-assay_type',
             'Dose units',
             'Doses',
             'Responses',
@@ -652,6 +657,7 @@ class EndpointSummary(FlatFileExporter):
                 ser['name'],
                 ser['observation_time_text'],
                 ser['response_units'],
+                ser['assay_type'],
             ]
 
             responsesList = getResponses(ser['groups'])
