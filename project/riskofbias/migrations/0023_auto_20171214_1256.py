@@ -8,28 +8,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('riskofbias', '0022_auto_20171201_1036'),
+        ('riskofbias', '0019_auto_20171201_1036'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='riskofbiasmetricanswers',
-            name='answer_choice',
+            name='choice',
             field=models.TextField(default='Not reported', unique=True),
         ),
         migrations.AlterField(
             model_name='riskofbiasmetricanswers',
-            name='answer_order',
+            name='order',
             field=models.IntegerField(default=1, unique=True),
         ),
         migrations.AlterField(
             model_name='riskofbiasmetricanswers',
-            name='answer_score',
+            name='score',
             field=models.PositiveSmallIntegerField(default=10, unique=True),
         ),
         migrations.AlterField(
             model_name='riskofbiasmetricanswers',
-            name='answer_symbol',
+            name='symbol',
             field=models.TextField(default='NR', unique=True),
         ),
     ]
