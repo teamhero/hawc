@@ -9,8 +9,6 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.html import strip_tags
 
-from model_utils import Choices
-
 from reversion import revisions as reversion
 
 from assessment.models import Assessment
@@ -409,7 +407,6 @@ class RiskOfBias(models.Model):
                 score.id = None
                 score.riskofbias_id = rob.id
                 score.metric_id = cw[RiskOfBiasMetric.COPY_NAME][score.metric_id]
-                score.answers_id = cw[RiskOfBiasMetricAnswers.COPY_NAME][score.answers_id]
                 score.save()
 
         return cw
