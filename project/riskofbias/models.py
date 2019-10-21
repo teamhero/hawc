@@ -448,6 +448,7 @@ class RiskOfBiasScore(models.Model):
         RiskOfBiasMetric,
         related_name='scores')
     score = models.PositiveSmallIntegerField(
+        choices=RISK_OF_BIAS_SCORE_CHOICES,
         default=10)
     notes = models.TextField(
         blank=True)
