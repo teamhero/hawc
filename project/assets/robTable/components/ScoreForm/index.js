@@ -110,23 +110,38 @@ class ScoreForm extends Component {
     render() {
         let { name } = this.props.score.metric,
             { scoreChoices, score, notes, selectedSymbol, selectedShade } = this.state;
-        return (
-            <div className='score-form'>
-                <div>
-                    <Select choices={scoreChoices}
-                          id={name}
-                          value={score}
-                          handleSelect={this.selectScore}/>
-                    <br/><br/>
-                    <ScoreIcon shade={selectedShade}
-                             symbol={selectedSymbol}/>
+        
+        if (this.props.score.metric.domain.assessment.id != 100500031) {
+            return (
+                <div className='score-form'>
+                    <div>
+                        <Select choices={scoreChoices}
+                              id={name}
+                              value={score}
+                              handleSelect={this.selectScore}/>
+                        <br/><br/>
+                        <ScoreIcon shade={selectedShade}
+                                 symbol={selectedSymbol}/>
+                    </div>
+                    <ReactQuill id={name}
+                             value={notes}
+                             onChange={this.handleEditorInput}
+                             className='score-editor' />
                 </div>
-                <ReactQuill id={name}
-                         value={notes}
-                         onChange={this.handleEditorInput}
-                         className='score-editor' />
-            </div>
-        );
+            );
+        } else {
+            return (
+                <div className='score-form'>
+                    <div>
+                        <input type='hidden' id='{name}' name='{name}' value='{score}' />
+                    </div>
+                    <ReactQuill id={name}
+                             value={notes}
+                             onChange={this.handleEditorInput}
+                             className='score-editor' />
+                </div>
+            );
+        } 
     }
 }
 
