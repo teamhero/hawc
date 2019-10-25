@@ -836,7 +836,7 @@ class Endpoint(BaseEndpoint):
     observation_time_text = models.CharField(
         max_length=64,
         blank=True,
-        help_text='Text for reported observation time (ex: "60-90 PND")')
+        help_text='Text for reported observation time (ex: "60-90 PND", 5d, 2wk)')
     data_location = models.CharField(
         max_length=128,
         blank=True,
