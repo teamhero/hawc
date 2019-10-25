@@ -82,7 +82,8 @@ class RoBHeatmapPlot extends D3Visualization {
         var dataset = [],
             included_metrics = this.data.settings.included_metrics,
             studies, 
-            metrics, 
+            metricNames, 
+            metrics,
             xIsStudy,
             study_label_field = this.data.settings.study_label_field
                 ? this.data.settings.study_label_field
@@ -118,9 +119,13 @@ class RoBHeatmapPlot extends D3Visualization {
                    .uniq()
                    .value();
 
-        metrics = _.chain(dataset)
+        metricNames = _.chain(dataset)
                    .map(function(d){return d.metric_label;})
                    .uniq()
+                   .value();
+
+        metrics = _.chain(dataset)
+                   .map(function(d){return d.metric;})
                    .value();
 
         if(this.firstPass){
@@ -141,13 +146,14 @@ class RoBHeatmapPlot extends D3Visualization {
             cell_size: this.data.settings.cell_size,
             dataset,
             studies,
+            metricNames,
             metrics,
             title_str: this.data.settings.title,
             x_label_text: this.data.settings.xAxisLabel,
             y_label_text: this.data.settings.yAxisLabel,
             xIsStudy,
-            xVals: (xIsStudy)  ? studies : metrics,
-            yVals: (!xIsStudy) ? studies : metrics,
+            xVals: (xIsStudy)  ? studies : metricNames,
+            yVals: (!xIsStudy) ? studies : metricNames,
             xField: (xIsStudy)  ? 'study_label' : 'metric_label',
             yField: (!xIsStudy) ? 'study_label' : 'metric_label',
         });
@@ -271,38 +277,37 @@ class RoBHeatmapPlot extends D3Visualization {
                 .style('fill',  function(d){return d.score_text_color;})
                 .text(function(d){return d.score_text;});
 
+		var heatmapPlot = this;
         $('.x_axis text').each( (this.xIsStudy) ? getStudySQs : getMetricSQs )
-            .attr('class', 'heatmap_selectable')
+            .attr('class', function(idx) {
+				return heatmapPlot.getClassForGridLabel("xaxis", idx);
+			})
             .on('mouseover', function(v){self.draw_hovers(this, {draw: true, type: 'column'});})
             .on('mouseout', hideHovers)
             .on('click', showSQs);
 
         $('.y_axis text').each( (!this.xIsStudy) ? getStudySQs : getMetricSQs )
-            .attr(
-                'class'
-                ,function(d) {
-                    var returnValue = "heatmap_selectable";
-
-                    if (
-                        (typeof(self.data) != "undefined")
-                        && (typeof(self.data.aggregation) != "undefined")
-                        && (typeof(self.data.aggregation.metrics_dataset) != "undefined")
-                        && (d < self.data.aggregation.metrics_dataset.length)
-                        && (typeof(self.data.aggregation.metrics_dataset[d].domain_is_overall_confidence) == "boolean")
-                        && (self.data.aggregation.metrics_dataset[d].domain_is_overall_confidence)
-                    ) {
-                        var returnValue = "heatmap_selectable_bold";
-                    }
-
-                    return returnValue;
-                }
-            )
+            .attr('class', function(idx) {
+				return heatmapPlot.getClassForGridLabel("yaxis", idx);
+			})
             .on('mouseover', function(v){self.draw_hovers(this, {draw: true, type: 'row'});})
             .on('mouseout', hideHovers)
             .on('click', showSQs);
 
         this.hover_group = this.vis.append('g');
     }
+	
+	getClassForGridLabel(axis, axisIndex) {
+		var returnValue = "heatmap_selectable";
+
+		// we only bold it when looking at metrics/domains; figure out which axis that is...
+		if ((this.xIsStudy && axis == "yaxis") || (!this.xIsStudy && axis == "xaxis")) {
+			if (this.metrics[axisIndex].domain.is_overall_confidence) {
+				returnValue = "heatmap_selectable_bold";
+			}
+		}
+		return returnValue;
+	}
 
     resize_plot_dimensions(){
         // Resize plot based on the dimensions of the labels.
