@@ -16,18 +16,25 @@ class ScoreCell extends Component {
 
     render(){
         let { score } = this.props;
-        return (
-            <div className='score-cell'
-                 name={score.metric.name}
-                 style={{backgroundColor: score.score_shade}}
-                 onClick={this.handleClick}>
-                <span className='tooltips'
-                      data-toggle='tooltip'
-                      title={score.metric.name}>
-                        {score.score_symbol}
-                 </span>
-            </div>
-        );
+
+        if (score.metric.domain.assessment.id != 100500031) {
+            return (
+                <div className='score-cell'
+                     name={score.metric.name}
+                     style={{backgroundColor: score.score_shade}}
+                     onClick={this.handleClick}>
+                    <span className='tooltips'
+                          data-toggle='tooltip'
+                          title={score.metric.name}>
+                            {score.score_symbol}
+                     </span>
+                </div>
+            );
+        } else {
+            return (
+                <div className='score-cell'></div>
+            );
+        }
     }
 }
 

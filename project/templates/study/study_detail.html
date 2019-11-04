@@ -75,6 +75,9 @@
           </h3>
           <div class="span12">
             <div id='rob_plot' class="d3_container"></div>
+            {% if assessment.id == 100500031 %}
+              <div>Click button on right to view Evaluation Details</div>
+            {% endif %}
           </div>
       </div>
     {% endif %}
@@ -118,7 +121,7 @@
       thisStudy.add_attachments_row(detail_div, {{study.get_attachments_json|safe}});
     {% endif %}
 
-    if (thisStudy.has_riskofbias()){
+    if (thisStudy.has_riskofbias() && thisStudy.data.assessment != 100500031){
         window.app.riskofbiasStartup(function(riskofbias){
             new riskofbias.Donut(thisStudy, '#rob_plot', {'build_plot_startup': true});
         })

@@ -41,24 +41,38 @@ class ScoreDisplay extends Component {
     render(){
         let { score, config } = this.props,
             copyTextButton = this.props.copyNotes ? <button className="btn btn-secondary copy-notes" onClick={this.copyNotes}>Copy Notes</button> : null;
-        return (
-            <div className={`score-display ${this.state.flex}-container`} ref='display'>
-                <div className='flex-1'>
-                    {config.display === 'final' && !config.isForm ? null : <p><b>{score.author.full_name}</b></p>}
-                    <ScoreBar score={score.score}
-                              shade={score.score_shade}
-                              symbol={score.score_symbol}
-                              description={score.score_description}
-                    />
+        
+        if (config.assessment_id != 100500031) {
+            return (
+                <div className={`score-display ${this.state.flex}-container`} ref='display'>
+                    <div className='flex-1'>
+                        {config.display === 'final' && !config.isForm ? null : <p><b>{score.author.full_name}</b></p>}
+                        <ScoreBar score={score.score}
+                                shade={score.score_shade}
+                                symbol={score.score_symbol}
+                                description={score.score_description}
+                        />
+                    </div>
+                    <div className='flex-3 score-notes'>
+                        <div dangerouslySetInnerHTML={{
+                            __html: score.notes,
+                        }} />
+                        {copyTextButton}
+                    </div>
                 </div>
-                <div className='flex-3 score-notes'>
-                    <div dangerouslySetInnerHTML={{
-                        __html: score.notes,
-                    }} />
-                    {copyTextButton}
+            );
+        } else {
+            return (
+                <div className={`score-display ${this.state.flex}-container`} ref='display'>
+                    <div className='flex-3 score-notes'>
+                        <div dangerouslySetInnerHTML={{
+                            __html: score.notes,
+                        }} />
+                        {copyTextButton}
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
     }
 }
 

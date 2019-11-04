@@ -27,7 +27,7 @@
     </li>
     {% endif %}
 
-    {% if assessment.enable_risk_of_bias %}
+    {% if assessment.enable_risk_of_bias and assessment.id != 100500031 %}
     <li>
         <b>Study evaluation report</b><br>
         <a class='btn btn-primary'
