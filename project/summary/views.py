@@ -743,9 +743,6 @@ def getEvidenceProfileDictionary(object):
     returnValue["cross_stream_confidence_judgement"] = json.loads(returnValue["cross_stream_confidence_judgement"])
     returnValue["cross_stream_inferences"] = json.loads(returnValue["cross_stream_inferences"])
 
-    evidenceProfile["cross_stream_confidence_judgement"] = json.loads(evidenceProfile["cross_stream_confidence_judgement"])
-    evidenceProfile["cross_stream_inferences"] = json.loads(evidenceProfile["cross_stream_inferences"])
-
     # Any existing stream objects loaded from the database will have the actual data fields stored within a "fields" attribute; extract
     # that data from the fields attribute and retain only that portion of the original stream object
     returnValue["streams"][:] = [stream["fields"] for stream in returnValue["streams"] if (stream)]
