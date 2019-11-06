@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('assessment', '0017_confidencefactor'),
-        ('summary', '0014_visual_sort_order'),
+        ('summary', '0015_merge_20171012_1508'),
     ]
 
     operations = [

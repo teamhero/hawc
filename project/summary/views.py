@@ -465,7 +465,6 @@ class EvidenceProfileNew(BaseCreate):
                 confidence_judgement = json.dumps(stream["confidence_judgement"]),
                 summary_of_findings = stream["summary_of_findings"],
                 order = stream["order"],
-                confidence_judgement = json.dumps(stream["confidence_judgement"]),
                 outcomes = json.dumps(stream["outcomes"]),
             )
 
