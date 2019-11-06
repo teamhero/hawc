@@ -12,16 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='datapivot',
-            name='published',
-            field=models.BooleanField(default=False, help_text='For assessments marked for public viewing, mark visual to be viewable by public', verbose_name='Publish visual for public viewing'),
-        ),
-        migrations.AddField(
-            model_name='visual',
-            name='published',
-            field=models.BooleanField(default=False, help_text='For assessments marked for public viewing, mark visual to be viewable by public', verbose_name='Publish visual for public viewing'),
-        ),
         migrations.AlterField(
             model_name='datapivot',
             name='caption',
