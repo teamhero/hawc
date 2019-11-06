@@ -442,11 +442,7 @@ class EvidenceProfileNew(BaseCreate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-<<<<<<< HEAD
         # Set the object model's cross-stream related fields to JSON-formatted strings based on the cleaned data from the submitted form
-=======
-        # Set the object model's cross-stream related fields based on the cleaned data from the submitted form
->>>>>>> 794146d... First commit -- clean-up complete for the top level Evidence Profile Table basic data, and for second-level  Evidence Profile Streams
         form.instance.cross_stream_confidence_judgement = json.dumps(form.cleaned_data.get("cross_stream_confidence_judgement"))
         form.instance.cross_stream_inferences = json.dumps(form.cleaned_data.get("cross_stream_inferences"))
 
@@ -467,13 +463,9 @@ class EvidenceProfileNew(BaseCreate):
                 stream_type = stream["stream_type"],
                 stream_title = stream["stream_title"],
                 confidence_judgement = json.dumps(stream["confidence_judgement"]),
-<<<<<<< HEAD
                 summary_of_findings = stream["summary_of_findings"],
                 order = stream["order"],
                 outcomes = json.dumps(stream["outcomes"]),
-=======
-                order = stream["order"],
->>>>>>> 794146d... First commit -- clean-up complete for the top level Evidence Profile Table basic data, and for second-level  Evidence Profile Streams
             )
 
             streamToSave.save()
@@ -487,16 +479,10 @@ class EvidenceProfileNew(BaseCreate):
                         hawcuser = self.request.user,
                         scenario_name = scenario["scenario_name"],
                         outcome = json.dumps(scenario["outcome"]),
-<<<<<<< HEAD
                         summary_of_findings = scenario["summary_of_findings"],
                         studies = json.dumps(scenario["studies"]),
                         confidencefactors_increase = json.dumps(scenario["confidencefactors_increase"]),
                         confidencefactors_decrease = json.dumps(scenario["confidencefactors_decrease"]),
-=======
-                        studies = "[]",
-                        confidencefactors_increase = "[]",
-                        confidencefactors_decrease = "[]",
->>>>>>> 794146d... First commit -- clean-up complete for the top level Evidence Profile Table basic data, and for second-level  Evidence Profile Streams
                         order = scenario["order"],
                         created = pytz.timezone(timezone.get_default_timezone_name()).localize(datetime.now()),
                     )
@@ -525,11 +511,7 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
 
     # This method handles a valid submitted form
     def form_valid(self, form):
-<<<<<<< HEAD
         # Set the object model's cross-stream related fields to JSON-formatted strings based on the cleaned data from the submitted form
-=======
-        # Set the object model's cross-stream related fields based on the cleaned data from the submitted form
->>>>>>> 794146d... First commit -- clean-up complete for the top level Evidence Profile Table basic data, and for second-level  Evidence Profile Streams
         form.instance.cross_stream_confidence_judgement = json.dumps(form.cleaned_data.get("cross_stream_confidence_judgement"))
         form.instance.cross_stream_inferences = json.dumps(form.cleaned_data.get("cross_stream_inferences"))
 
@@ -562,12 +544,9 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
             streamToSave.hawcuser = self.request.user
             streamToSave.stream_type = stream["stream_type"]
             streamToSave.stream_title = stream["stream_title"]
-<<<<<<< HEAD
             streamToSave.confidence_judgement = json.dumps(stream["confidence_judgement"])
             streamToSave.summary_of_findings = stream["summary_of_findings"]
             streamToSave.order = stream["order"]
-=======
->>>>>>> 794146d... First commit -- clean-up complete for the top level Evidence Profile Table basic data, and for second-level  Evidence Profile Streams
             streamToSave.confidence_judgement = json.dumps(stream["confidence_judgement"])
             streamToSave.order = stream["order"]
 
@@ -598,16 +577,10 @@ class EvidenceProfileUpdate(GetEvidenceProfileObjectMixin, BaseUpdate):
                     scenarioToSave.hawcuser = self.request.user
                     scenarioToSave.scenario_name = scenario["scenario_name"]
                     scenarioToSave.outcome = json.dumps(scenario["outcome"])
-<<<<<<< HEAD
                     scenarioToSave.summary_of_findings = scenario["summary_of_findings"]
                     scenarioToSave.studies = json.dumps(scenario["studies"])
                     scenarioToSave.confidencefactors_increase = json.dumps(scenario["confidencefactors_increase"])
                     scenarioToSave.confidencefactors_decrease = json.dumps(scenario["confidencefactors_decrease"])
-=======
-                    scenarioToSave.studies = "{}"
-                    scenarioToSave.confidencefactors_increase = "[]"
-                    scenarioToSave.confidencefactors_decrease = "[]"
->>>>>>> 794146d... First commit -- clean-up complete for the top level Evidence Profile Table basic data, and for second-level  Evidence Profile Streams
                     scenarioToSave.order = scenario["order"]
 
                     scenarioToSave.save();
@@ -775,7 +748,6 @@ def getEvidenceProfileDictionary(object):
 
     # Any existing stream objects loaded from the database will have the actual data fields stored within a "fields" attribute; extract
     # that data from the fields attribute and retain only that portion of the original stream object
-<<<<<<< HEAD
     returnValue["streams"][:] = [stream["fields"] for stream in returnValue["streams"] if (stream)]
 
     # Initialize a list to hold the primary keys of all the studies in the evidence profile
@@ -783,12 +755,6 @@ def getEvidenceProfileDictionary(object):
 
     # Attempt to de-serialize each stream's "confidence_judgement" attribute and child scenarios
     for stream in returnValue["streams"]:
-=======
-    evidenceProfile["streams"][:] = [stream["fields"] for stream in evidenceProfile["streams"] if (stream)]
-
-    # Attempt to de-serialize each stream's "confidence_judgement" and "outcome" attributes
-    for stream in evidenceProfile["streams"]:
->>>>>>> 794146d... First commit -- clean-up complete for the top level Evidence Profile Table basic data, and for second-level  Evidence Profile Streams
         try:
             stream["confidence_judgement"] = json.loads(stream["confidence_judgement"])
         except:
