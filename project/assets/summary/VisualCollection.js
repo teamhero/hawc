@@ -22,7 +22,7 @@ class VisualCollection {
     }
 
     // This method builds the HTML table of links to this assessment's visualizations
-    static buildTable(url1, url2, url3, $el) {
+    static buildTable(url1, url2, url3, $el, opts) {
         var visuals, obj;
 
         // Call the included API URLs to retrieve the information about each type of visualization
@@ -53,7 +53,7 @@ class VisualCollection {
         ).always(
             function() {
                 // Whether everything went okay or not, build an HTML table based around the visuals array
-                obj = new VisualCollection( visuals );
+                obj = new VisualCollection( visuals, opts );
                 return obj.build_table($el);
             }
         );
