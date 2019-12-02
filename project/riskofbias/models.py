@@ -40,6 +40,8 @@ class RiskOfBiasDomain(models.Model):
         ,help_text = "Is this domain for overall confidence?"
     )
 
+    COPY_NAME = 'riskofbiasdomains'
+
     class Meta:
         unique_together = ('assessment', 'name')
         ordering = ('pk', )
@@ -73,73 +75,15 @@ class RiskOfBiasDomain(models.Model):
                 description=domain['description'])
             RiskOfBiasMetric.build_metrics_for_one_domain(d, domain['metrics'])
 
-    @classmethod
-    def copy_across_assessment(cls, cw, studies, assessment):
-        # Copy domain and metrics across studies as well. If a domain and
-        # metric have identical names in the new assessment as the old,
-        # then don't create new metrics and domains. If the names are not
-        # identical, then create a new one. Save metric old:new IDs in a
-        # crosswalk which is returned.
-
-        # assert all studies come from a single assessment
-        source_assessment = Assessment.objects\
-            .filter(references__in=studies)\
-            .distinct()
-        if source_assessment.count() != 1:
-            raise ValueError('Studies must come from the same assessment')
-        source_assessment = source_assessment[0]
-        cw[Assessment.COPY_NAME][source_assessment.id] = assessment.id
-
-        def get_key(metric):
-            return '{}: {}'.format(metric.domain.name, metric.name)
-
-        # create a map of domain + metric for new assessment
-        metrics = RiskOfBiasMetric.objects\
-            .filter(domain__assessment=assessment)
-        metric_mapping = {get_key(metric): metric.id for metric in metrics}
-
-        # if any duplicates exist; create new
-        if len(metric_mapping) != metrics.count():
-            metric_mapping = {}
-
-        # create a map of existing domains for assessment
-        domain_mapping = {
-            domain.name: domain.id for domain in
-            cls.objects.filter(assessment=assessment)
-        }
-
-        # map or create new objects
-        for metric in RiskOfBiasMetric.objects\
-                .filter(domain__assessment=source_assessment):
-
-            source_metric_id = metric.id
-            key = get_key(metric)
-            target_metric_id = metric_mapping.get(key)
-
-            # if existing metric doesn't exist, make one
-            if target_metric_id is None:
-
-                domain = metric.domain
-                # if existing domain doesn't exist, make one
-                if domain_mapping.get(domain.name) is None:
-                    # domain not found; we must create one
-                    domain.id = None
-                    domain.assessment_id = assessment.id
-                    domain.save()
-                    domain_mapping[domain.name] = domain.id
-                    logging.info('Created RoB domain: {} -> {}'.
-                                 format(domain.name, domain.id))
-
-                metric.id = None
-                metric.domain_id = domain_mapping[domain.name]
-                metric.save()
-                target_metric_id = metric.id
-                logging.info('Created RoB metric: {} -> {}'.
-                             format(key, target_metric_id))
-
-            cw[RiskOfBiasMetric.COPY_NAME][source_metric_id] = target_metric_id
-
-        return cw
+    def copy_across_assessments(self, cw):
+        children = list(self.metrics.all())
+        old_id = self.id
+        self.id = None
+        self.assessment_id = cw[Assessment.COPY_NAME][self.assessment_id]
+        self.save()
+        cw[self.COPY_NAME][old_id] = self.id
+        for child in children:
+            child.copy_across_assessments(cw)
 
 
 class RiskOfBiasMetric(models.Model):
@@ -181,7 +125,7 @@ class RiskOfBiasMetric(models.Model):
     last_updated = models.DateTimeField(
         auto_now=True)
 
-    COPY_NAME = 'metrics'
+    COPY_NAME = 'riskofbiasmetrics'
 
     class Meta:
         ordering = ('domain', 'id')
@@ -205,6 +149,13 @@ class RiskOfBiasMetric(models.Model):
             objs.append(obj)
         RiskOfBiasMetric.objects.bulk_create(objs)
 
+    def copy_across_assessments(self, cw):
+        old_id = self.id
+        self.id = None
+        self.domain_id = cw[RiskOfBiasDomain.COPY_NAME][self.domain_id]
+        self.save()
+        cw[self.COPY_NAME][old_id] = self.id
+
 
 class RiskOfBias(models.Model):
     objects = managers.RiskOfBiasManager()
@@ -226,6 +177,8 @@ class RiskOfBias(models.Model):
         auto_now_add=True)
     last_updated = models.DateTimeField(
         auto_now=True)
+
+    COPY_NAME = 'riskofbiases'
 
     class Meta:
         verbose_name_plural = 'Study Evaluation'
@@ -358,33 +311,15 @@ class RiskOfBias(models.Model):
             ser['author']['full_name']
         )
 
-    @classmethod
-    def copy_across_assessment(cls, cw, studies, assessment):
-        # Copy active, final, risk of bias assessments for each study, and
-        # assign to project manager selected at random. Requires that for all
-        # studies, a crosswalk exists which assigns a new RiskOfBiasMetric ID
-        # from the old RiskOfBiasMetric ID.
-
-        author = assessment.project_manager.first()
-        final_robs = cls.objects.filter(study__in=studies, active=True, final=True)
-
-        # copy reviews and scores
-        for rob in final_robs:
-            scores = list(rob.scores.all())
-
-            rob.id = None
-            rob.study_id = cw[Study.COPY_NAME][rob.study_id]
-            rob.author = author
-            rob.save()
-
-            for score in scores:
-                score.id = None
-                score.riskofbias_id = rob.id
-                score.metric_id = cw[RiskOfBiasMetric.COPY_NAME][score.metric_id]
-                score.save()
-
-        return cw
-
+    def copy_across_assessments(self, cw):
+        children = list(self.scores.all())
+        old_id = self.id
+        self.id = None
+        self.study_id = cw[Study.COPY_NAME][self.study_id]
+        self.save()
+        cw[self.COPY_NAME][old_id] = self.id
+        for child in children:
+            child.copy_across_assessments(cw)
 
 class RiskOfBiasScore(models.Model):
     objects = managers.RiskOfBiasScoreManager()
@@ -426,6 +361,8 @@ class RiskOfBiasScore(models.Model):
         default=10)
     notes = models.TextField(
         blank=True)
+
+    COPY_NAME = 'riskofbiasscores'
 
     class Meta:
         ordering = ('metric', 'id')
@@ -481,6 +418,14 @@ class RiskOfBiasScore(models.Model):
         RiskOfBias.delete_caches(rob_ids)
         Study.delete_caches(study_ids)
 
+    def copy_across_assessments(self, cw):
+        old_id = self.id
+        self.id = None
+        self.riskofbias_id = cw[RiskOfBias.COPY_NAME][self.riskofbias_id]
+        self.metric_id = cw[RiskOfBiasMetric.COPY_NAME][self.metric_id]
+        self.save()
+        cw[self.COPY_NAME][old_id] = self.id
+
 
 class RiskOfBiasAssessment(models.Model):
     objects = managers.RiskOfBiasAssessmentManager()
@@ -491,47 +436,49 @@ class RiskOfBiasAssessment(models.Model):
     number_of_reviewers = models.PositiveSmallIntegerField(
         default=1)
     help_text = models.TextField(
-        default="""<p>Study evaluations are performed on an endpoint/outcome-specific basis. 
-                    For each evaluation domain, core and prompting questions are provided to 
-                    guide the reviewer in assessing different aspects of study design and 
-                    conduct related to reporting, risk of bias and study sensitivity. 
-                    For some domains (see below), additional outcome- or chemical-specific 
-                    refinements to the criteria used to answer the questions should be developed 
-                    <em>a priori</em> by reviewers. Each domain receives a judgment of 
-                    <em>Good</em>, <em>Adequate</em>, <em>Deficient</em>, <em>Not Reported</em> 
-                    or <em>Critically Deficient</em> accompanied by the rationale and primary 
-                    study-specific information supporting the judgment.&nbsp;Once all domains 
-                    are evaluated, a confidence rating of <em>High</em>, <em>Medium</em>, or 
-                    <em>Low</em> confidence or <em>Uninformative</em> is assigned for each 
-                    endpoint/outcome from the study.&nbsp;The overall confidence rating 
-                    should, to the extent possible, reflect interpretations of the potential 
-                    influence on the results (including the direction and/or magnitude of 
-                    influence) across all domains.&nbsp;The rationale supporting the overall 
-                    confidence rating should be documented clearly and consistently, including 
-                    a brief description of any important strengths and/or limitations that were 
+        default="""<p>Study evaluations are performed on an endpoint/outcome-specific basis.
+                    For each evaluation domain, core and prompting questions are provided to
+                    guide the reviewer in assessing different aspects of study design and
+                    conduct related to reporting, risk of bias and study sensitivity.
+                    For some domains (see below), additional outcome- or chemical-specific
+                    refinements to the criteria used to answer the questions should be developed
+                    <em>a priori</em> by reviewers. Each domain receives a judgment of
+                    <em>Good</em>, <em>Adequate</em>, <em>Deficient</em>, <em>Not Reported</em>
+                    or <em>Critically Deficient</em> accompanied by the rationale and primary
+                    study-specific information supporting the judgment.&nbsp;Once all domains
+                    are evaluated, a confidence rating of <em>High</em>, <em>Medium</em>, or
+                    <em>Low</em> confidence or <em>Uninformative</em> is assigned for each
+                    endpoint/outcome from the study.&nbsp;The overall confidence rating
+                    should, to the extent possible, reflect interpretations of the potential
+                    influence on the results (including the direction and/or magnitude of
+                    influence) across all domains.&nbsp;The rationale supporting the overall
+                    confidence rating should be documented clearly and consistently, including
+                    a brief description of any important strengths and/or limitations that were
                     identified and their potential impact on the overall confidence.</p>
-                    <p>Note that due to current limitations in HAWC, domain judgments and overall 
-                    ratings for all individual endpoints/outcomes assessed in a study will need 
-                    to be entered using a single drop-down selection and free-text box for each 
-                    study. Thus, all the reviewer decisions (and the supporting rationale) drawn 
-                    at the level of a specific cohort or individual endpoint within a study must 
-                    be described within a single free-text box.&nbsp;Within the text boxes, please 
-                    remember to call out each of the specific judgments and rationales. A good 
-                    form to follow for the text boxes is '<strong><em>Endpoint/Outcome – Judgment 
-                    – Rationale</em></strong>'. When selecting the representative rating for the 
-                    domains and overall rating (i.e., the drop-down selection with the associated 
-                    color code), it is typically most appropriate to select the judgment that 
-                    best represents an average of the responses for the endpoint/outcome evaluated 
-                    in that study, considering the pre-defined importance of individual 
+                    <p>Note that due to current limitations in HAWC, domain judgments and overall
+                    ratings for all individual endpoints/outcomes assessed in a study will need
+                    to be entered using a single drop-down selection and free-text box for each
+                    study. Thus, all the reviewer decisions (and the supporting rationale) drawn
+                    at the level of a specific cohort or individual endpoint within a study must
+                    be described within a single free-text box.&nbsp;Within the text boxes, please
+                    remember to call out each of the specific judgments and rationales. A good
+                    form to follow for the text boxes is '<strong><em>Endpoint/Outcome – Judgment
+                    – Rationale</em></strong>'. When selecting the representative rating for the
+                    domains and overall rating (i.e., the drop-down selection with the associated
+                    color code), it is typically most appropriate to select the judgment that
+                    best represents an average of the responses for the endpoint/outcome evaluated
+                    in that study, considering the pre-defined importance of individual
                     outcomes/health effects to the assessment (see Overall Confidence examples).</p>
-                    <p>Follow <a href='https://hawcprd.epa.gov/assessment/100000039/' target='_blank'><strong>link</strong></a> 
-                    to see attachments that contain example answers to the animal study evaluation domains. 
+                    <p>Follow <a href='https://hawcprd.epa.gov/assessment/100000039/' target='_blank'><strong>link</strong></a>
+                    to see attachments that contain example answers to the animal study evaluation domains.
                     <em>It is really helpful to have this document open when conducting reviews.</em></p>
-                    <p>Follow <a href='https://hawcprd.epa.gov/assessment/100000039/' target='_blank'><strong>link</strong></a> 
+                    <p>Follow <a href='https://hawcprd.epa.gov/assessment/100000039/' target='_blank'><strong>link</strong></a>
                     to see attachments that contain example prompting and follow-up questions for epidemiological studies.</p>
                 """,
         help_text="Detailed instructions for completing study evaluation assessments."
     )
+
+    COPY_NAME = 'riskofbiasassessments'
 
     def get_absolute_url(self):
         return reverse('riskofbias:arob_reviewers', args=[self.assessment.pk])
@@ -539,6 +486,15 @@ class RiskOfBiasAssessment(models.Model):
     @classmethod
     def build_default(cls, assessment):
         RiskOfBiasAssessment.objects.create(assessment=assessment)
+
+    def copy_across_assessments(self, cw):
+        old_id = self.id
+        self.id = None
+        new_assessment_id = cw[Assessment.COPY_NAME][self.assessment_id]
+        self.assessment_id = new_assessment_id
+        self.save()
+        cw[self.COPY_NAME][old_id] = self.id
+
 
 
 reversion.register(RiskOfBiasDomain)

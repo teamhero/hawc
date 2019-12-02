@@ -57,3 +57,6 @@ notebooks/*.ipynb
 .vscode
 project/package-lock.json
 yarn.lock
+
+venv/
+logfile
