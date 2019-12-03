@@ -308,3 +308,7 @@ def get_distinct_charfield(Cls, assessment_id, field):
 def get_distinct_charfield_opts(Cls, assessment_id, field):
     objs = get_distinct_charfield(Cls, assessment_id, field)
     return [(obj, obj) for obj in sorted(objs)]
+
+
+def get_model_copy_name(instance: models.Model) ->  str:
+    return getattr(instance, 'COPY_NAME', instance._meta.db_table)

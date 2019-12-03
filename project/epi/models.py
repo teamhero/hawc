@@ -76,7 +76,7 @@ class Country(models.Model):
 
 class AdjustmentFactor(models.Model):
     objects = managers.AdjustmentFactorManager()
-    
+
     assessment = models.ForeignKey(
         'assessment.Assessment')
     description = models.TextField()
@@ -380,7 +380,7 @@ class Outcome(BaseEndpoint):
 
     TAGS_HELP_TEXT = "For now, tag overall study confidence from the Risk of Bias review in this field. Ex. high" + formatHelpTextNotes("To add a new tag, click the \"+\" button to the right.") + formatHelpTextNotes("Only create new tags when necessary")
 
-                    
+
 
     TEXT_CLEANUP_FIELDS = (
         'name',
@@ -886,7 +886,7 @@ class Exposure(models.Model):
                     formatHelpTextNotes("If multiple, separate with semicolons") +
                     formatHelpTextNotes("Add units for quantitative measurements (days, months, years)")
         )
-                  
+
     duration = models.CharField(
         max_length=128,
         blank=True,
@@ -992,11 +992,16 @@ class Exposure(models.Model):
         )
 
     def copy_across_assessments(self, cw):
+        children = list(self.central_tendencies.all())
         old_id = self.id
+
         self.id = None
         self.study_population_id = cw[StudyPopulation.COPY_NAME][self.study_population_id]
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
+
+        for child in children:
+            child.copy_across_assessments(cw)
 
     def get_study(self):
         if self.study_population is not None:
@@ -1020,7 +1025,7 @@ class CentralTendency(models.Model):
         (3, "SEM"),
         (4, "GSD"),
         (5, "other"))
-    
+
     exposure = models.ForeignKey(
         Exposure,
         related_name='central_tendencies')
@@ -1126,6 +1131,13 @@ class CentralTendency(models.Model):
             ser.get("upper_bound_interval"),
         )
 
+    def copy_across_assessments(self, cw):
+        old_id = self.id
+
+        self.id = None
+        self.exposure_id = cw[self.exposure.COPY_NAME][self.exposure_id]
+        self.save()
+        cw[self.COPY_NAME][old_id] = self.id
 
 class GroupNumericalDescriptions(models.Model):
     objects = managers.GroupNumericalDescriptionsManager()
@@ -1623,7 +1635,7 @@ class GroupResult(models.Model):
         choices=P_VALUE_QUALIFIER_CHOICES,
         default="-",
         verbose_name='p-value qualifier',
-        help_text="Select n.s. if results are not statistically significant; otherwise, choose the appropriate qualifier. " + 
+        help_text="Select n.s. if results are not statistically significant; otherwise, choose the appropriate qualifier. " +
                     HAWC_VIS_NOTE_UNSTYLED)
     p_value = models.FloatField(
         blank=True,
@@ -1636,7 +1648,7 @@ class GroupResult(models.Model):
         verbose_name="Main finding",
         help_text="If study does not report a statistically significant association (p<0.05) between exposure " +
                     "and health outcome at any exposure level, check \"Main finding\" for highest exposure group " +
-                    "compared with referent group (e.g.Q4 vs. Q1). If study reports a statistically significant " + 
+                    "compared with referent group (e.g.Q4 vs. Q1). If study reports a statistically significant " +
                     "association and monotonic dose response, check \"Main finding\" for lowest exposure group with " +
                     "a statistically significant association. If nonmonotonic dose response, case-by-case considering " +
                     "statistical trend analyses, consistency of pattern across exposure groups, and/or biological " +

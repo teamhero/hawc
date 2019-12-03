@@ -69,12 +69,12 @@ class Study(Reference):
     short_citation = models.CharField(
         max_length=256,
         help_text="""
-                Use this format: last name, year, HERO ID (e.g., Baeder, 1990, 10130). This field 
-                is used to select studies for visualizations and endpoint filters within HAWC, so 
-                you may need to add distinguishing features such as chemical name when the 
-                assessment includes multiple chemicals (e.g., Baeder, 1990, 10130 PFHS). Note: 
-                Brackets can be added to put the references in LitCiter format in document text, 
-                e.g., {Baeder, 1990, 10130} or {Baeder, 1990, 10130@@author-year}, but LitCiter 
+                Use this format: last name, year, HERO ID (e.g., Baeder, 1990, 10130). This field
+                is used to select studies for visualizations and endpoint filters within HAWC, so
+                you may need to add distinguishing features such as chemical name when the
+                assessment includes multiple chemicals (e.g., Baeder, 1990, 10130 PFHS). Note:
+                Brackets can be added to put the references in LitCiter format in document text,
+                e.g., {Baeder, 1990, 10130} or {Baeder, 1990, 10130@@author-year}, but LitCiter
                 will not work on HAWC visuals.
                 """)
     full_citation = models.TextField(
@@ -101,8 +101,8 @@ class Study(Reference):
         blank=True,
         verbose_name="Internal study identifier",
         help_text="""
-                This field may be used in HAWC visualizations when there is a preference not to 
-                display the HERO ID number, so use author year format, e.g., Smith, 1978, Smith 
+                This field may be used in HAWC visualizations when there is a preference not to
+                display the HERO ID number, so use author year format, e.g., Smith, 1978, Smith
                 and Jones, 1978 or Smith et al., 1978 (for more than 3 authors).
                 """)
     contact_author = models.BooleanField(
@@ -155,9 +155,11 @@ class Study(Reference):
 
     @classmethod
     @transaction.atomic
-    def copy_across_assessment(cls, studies, assessment):
+    def copy_across_assessment(cls, studies, assessment, cw=None, copy_rob=False):
+
         # copy selected studies from one assessment to another.
-        cw = collections.defaultdict(dict)
+        if cw is None:
+            cw = collections.defaultdict(dict)
 
         # assert all studies come from a single assessment
         source_assessment = Assessment.objects\
@@ -177,6 +179,9 @@ class Study(Reference):
 
             # get child-types and copy
             children = []
+
+            if copy_rob:
+                children.extend(list(study.riskofbiases.all()))
 
             if study.bioassay:
                 children.extend(list(study.experiments.all()))
@@ -349,13 +354,13 @@ class Study(Reference):
 
     def get_crumbs(self):
         return get_crumbs(self, parent=self.assessment)
-    
+
     def get_crumbs_icon(self):
         if self.editable:
             return None
         else:
             return '<i title="Study is locked" class="fa fa-lock" aria-hidden="true"></i>'
-    
+
     # fetch the overall and individual metric RoB scores for this study, in a format that the DataPivot and other
     # visualizations can use -- JSON encoded strings. rob_scores should correspond to the headers retrieved from
     # Assessment.get_rob_visualization_headers
@@ -428,16 +433,16 @@ class Study(Reference):
                .filter(active=True, final=False)\
                .order_by('last_updated')\
                .prefetch_related('author')
-			   
+
     def get_overall_confidence(self):
         final_confidence_set = self.riskofbiases\
                 .prefetch_related('scores__metric__domain')\
                 .filter(active=True, final=True, scores__metric__domain__is_overall_confidence=True)
-					   
+
         if final_confidence_set.exists():
             if final_confidence_set.count() != 1:
                 return -1
-            else: 
+            else:
                 fc = final_confidence_set.values_list('scores__score', flat=True)[0]
                 return (fc+1)%11
         else:
@@ -467,7 +472,7 @@ class Study(Reference):
 
 class Attachment(models.Model):
     objects = managers.AttachmentManager()
-    
+
     study = models.ForeignKey(Study, related_name="attachments")
     attachment = models.FileField(upload_to="study-attachment")
 

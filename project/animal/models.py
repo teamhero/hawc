@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import collections
+from itertools import chain
 import json
 import math
 
@@ -79,8 +80,8 @@ class Experiment(models.Model):
         blank=True,
         verbose_name="Chemical identifier (CAS)",
         help_text="""
-                CAS number for chemical-tested. Use N/A if not applicable. If more than one 
-                CAS number is applicable, then use a common one here and indicate others 
+                CAS number for chemical-tested. Use N/A if not applicable. If more than one
+                CAS number is applicable, then use a common one here and indicate others
                 in the comment field below.
                 """)
     chemical_source = models.CharField(
@@ -114,10 +115,10 @@ class Experiment(models.Model):
         max_length=128,
         blank=True,
         help_text="""
-            Description of any compliance methods used (i.e. use of EPA OECD, NTP, 
-            or other guidelines; conducted under GLP guideline conditions, non-GLP but consistent 
-            with guideline study, etc.). This field response should match any description used 
-            in study evaluation in the reporting quality domain, e.g., GLP study (OECD guidelines 
+            Description of any compliance methods used (i.e. use of EPA OECD, NTP,
+            or other guidelines; conducted under GLP guideline conditions, non-GLP but consistent
+            with guideline study, etc.). This field response should match any description used
+            in study evaluation in the reporting quality domain, e.g., GLP study (OECD guidelines
             414 and 412, 1981 versions). If not reported, then use state "not reported."
             """)
     description = models.TextField(
@@ -255,7 +256,7 @@ class AnimalGroup(models.Model):
         ("Adult (gestation)", "Adult (gestation)"),
         ("Multi-lifestage", "Multi-lifestage")
     )
-        
+
 
     TEXT_CLEANUP_FIELDS = (
         'name',
@@ -272,9 +273,9 @@ class AnimalGroup(models.Model):
     name = models.CharField(
         max_length=80,
         help_text="""
-            Name should be: sex, common strain name, species (plural) and use Title Style 
-            (e.g. Male Sprague Dawley Rat, Female C57BL/6 Mice, Male and Female 
-            C57BL/6 Mice). For developmental studies, include the generation before 
+            Name should be: sex, common strain name, species (plural) and use Title Style
+            (e.g. Male Sprague Dawley Rat, Female C57BL/6 Mice, Male and Female
+            C57BL/6 Mice). For developmental studies, include the generation before
             sex in title (e.g., F1 Male Sprague Dawley Rat or P0 Female C57 Mice)
             """)
     species = models.ForeignKey(
@@ -495,7 +496,7 @@ class DosingRegime(models.Model):
         ("VT", "Vehicle-treated"),
         ("B" , "Untreated + Vehicle-treated"),
         ("N" , "No"))
-    
+
     TEXT_CLEANUP_FIELDS = (
         'description',
         'duration_exposure_text',
@@ -798,7 +799,7 @@ class Endpoint(BaseEndpoint):
     effect = models.CharField(
         max_length=128,
         blank=True,
-        help_text="Please reference terminology reference" 
+        help_text="Please reference terminology reference"
                     "file and use Title Style. Commonly used "
                     "effects include \"Histopathology\", \"Malformation,\" "
                     "\"Growth\", \"Clinical Chemistry\", \"Mortality,\" "
@@ -916,18 +917,18 @@ class Endpoint(BaseEndpoint):
     results_notes = models.TextField(
         blank=True,
         help_text= """
-            Qualitative description of the results. This field can be 
-            left blank if there is no need to further describe numerically 
-            extracted findings, e.g., organ or body weights. Use this 
-            field to describe findings such as the type and severity 
-            of histopathology or malformations not otherwise captured 
-            in the numerical data extraction. Also use this field to cut 
-            and paste findings described only in text in the study. If 
-            coding is used to create exposure-response arrays, then add 
-            this comment in bold font at the start of the text box entry 
-            <strong>"For exposure-response array data display purposes, the following 
-            results were coded (control and no effect findings were coded as 
-            "0", treatment-related increases were coded as "1", and 
+            Qualitative description of the results. This field can be
+            left blank if there is no need to further describe numerically
+            extracted findings, e.g., organ or body weights. Use this
+            field to describe findings such as the type and severity
+            of histopathology or malformations not otherwise captured
+            in the numerical data extraction. Also use this field to cut
+            and paste findings described only in text in the study. If
+            coding is used to create exposure-response arrays, then add
+            this comment in bold font at the start of the text box entry
+            <strong>"For exposure-response array data display purposes, the following
+            results were coded (control and no effect findings were coded as
+            "0", treatment-related increases were coded as "1", and
             treatment-related decreases were coded as "-1"."</strong>
             """)
     endpoint_notes = models.TextField(
@@ -1191,7 +1192,7 @@ class Endpoint(BaseEndpoint):
             return None
 
     def copy_across_assessments(self, cw):
-        children = list(self.groups.all())
+        children = chain(list(self.groups.all()), list(self.bmd_sessions.all()))
 
         old_id = self.id
         new_assessment_id = cw[Assessment.COPY_NAME][self.assessment_id]

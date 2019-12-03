@@ -25,6 +25,7 @@ from treebeard.mp_tree import MP_Node
 
 from utils.helper import HAWCtoDateString, HAWCDjangoJSONEncoder, \
     SerializerHelper, tryParseInt
+from utils.models import get_model_copy_name
 
 from . import managers
 
@@ -184,8 +185,8 @@ class Visual(models.Model):
         (ROB_HEATMAP, "risk of bias heatmap"),
         (ROB_BARCHART, "risk of bias barchart"), )
 
-    SORT_ORDER_CHOICES = (("short_citation","Short Citation"),("overall_confidence","Final Study Confidence"),)	
-	
+    SORT_ORDER_CHOICES = (("short_citation","Short Citation"),("overall_confidence","Final Study Confidence"),)
+
     title = models.CharField(
         max_length=128)
     slug = models.SlugField(
@@ -351,6 +352,17 @@ class Visual(models.Model):
 
         return json.dumps(data)
 
+    def copy_across_assessments(self,  cw):
+        old_id = self.id
+
+        self.id = None
+        self.assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
+        self.save()
+
+        # TODO - improve prefilters and setttings?
+
+        cw[get_model_copy_name(self)][old_id] = self.id
+
 
 class DataPivot(models.Model):
     objects = managers.DataPivotManager()
@@ -429,6 +441,9 @@ class DataPivot(models.Model):
         settings_as_json['row_overrides'] = []
         return json.dumps(settings_as_json)
 
+    def copy_across_assessment(cw):
+        raise NotImplementedError("Only implemented on child classes")
+
 
 class DataPivotUpload(DataPivot):
     objects = managers.DataPivotUploadManager()
@@ -448,6 +463,18 @@ class DataPivotUpload(DataPivot):
     @property
     def visual_type(self):
         return "Data pivot (file upload)"
+
+    def copy_across_assessments(self, cw):
+        old_id = self.id
+
+        self.id = None
+        self.assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
+        self.save()
+
+        # TODO - check multitable inheritance
+        # TODO - improve prefilters and setttings?
+
+        cw[get_model_copy_name(self)][old_id] = self.id
 
 
 class DataPivotQuery(DataPivot):
@@ -626,6 +653,18 @@ class DataPivotQuery(DataPivot):
             return "Data pivot (in vitro)"
         else:
             raise ValueError("Unknown type")
+
+    def copy_across_assessments(self, cw):
+        old_id = self.id
+
+        self.id = None
+        self.assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
+        self.save()
+
+        # TODO - check multitable inheritance
+        # TODO - improve prefilters and setttings?
+
+        cw[get_model_copy_name(self)][old_id] = self.id
 
 
 class Prefilter(object):
