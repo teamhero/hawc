@@ -1,0 +1,122 @@
+{% extends 'portal.html' %}
+
+{% block title %}
+  {{assessment}} | Literature Review | HAWC
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'assessment:detail' pk=assessment.pk %}">{{ assessment }}</a><span class="divider">/</span></li>
+  <li><a href="{% url 'lit:overview' assessment.pk %}">Literature Review</a><span class="divider">/</span></li>
+  <li class="active">Bulk Reference Tagging<span class="divider">/</span></li>
+{% endblock %}
+
+{% block content %}
+
+<h2>Bulk Reference Tagging for {{assessment}}</h2>
+
+{% if method == "GET" %}
+
+<form method="POST" id="bulkTaggingForm">
+	{% csrf_token %}
+	References to fetch: <select id="listing_variety">
+							<option value="untagged_only">Untagged Only</option>
+							<option value="tagged_only">Tagged Only</option>
+							<option value="all">All</option>
+						</select>
+	<input type="hidden" id="referenceIds" name="referenceIds"/>
+	<input type="hidden" id="tagIds" name="tagIds"/>
+	<p>
+	<div id="status_msg"></div>
+	<table id="reference_list">
+	</table>
+	<div id="shortcut_links"></div>
+	<div id="pagination_links"></div>
+
+	<hr>
+
+    <div class="span3">
+      <div id="taglist"></div><br>
+      <a class="btn btn-primary" id="submitBtn"></a>
+    </div>
+
+</form>
+
+{% else %}
+
+Your bulk tag operation has been completed. <a href="{% url 'lit:bulk_tagging' assessment.pk %}">Make another</a>?
+
+{% endif %}
+
+
+{% endblock %}
+
+{% block extrajs %}
+  <script type="text/javascript">
+    window.app.litStartup(function(lit){
+		let bti = new lit.BulkTagInterface(lit, {{ assessment.pk }}, {{ tags|safe }});
+		bti.loadReferences();
+
+		console.log("TAGS: ");
+		console.log({{ tags|safe}});
+
+		/*
+		// build a standard tagtree...
+        window.tagtree = new lit.TagTree({{tags|safe}});
+		$('#taglist').html(window.tagtree.get_nested_list({"show_refs_count": false}))
+			.on('hawc-tagClicked', function(e){
+				var clickedTag = $(e.target);
+				// console.log("tag clicked");
+				// console.log(e);
+				  // $(e.target).addClass("selected");
+				if (clickedTag.hasClass("selected")) {
+					clickedTag.removeClass("selected");
+				} else {
+					clickedTag.addClass("selected");
+				}
+			});
+		*/
+
+		// and now muck with it - add some checkboxes and disable the ability to collapse the tree
+		/*
+		$("div#taglist").find("div").each(function() {
+			if ($(this).attr("data-id") != undefined) {
+				$("<input/>").attr("type", "checkbox").prependTo($(this)).css({
+					"position": "absolute",
+					"margin-left": "-10px",
+					"margin-top": "7px"
+				});
+			}
+		});
+		$("div.collapse").css("overflow", "visible");
+		$("span.nestedTagCollapser").remove();
+		*/
+
+		/*
+		window.ref_container = new lit.EditReferenceContainer([], window.tagtree,
+												{"content_div": "#foobar"});
+												*/
+
+
+		/*
+		  $('#taglist')
+			.html(tagtree.get_nested_list({"show_refs_count": true}))
+			.on('hawc-tagClicked', function(e){
+			  $('.nestedTag').removeClass("selected");
+			  $(e.target).addClass("selected");
+			  var tag = $(e.target).data('d'),
+				  options = {
+					tag: tag,
+					download_url: "{% url 'lit:ref_download_excel' assessment.pk %}"
+				  },
+				  refviewer = new lit.ReferencesViewer($('#references_detail_div'), options);
+			  tag.get_reference_objects_by_tag(refviewer);
+			});
+		*/
+
+    // let refviewer = new lit.ReferencesViewer($('#referenceTbl'), {fixed_title: 'Search Results'});
+      // window.tagtree = new lit.TagTree({{tags|safe}});
+      // $('#tags').html(window.tagtree.get_nested_list({"show_refs_count": false}))
+    });
+  </script>
+{% endblock extrajs %}
+

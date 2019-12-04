@@ -45,3 +45,26 @@ class ReferenceCleanupFieldsSerializer(DynamicFieldsMixin, serializers.ModelSeri
         model = models.Reference
         cleanup_fields = model.TEXT_CLEANUP_FIELDS
         fields = cleanup_fields + ('id', )
+
+class ReferenceBasicFieldsSerializer(serializers.ModelSerializer):
+    tags = serializers.SerializerMethodField()
+    has_tags = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Reference
+        # fields = '__all__'
+        fields = ['id', 'title', 'authors', 'year', 'tags', 'has_tags']
+
+    def get_tags(self, obj):
+        tags = []
+        for t in obj.tags.all():
+            tag = {
+                "id": t.pk,
+                "name": t.name
+            }
+            tags.append(tag)
+
+        return tags
+
+    def get_has_tags(self, obj):
+        return obj.has_tags

@@ -622,6 +622,12 @@ class Reference(models.Model):
         help_text="Used internally for determining when reference was "
                   "originally added")
 
+    @property
+    def has_tags(self):
+        for t in self.tags.all():
+            return True
+        return False
+
     def get_absolute_url(self):
         return reverse('lit:ref_detail', kwargs={'pk': self.pk})
 
