@@ -2,6 +2,7 @@ from collections import OrderedDict
 import json
 import os
 
+from django.apps import apps
 from django.db import models
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -17,7 +18,7 @@ from django.shortcuts import HttpResponse
 from reversion import revisions as reversion
 
 from utils.models import get_crumbs
-from utils.helper import HAWCDjangoJSONEncoder
+from utils.helper import HAWCDjangoJSONEncoder, SerializerHelper
 from myuser.models import HAWCUser
 
 from . import managers
@@ -246,6 +247,23 @@ class Assessment(models.Model):
                     rob_headers.append(rob_header)
 
         return rob_headers
+
+    def bust_cache(self):
+        # Delete the cache for all objects in an assessment.
+        # look for all cases where SerializerHelper.get_serialized is used
+        for Model, filters in [
+            (apps.get_model('animal', 'Endpoint'), dict(assessment_id=self.id)),
+            (apps.get_model('epi', 'Outcome'), dict(assessment_id=self.id)),
+            (apps.get_model('epimeta', 'MetaProtocol'), dict(study__assessment_id=self.id)),
+            (apps.get_model('epimeta', 'MetaResult'), dict(protocol__study__assessment_id=self.id)),
+            (apps.get_model('invitro', 'IVEndpoint'), dict(assessment_id=self.id)),
+            (apps.get_model('mgmt', 'Task'), dict(study__assessment_id=self.id)),
+            (apps.get_model('riskofbias', 'RiskOfBias'), dict(study__assessment_id=self.id)),
+            (apps.get_model('study', 'Study'), dict(assessment_id=self.id)),
+            (apps.get_model('summary', 'Visual'), dict(assessment_id=self.id)),
+        ]:
+            ids = list(Model.objects.filter(**filters).values_list('id', flat=True))
+            SerializerHelper.delete_caches(Model, ids)
 
 
 class Attachment(models.Model):
