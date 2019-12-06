@@ -235,7 +235,7 @@ class AcceptNewLicenseForm(ModelForm):
     class Meta:
         model = models.HAWCUser
         fields = ('license_v2_accepted', )
-        
+
 
 def hawc_authenticate(email=None, password=None):
     """
@@ -372,7 +372,7 @@ class AdminUserForm(PasswordForm):
     class Meta:
         model = models.HAWCUser
         fields = ("email", "first_name", "last_name",
-                  "password1", "password2")
+                  "password1", "password2", "is_staff", "is_active")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
