@@ -519,6 +519,7 @@ class IVEndpoint(BaseEndpoint):
             self.groups.all(),
             self.benchmarks.all(),
         ))
+        effects = list(self.effects.all())
         old_id = self.id
         new_assessment_id = cw[Assessment.COPY_NAME][self.assessment_id]
 
@@ -538,11 +539,7 @@ class IVEndpoint(BaseEndpoint):
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
 
-        # copy tags
-        for tag in self.effects.through.objects.filter(baseendpoint_id=old_id):
-            tag.id = None
-            tag.baseendpoint_id = self.id
-            tag.save()
+        self.effects.set(effects)
 
         if self.category:
             self.category.copy_across_assessments(cw)

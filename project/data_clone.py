@@ -29,13 +29,15 @@ from lit import models as lit_models
 from riskofbias import models as rob_models
 from bmd import models as bmd_models
 from animal import models as ani_models
+from epi import models as epi_models
 from summary import models as summary_models
 
 from study import signals as study_signals
 from assessment import signals as assess_signals
 from riskofbias import signals as rob_signals
-from bmd import signals as bmd_signals
 from animal import signals as ani_signals
+from epi import signals as epi_signals
+from bmd import signals as bmd_signals
 
 
 class Cloner:
@@ -113,12 +115,11 @@ def clone_assessment(
     cw[Assessment.COPY_NAME][old_assessment_id] = new_assessment_id
 
     lit_models.ReferenceFilterTag.copy_tags(old_assessment, new_assessment)
-    # todo apply tags to new reference clones
-
-    # TODO - copy invitro tags
+    # TODO - do these delete the tags in existing?
+    # TODO - apply tags to new reference clones
+    # TODO - copy in-vitro tags
 
     # copy rob logic
-    # disable post_create signals
     assert post_save.disconnect(receiver=rob_signals.invalidate_caches_rob_metrics, sender=rob_models.RiskOfBiasDomain) is True
     assert post_save.disconnect(receiver=rob_signals.invalidate_caches_rob_metrics, sender=rob_models.RiskOfBiasMetric) is True
     assert post_save.disconnect(receiver=rob_signals.create_rob_scores, sender=rob_models.RiskOfBiasMetric) is True
@@ -144,25 +145,27 @@ def clone_assessment(
     assert post_save.disconnect(receiver=ani_signals.invalidate_endpoint_cache, sender=ani_models.EndpointGroup) is True
     assert post_save.disconnect(receiver=rob_signals.invalidate_caches_risk_of_bias, sender=rob_models.RiskOfBias) is True
     assert post_save.disconnect(receiver=rob_signals.invalidate_caches_risk_of_bias, sender=rob_models.RiskOfBiasScore) is True
+    assert post_save.disconnect(receiver=epi_signals.invalidate_outcome_cache, sender=epi_models.StudyPopulation) is True
+    assert post_save.disconnect(receiver=epi_signals.invalidate_outcome_cache, sender=epi_models.ComparisonSet) is True
+    assert post_save.disconnect(receiver=epi_signals.invalidate_outcome_cache, sender=epi_models.Exposure) is True
+    assert post_save.disconnect(receiver=epi_signals.invalidate_outcome_cache, sender=epi_models.Group) is True
+    assert post_save.disconnect(receiver=epi_signals.invalidate_outcome_cache, sender=epi_models.Outcome) is True
+    assert post_save.disconnect(receiver=epi_signals.invalidate_outcome_cache, sender=epi_models.Result) is True
+    assert post_save.disconnect(receiver=epi_signals.invalidate_outcome_cache, sender=epi_models.GroupResult) is True
+    assert post_save.disconnect(receiver=epi_signals.modify_group_result, sender=epi_models.Group) is True
     studies = study_models.Study.objects.filter(id__in=study_ids)
     assert studies.count() == len(studies)
-    cw = study_models.Study.copy_across_assessment(
-        studies=studies[:5],
-        assessment=new_assessment,
-        cw=cw,
-        copy_rob=True
-    )
+    cw = study_models.Study.copy_across_assessment(studies=studies, assessment=new_assessment, cw=cw, copy_rob=True)
 
-    # copy viz  # TODO - make smarter
+    # copy viz
     visuals = summary_models.Visual.objects.filter(id__in=viz_ids)
     assert visuals.count() == len(viz_ids)
     for visual in visuals:
         visual.copy_across_assessments(cw)
 
-    # copy data-pivots  # TODO - fix - some issue w/ the data-pivot not copying correctly.
+    # copy data-pivots
     dpus = summary_models.DataPivotUpload.objects.filter(id__in=dp_ids)
     dpqs = summary_models.DataPivotQuery.objects.filter(id__in=dp_ids)
-    import pdb; pdb.set_trace()
     assert dpus.count() + dpqs.count() == len(dp_ids)
     for dp in chain(dpus, dpqs):
         dp.copy_across_assessments(cw)
@@ -182,7 +185,6 @@ def main():
         100000055, 100000063, 100000056, 100000067, 100000024, 100000084, 100000054, 100000062, 100000041, 100000042, 100000043, 100000044, 100000069, 100000102, 100000104, 100000106, 100000107, 100000110, 100000086, 100000078, 100000105, 100000089, 100000098, 100500049, 100000111, 100000112, 100500059, 100000108, 100500052, 100500054, 100500060, 100500061, 100500005, 100500066, 100500004, 100500010, 100500007, 100500030, 100500043, 100500032, 100500027, 100500028, 100500029, 100500031, 100000061, 100500070, 100500063, 100500067, 100500062, 100500069, 100500075, 100500074, 100500076, 100500077, 100500073, 100500079, 100500085, 100500051, 100500096, 100500095, 100500091, 100500094, 100500102, 100000064, 100500103, 100000060, 100500099, 100500104, 100500105
     ]
     clone_assessment(100000026, "tester", study_ids, dp_ids, viz_ids)
-
 
 if __name__ == '__main__':
     main()

@@ -1,7 +1,9 @@
 from datetime import datetime
 from operator import methodcaller
 import json
+from typing import Dict
 
+from django.apps import apps
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
@@ -352,16 +354,32 @@ class Visual(models.Model):
 
         return json.dumps(data)
 
-    def copy_across_assessments(self,  cw):
+    def copy_across_assessments(self, cw: Dict):
         old_id = self.id
 
         self.id = None
         self.assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
+        self.prefilters = Prefilter.copy_across_assessments(self.prefilters, cw)
+        self.settings = self._update_settings_across_assessments(cw)
         self.save()
 
-        # TODO - improve prefilters and setttings?
-
         cw[get_model_copy_name(self)][old_id] = self.id
+
+    def _update_settings_across_assessments(self, cw: Dict) -> str:
+        settings = json.loads(self.settings)
+
+        if (self.visual_type == 1) and 'included_metrics' in settings:
+            pass
+
+        if (self.visual_type == 2 or self.visual_type == 3) and 'included_metrics' in settings:
+            ids = []
+            model_cw = cw[get_model_copy_name(apps.get_model("riskofbias", "RiskOfBiasMetric"))]
+            for id_ in settings['included_metrics']:
+                if id_ in model_cw:
+                    ids.append(model_cw[id_])
+            settings['included_metrics'] = ids
+
+        return json.dumps(settings)
 
 
 class DataPivot(models.Model):
@@ -466,15 +484,28 @@ class DataPivotUpload(DataPivot):
 
     def copy_across_assessments(self, cw):
         old_id = self.id
+        new_assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
 
+        # copy base
+        base = self.datapivot_ptr
+        base.id = None
+        base.assessment_id = new_assessment_id
+        base.save()
+
+        # copy self
         self.id = None
-        self.assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
+        self.assessment_id = new_assessment_id
+        self.datapivot_ptr = base
         self.save()
 
         # TODO - check multitable inheritance
         # TODO - improve prefilters and setttings?
 
         cw[get_model_copy_name(self)][old_id] = self.id
+
+    def _update_settings_across_assessments(self, cw: Dict) -> str:
+        # no changes required
+        return self.settings
 
 
 class DataPivotQuery(DataPivot):
@@ -656,16 +687,46 @@ class DataPivotQuery(DataPivot):
 
     def copy_across_assessments(self, cw):
         old_id = self.id
+        new_assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
 
+        # copy base
+        base = self.datapivot_ptr
+        base.id = None
+        base.assessment_id = new_assessment_id
+        base.save()
+
+        # copy self
         self.id = None
-        self.assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
+        self.assessment_id = new_assessment_id
+        self.datapivot_ptr = base
+        self.prefilters = Prefilter.copy_across_assessments(self.prefilters, cw)
         self.save()
-
-        # TODO - check multitable inheritance
-        # TODO - improve prefilters and setttings?
 
         cw[get_model_copy_name(self)][old_id] = self.id
 
+    def _update_settings_across_assessments(self, cw: Dict) -> str:
+        try:
+            settings = json.loads(self.settings)
+        except json.JSONDecodeError:
+            return self.settings
+
+        if len(settings['row_overrides']) > 0:
+            if self.evidence_type == BIOASSAY and self.export_style == self.EXPORT_GROUP:
+                Model = apps.get_model("animal", "EndpointGroup")
+            elif self.evidence_type == BIOASSAY and self.export_style == self.EXPORT_ENDPOINT:
+                Model = apps.get_model("animal", "Endpoint")
+            elif self.evidence_type == EPI and self.export_style == self.EXPORT_GROUP:
+                Model = apps.get_model("epi", "ResultGroup")
+            elif self.evidence_type == EPI and self.export_style == self.EXPORT_ENDPOINT:
+                Model = apps.get_model("epi", "Outcome")
+            else:
+                raise NotImplementedError()
+
+            model_cw = cw[get_model_copy_name(Model)]
+            for override in row_overrides:
+                override.update(pk=model_cw[override['pk']])
+
+        return json.dumps(settings)
 
 class Prefilter(object):
     """
@@ -727,6 +788,22 @@ class Prefilter(object):
     @staticmethod
     def setFiltersFromObj(filters, prefilters):
         filters.update(json.loads(prefilters))
+
+    def copy_across_assessments(prefilters: str, cw: Dict) -> str:
+        filters = json.loads(prefilters)
+        for study_id_key in [
+            "animal_group__experiment__study__in",
+            "study_population__study__in",
+            "experiment__study__in",
+            "protocol__study__in",
+        ]:
+            if study_id_key in filters:
+                ids = []
+                for id_ in filters[study_id_key]:
+                    if int(id_) in cw[get_model_copy_name(Study)]:
+                        ids.append(str(cw[get_model_copy_name(Study)][int(id_)]))
+                filters[study_id_key] = ids
+        return json.dumps(filters)
 
 
 reversion.register(SummaryText)

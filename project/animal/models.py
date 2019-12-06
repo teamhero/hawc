@@ -1193,6 +1193,7 @@ class Endpoint(BaseEndpoint):
 
     def copy_across_assessments(self, cw):
         children = chain(list(self.groups.all()), list(self.bmd_sessions.all()))
+        effects = list(self.effects.all())
 
         old_id = self.id
         new_assessment_id = cw[Assessment.COPY_NAME][self.assessment_id]
@@ -1211,11 +1212,7 @@ class Endpoint(BaseEndpoint):
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
 
-        # copy tags
-        for tag in self.effects.through.objects.filter(baseendpoint_id=old_id):
-            tag.id = None
-            tag.baseendpoint_id = self.id
-            tag.save()
+        self.effects.set(effects)
 
         # copy other children
         for child in children:

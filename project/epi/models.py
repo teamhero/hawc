@@ -355,6 +355,7 @@ class StudyPopulation(models.Model):
         return self.design not in self.OUTCOME_GROUP_DESIGNS
 
     def copy_across_assessments(self, cw):
+        countries = list(self.countries.all())
         children = list(itertools.chain(
             self.criteria.all(),
             self.spcriteria.all(),
@@ -365,6 +366,7 @@ class StudyPopulation(models.Model):
         self.id = None
         self.study_id = cw[Study.COPY_NAME][self.study_id]
         self.save()
+        self.countries.set(countries)
         cw[self.COPY_NAME][old_id] = self.id
         for child in children:
             child.copy_across_assessments(cw)
@@ -521,6 +523,7 @@ class Outcome(BaseEndpoint):
         )
 
     def copy_across_assessments(self, cw):
+        effects = list(self.effects.all())
         children = list(itertools.chain(
             self.comparison_sets.all(),
             self.results.all()))
@@ -542,11 +545,7 @@ class Outcome(BaseEndpoint):
         self.save()
         cw[self.COPY_NAME][old_id] = self.id
 
-        # copy tags
-        for tag in self.effects.through.objects.filter(baseendpoint_id=old_id):
-            tag.id = None
-            tag.baseendpoint_id = self.id
-            tag.save()
+        self.effects.set(effects)
 
         # copy other children
         for child in children:
