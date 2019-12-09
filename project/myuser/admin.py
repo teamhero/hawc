@@ -5,6 +5,13 @@ from django.core.urlresolvers import reverse
 from . import forms, models
 
 
+class IntentionalException(Exception):
+    """
+    An intentionally thrown exception, used for testing in various deployment environments.
+    """
+    pass
+
+
 class HAWCUserAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'email', 'is_active',
                     'is_staff', 'date_joined')
@@ -12,6 +19,11 @@ class HAWCUserAdmin(admin.ModelAdmin):
     search_fields = ('last_name', 'first_name', 'email')
     ordering = ('-date_joined', )
     form = forms.AdminUserForm
+
+    def throw_500(modeladmin, request, queryset):
+        message = f'User {request.user} intentionally threw a server error from the admin site.'
+        raise IntentionalException(message)
+
 
     def send_welcome_emails(modeladmin, request, queryset):
         for user in queryset:
@@ -34,8 +46,9 @@ class HAWCUserAdmin(admin.ModelAdmin):
 
     set_password.short_description = "Set user-password"
     send_welcome_emails.short_description = "Send welcome email"
+    throw_500.short_description = "Intentionally throw a server error (500)"
 
-    actions = (send_welcome_emails, set_password)
+    actions = (send_welcome_emails, set_password, throw_500)
 
 
 admin.site.register(models.HAWCUser, HAWCUserAdmin)

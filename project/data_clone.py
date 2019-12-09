@@ -115,9 +115,9 @@ def clone_assessment(
     cw[Assessment.COPY_NAME][old_assessment_id] = new_assessment_id
 
     lit_models.ReferenceFilterTag.copy_tags(old_assessment, new_assessment)
-    # TODO - do these delete the tags in existing?
-    # TODO - apply tags to new reference clones
-    # TODO - copy in-vitro tags
+    # TODO - make a pandas dataframe for all the assessment splits
+    # TODO - fix invitro copy tags
+    # TODO - start comparing everything individually
 
     # copy rob logic
     assert post_save.disconnect(receiver=rob_signals.invalidate_caches_rob_metrics, sender=rob_models.RiskOfBiasDomain) is True
