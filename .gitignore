@@ -60,3 +60,4 @@ yarn.lock
 
 venv/
 logfile
+.mypy_cache/
