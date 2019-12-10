@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Dict, List, Tuple
 
 import django
 
@@ -242,7 +243,7 @@ class AssessmentRootMixin(object):
         return depth
 
     @classmethod
-    def copy_tags(cls, copy_to_assessment, copy_from_assessment):
+    def copy_tags(cls, copy_to_assessment, copy_from_assessment) -> Dict[int, int]:
         # delete existing tags for this assessment
         old_root = cls.get_assessment_root(copy_to_assessment.pk)
         old_root.delete()
@@ -256,6 +257,41 @@ class AssessmentRootMixin(object):
         # insert as new taglist
         cls.load_bulk(tags, parent=None, keep_ids=False)
         cls.clear_cache(copy_to_assessment.pk)
+
+        # return mapping of old to new
+        def get_tag_ids(taglist: List) -> Tuple[List[int], List[str]]:
+            """
+            Return a list of tag-ids and tag-names to map from old tag to new tag.
+
+            Args:
+                taglist (List): A `dump_bulk` ordered list of tags
+
+            Returns:
+                Tuple[List[int], List[str]]: A list of id and name for all tags
+            """
+            tag_ids = []
+            tag_names = []
+
+            def append_child(node):
+                # recursively append id and name to lists
+                tag_ids.append(node['id'])
+                tag_names.append(node['data']['name'])
+                if 'children' in node:
+                    for child in node['children']:
+                        append_child(child)
+
+            append_child(taglist[0])
+
+            return tag_ids, tag_names
+
+        # return a mapping of old tag id to new tag id
+        old_taglist = cls.dump_bulk(cls.get_assessment_root(copy_from_assessment.pk))
+        new_taglist = cls.dump_bulk(cls.get_assessment_root(copy_to_assessment.pk))
+        old_ids, old_names = get_tag_ids(old_taglist)
+        new_ids, new_names = get_tag_ids(new_taglist)
+        assert old_names[0] != new_names[0]  # root id should change
+        assert old_names[1:] == new_names[1:]  # everything else should be the same
+        return {old_id: new_id for old_id, new_id in zip(old_ids, new_ids)}
 
     def get_assessment_id(self):
         name = self.get_ancestors()[0].name
