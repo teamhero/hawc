@@ -1,6 +1,7 @@
 from datetime import datetime
 from operator import methodcaller
 import json
+import logging
 from typing import Dict
 
 from django.apps import apps
@@ -30,6 +31,9 @@ from utils.helper import HAWCtoDateString, HAWCDjangoJSONEncoder, \
 from utils.models import get_model_copy_name
 
 from . import managers
+
+
+logger = logging.getLogger(__name__)
 
 BIOASSAY = 0
 EPI = 1
@@ -357,11 +361,27 @@ class Visual(models.Model):
     def copy_across_assessments(self, cw: Dict):
         old_id = self.id
 
+        study_cw = cw[get_model_copy_name(Study)]
+        new_study_ids = []
+        for study in self.studies.all():
+            if study.id in study_cw:
+                new_study_ids.append(study_cw[study.id])
+            else:
+                logger.warning(f"Study {study.id} ({study}) missing from viz: {self.id}")
+        new_studies = list(Study.objects.filter(id__in=new_study_ids))
+        assert len(new_study_ids) == len(new_studies)
+
+        if self.endpoints.all().count() > 0:
+            raise NotImplementedError("Requires implementation to copy this visual type")
+
         self.id = None
         self.assessment_id = cw[get_model_copy_name(self.assessment)][self.assessment_id]
         self.prefilters = Prefilter.copy_across_assessments(self.prefilters, cw)
         self.settings = self._update_settings_across_assessments(cw)
         self.save()
+
+        # set m2m settings
+        self.studies.set(new_studies)
 
         cw[get_model_copy_name(self)][old_id] = self.id
 
