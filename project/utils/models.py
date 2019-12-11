@@ -251,8 +251,10 @@ class AssessmentRootMixin(object):
         # copy tags from alternative assessment, renaming root-tag
         root = cls.get_assessment_root(copy_from_assessment.pk)
         tags = cls.dump_bulk(root)
+        assert 'name' in tags[0]['data']
         tags[0]['data']['name'] = cls.get_assessment_root_name(copy_to_assessment.pk)
-        tags[0]['data']['slug'] = cls.get_assessment_root_name(copy_to_assessment.pk)
+        if 'slug' in tags[0]['data']:
+            tags[0]['data']['slug'] = cls.get_assessment_root_name(copy_to_assessment.pk)
 
         # insert as new taglist
         cls.load_bulk(tags, parent=None, keep_ids=False)

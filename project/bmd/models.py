@@ -406,7 +406,7 @@ class Model(models.Model):
         self.save()
 
     def copy_across_assessments(self, cw):
-        children = list(self.selectedmodel_set.all())
+        children = list(self.selectedmodel_set.all().order_by('id'))
         old_id = self.id
 
         self.id = None

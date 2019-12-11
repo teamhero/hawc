@@ -363,7 +363,7 @@ class Visual(models.Model):
 
         study_cw = cw[get_model_copy_name(Study)]
         new_study_ids = []
-        for study in self.studies.all():
+        for study in self.studies.all().order_by('id'):
             if study.id in study_cw:
                 new_study_ids.append(study_cw[study.id])
             else:
