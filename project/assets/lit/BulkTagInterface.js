@@ -4,7 +4,7 @@ class BulkTagInterface {
 	assessmentId = -1;
 	pageNum = 0;
 	pageSize = 50;
-	sortOrder = "-year";
+	sortOrder = "authors";
 	referenceSelections = null;
 	tagSelections = null;
 
