@@ -3,7 +3,6 @@ import json
 from datetime import datetime
 
 from django.core.urlresolvers import reverse_lazy
-from django.db.transaction import atomic
 from django.forms.models import model_to_dict
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -39,8 +38,11 @@ class LitOverview(BaseList):
         context['tags'] = models.ReferenceFilterTag.get_all_tags(self.assessment.id)
         return context
 
-class BulkTagging(TemplateView):
+class BulkTagging(TeamMemberOrHigherMixin, TemplateView):
     template_name = "lit/bulk_tagging.html"
+
+    def get_assessment(self, request, *args, **kwargs):
+        return get_object_or_404(Assessment, pk=kwargs['pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -54,34 +56,12 @@ class BulkTagging(TemplateView):
         context = self.get_context_data(**kwargs)
         context['method'] = 'POST'
 
-        ref_ids = (self.request.POST["referenceIds"]).split(",")
-        tag_ids = (self.request.POST["tagIds"]).split(",")
+        ref_ids = [ tryParseInt(x, -1) for x in (self.request.POST["referenceIds"]).split(",") ]
+        tag_ids = [ tryParseInt(x, -1) for x in (self.request.POST["tagIds"]).split(",") ]
 
-        self.process_bulk_tag_request(ref_ids, tag_ids)
+        models.Reference.apply_bulk_tags(ref_ids, tag_ids)
 
         return super(TemplateView, self).render_to_response(context)
-
-    @atomic
-    def process_bulk_tag_request(self, reference_ids_strings, tag_ids_strings):
-        tag_ids = [ tryParseInt(tag_id, -1) for tag_id in tag_ids_strings ]
-        ref_ids = [ tryParseInt(ref_id, -1) for ref_id in reference_ids_strings ]
-
-        existing = models.ReferenceTags.objects.filter(tag__in=tag_ids, content_object__in=ref_ids)
-        existing_set = {f'{tag.tag_id}-{tag.content_object_id}' for tag in existing}
-
-        creates = []
-        ref_ids_to_update = set()
-        for tag in tag_ids:
-            for ref in ref_ids:
-                if f'{tag}-{ref}' not in existing_set:
-                    creates.append(models.ReferenceTags(tag_id=tag, content_object_id=ref))
-                    ref_ids_to_update.add(ref)
-
-        models.ReferenceTags.objects.bulk_create(creates)
-
-        models.Reference.objects.filter(pk__in=ref_ids_to_update).update(last_updated=datetime.now())
-
-        # note from Andy - necessary to somehow clear lit cache after bulk create?
 
 class SearchList(BaseList):
     parent_model = Assessment

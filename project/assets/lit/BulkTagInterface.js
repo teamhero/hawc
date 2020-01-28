@@ -50,7 +50,6 @@ class BulkTagInterface {
         $('#taglist').html(window.tagtree.get_nested_list({"show_refs_count": false}))
             .on('hawc-tagClicked', function(e){
                 var clickedTag = $(e.target);
-                console.log("tag clicked");
                 var tagId = clickedTag.parent("div").attr("data-id");
                   // $(e.target).addClass("selected");
                 if (clickedTag.hasClass("selected")) {
@@ -63,7 +62,6 @@ class BulkTagInterface {
 					hook.tagSelections.ids[tagId] = true;
                 }
 
-				console.log(hook.tagSelections);
 				hook.updateTaglistTitle();
             });
 
@@ -88,7 +86,6 @@ class BulkTagInterface {
 		var numTags = this.tagSelections.numberOfTags;
 
 		if (numRefs > 0 && numTags > 0) {
-			console.log("go ahead...");
 			$("#bulkTaggingForm #referenceIds").val(this.commaDelim(this.referenceSelections.ids));
 			$("#bulkTaggingForm #tagIds").val(this.commaDelim(this.tagSelections.ids));
 
@@ -107,7 +104,6 @@ class BulkTagInterface {
 		var singleAlertShown = false;
 		$("input[type='checkbox']").each(function() {
 			if ($(this).prop("checked") != doCheck) {
-				console.log("now at [" + hook.referenceSelections.numberOfIds + "]...");
 				if (!doCheck || hook.referenceSelections.numberOfIds < hook.maxRefsPerBatch) {
 					$(this).prop("checked", doCheck).trigger("change");
 				} else {
@@ -156,7 +152,6 @@ class BulkTagInterface {
 		var referenceId = checkbox.attr("data-referenceId");
 		if (checkbox.prop("checked")) {
 			if (this.referenceSelections.numberOfIds < this.maxRefsPerBatch) {
-				console.log("checked [" + referenceId + "]");
 				if (this.referenceSelections.ids[referenceId] === undefined) {
 					this.referenceSelections.ids[referenceId] = true;
 					this.referenceSelections.numberOfIds++;
@@ -166,15 +161,12 @@ class BulkTagInterface {
 				this.showMaxWarning();
 			}
 		} else {
-			console.log("deselected [" + referenceId + "]");
 			if (this.referenceSelections.ids[referenceId] !== undefined) {
 				delete this.referenceSelections.ids[referenceId];
 				this.referenceSelections.numberOfIds--;
 			}
 		}
 
-		console.log("NOW:");
-		console.log(this.referenceSelections);
 		this.updateTaglistTitle();
 	}
 
@@ -189,7 +181,6 @@ class BulkTagInterface {
 		} else {
 			this.setStatus("References " + startIdx + "-" + endIdx + " of " + totalIdx);
 		}
-		console.log(data);
 
 		var tbl = $("table#reference_list");
 		var headerRow = $("<tr/>").appendTo(tbl);
@@ -268,7 +259,6 @@ class BulkTagInterface {
 		if (this.sortOrder != "") {
 			testUrl += "&ordering=" + this.sortOrder;
 		}
-		console.log("test url is [" + testUrl + "]");
 
 		this.setLoading(true);
 

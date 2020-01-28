@@ -25,6 +25,7 @@ class ReferenceCleanup(CleanupFieldsBaseViewSet):
 
 class Reference(viewsets.ReadOnlyModelViewSet):
     assessment_filter_args = "assessment"
+    serializer_class = serializers.ReferenceBasicFieldsSerializer
     model = models.Reference
     pagination_class = LimitOffsetPagination
     permission_classes = (AssessmentLevelPermissions, )
@@ -53,8 +54,5 @@ class Reference(viewsets.ReadOnlyModelViewSet):
                     qs = qs.filter(number_of_tags__gt = 0)
 
             return qs
-
-    def get_serializer_class(self):
-        cls = serializers.ReferenceBasicFieldsSerializer
-        return cls
-
+        else:
+            return self.model.objects.all()

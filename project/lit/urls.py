@@ -115,7 +115,7 @@ urlpatterns = [
         views.RISExportInstructions.as_view(),
         name='ris_export_instructions'),
 
-    url(r'^assessment/(?P<pk>\d+)/bulk-tagging$',
+    url(r'^assessment/(?P<pk>\d+)/bulk-tagging/$',
         views.BulkTagging.as_view(),
         name='bulk_tagging'),
 
